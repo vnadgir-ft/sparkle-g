@@ -31,32 +31,34 @@
     @author Michele Mostarda (michele.mostarda)
     @version $Id$
 -->
-<project xmlns:antlr="antlib:org/apache/tools/ant/antlr" basedir="." name="sparkle-g" default="test">
-
-    <taskdef name="antlr3" classname="org.apache.tools.ant.antlr.ANTLR3" classpath="tools/antlr3.jar"/>
+<project xmlns:antlr3="antlib:org.apache.tools.ant.antlr" xmlns:svn="antlib:org.tigris.subversion.svnant" basedir="." name="sparkle-g" default="release">
 
     <property file="build.properties" />
 
+    <path id="antlib.classpath">
+        <fileset dir="${ant.tools.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <taskdef uri="antlib:org.apache.tools.ant.antlr" resource="org/apache/tools/ant/antlr/antlib.xml" classpathref="antlib.classpath"/>
+    <taskdef uri="antlib:org.tigris.subversion.svnant" resource="org/tigris/subversion/svnant/antlib.xml" classpathref="antlib.classpath"/>
+
     <target name="init">
-        <mkdir dir="${main.java.src}" />
-        <mkdir dir="${target.classes.dir}" />
+        <mkdir dir="${main.java.src}"/>
+        <mkdir dir="${target.classes.dir}"/>
+        <mkdir dir="${target.grammar.dir}"/>
     </target>
 
     <target name="compile" depends="init">
-        <antlr3 target="${main.grammar.src}"
-                outputdirectory="${main.java.src}"
-                debug="false">
+        <antlr3:antlr3 target="${main.grammar.src}" outputdirectory="${main.java.src}" debug="false">
             <jvmarg value="-Xmx256m" />
             <classpath>
                 <fileset dir="${lib.dir}/compile-time" />
             </classpath>
-        </antlr3>
+        </antlr3:antlr3>
 
-        <javac srcdir="${main.java.src}"
-            destdir="${target.classes.dir}"
-            verbose="true"
-            optimize="true"
-            debug="true">
+        <javac srcdir="${main.java.src}" destdir="${target.classes.dir}" verbose="true" optimize="true" debug="true">
             <classpath>
                 <fileset dir="${lib.dir}/compile-time" />
             </classpath>
@@ -72,6 +74,30 @@
             </classpath>
             <arg value="${test.grammar.src}" />
         </java>
+    </target>
+
+    <target name="release" depends="test">
+        <svn:svn javahl="false">
+            <status path="." revisionProperty="svn.revision" />
+        </svn:svn>
+        <tstamp>
+            <format pattern="yyyyMMddHHmmss" property="build.timestamp" />
+        </tstamp>
+        <condition property="publish.revision" value="${project.version}">
+            <equals arg1="${project.status}" arg2="release"/>
+        </condition>
+        <condition property="publish.revision" value="${project.version}-r${svn.revision}-dev">
+            <equals arg1="${project.status}" arg2="integration"/>
+        </condition>
+        <condition property="publish.revision" value="${project.version}-r${svn.revision}-dev${build.timestamp}">
+            <equals arg1="${project.status}" arg2="development"/>
+        </condition>
+        <copy todir="${target.grammar.dir}">
+            <fileset file="${main.grammar.src}"/>
+        </copy>
+        <move tofile="${target.grammar.dir}/Sparql-${publish.revision}.g">
+            <fileset file="${target.grammar.dir}/Sparql.g"/>
+        </move>
     </target>
 
     <target name="clean">
