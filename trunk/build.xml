@@ -1,0 +1,84 @@
+<!--
+    Copyright 2007 the original author or authors.
+
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following
+    conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+    disclaimer.
+
+    Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+    disclaimer in the documentation and/or other materials provided with the distribution.
+
+    Neither the name of the author or authors nor the names of its contributors may be used to endorse or promote
+    products derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    @author Simone Tripodi   (simone.tripodi)
+    @author Michele Mostarda (michele.mostarda)
+    @version $Id$
+-->
+<project xmlns:antlr="antlib:org/apache/tools/ant/antlr" basedir="." name="sparkle-g" default="test">
+
+    <taskdef name="antlr3" classname="org.apache.tools.ant.antlr.ANTLR3" classpath="tools/antlr3.jar"/>
+
+    <property file="build.properties" />
+
+    <target name="init">
+        <mkdir dir="${main.java.src}" />
+        <mkdir dir="${target.classes.dir}" />
+    </target>
+
+    <target name="compile" depends="init">
+        <antlr3 target="${main.grammar.src}"
+                outputdirectory="${main.java.src}"
+                debug="false">
+            <jvmarg value="-Xmx256m" />
+            <classpath>
+                <fileset dir="${lib.dir}/compile-time" />
+            </classpath>
+        </antlr3>
+
+        <javac srcdir="${main.java.src}"
+            destdir="${target.classes.dir}"
+            verbose="true"
+            optimize="true"
+            debug="true">
+            <classpath>
+                <fileset dir="${lib.dir}/compile-time" />
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="test" depends="compile" description="Compiles and tests the SPARQL grammar">
+        <java classname="${test.classname}" fork="true" maxmemory="256m">
+            <classpath>
+                <fileset dir="${lib.dir}/compile-time" />
+                <fileset dir="${lib.dir}/test" />
+                <pathelement location="${target.classes.dir}" />
+            </classpath>
+            <arg value="${test.grammar.src}" />
+        </java>
+    </target>
+
+    <target name="clean">
+        <delete verbose="true" includeemptydirs="true">
+            <fileset dir="${main.java.src}" />
+            <fileset dir="${target.classes.dir}" />
+        </delete>
+    </target>
+
+</project>
