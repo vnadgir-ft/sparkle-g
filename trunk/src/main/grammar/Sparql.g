@@ -54,118 +54,11 @@ options {
     ASTLabelType=CommonTree;
 }
 
-tokens {
-   BASE;
-   PREFIX;
-   SELECT;
-   DISTINCT;
-   REDUCED;
-   CONSTRUCT;
-   DESCRIBE;
-   ASK;
-   FROM;
-   NAMED;
-   WHERE;
-   ORDER;
-   BY;
-   ASC;
-   DESC;
-   LIMIT;
-   OFFSET;
-   OPTIONAL;
-   GRAPH;
-   UNION;
-   FILTER;
-   A;
-   STR;
-   LANG;
-   LANGMATCHES;
-   DATATYPE;
-   BOUND;
-   SAMETERM;
-   ISIRI;
-   ISURI;
-   ISBLANK;
-   ISLITERAL; 
-   REGEX;
-   TRUE;
-   FALSE;
-}
-
 @lexer::header {
 import java.util.HashMap;
 }
 
-@lexer::members {
-
-  int keyword = 0;
-
-  static private HashMap<String, Integer> keywords = new HashMap<String, Integer>();
-  {
-     keywords.put("BASE", BASE);
-     keywords.put("PREFIX", PREFIX);
-     keywords.put("SELECT", SELECT);
-     keywords.put("DISTINCT", DISTINCT);
-     keywords.put("REDUCED", REDUCED);
-     keywords.put("CONSTRUCT", CONSTRUCT);
-     keywords.put("DESCRIBE", DESCRIBE);
-     keywords.put("ASK", ASK);
-     keywords.put("FROM", FROM);
-     keywords.put("NAMED", NAMED);
-     keywords.put("WHERE", WHERE);
-     keywords.put("ORDER", ORDER);
-     keywords.put("BY", BY);
-     keywords.put("ASC", ASC);
-     keywords.put("DESC", DESC);
-     keywords.put("LIMIT", LIMIT);
-     keywords.put("OFFSET", OFFSET);
-     keywords.put("OPTIONAL", OPTIONAL);
-     keywords.put("GRAPH", GRAPH);
-     keywords.put("UNION", UNION);
-     keywords.put("FILTER", FILTER);
-     keywords.put("A", A);
-     keywords.put("STR", STR);
-     keywords.put("LANG", LANG);
-     keywords.put("LANGMATCHES", LANGMATCHES);
-     keywords.put("DATATYPE", DATATYPE);
-     keywords.put("BOUND", BOUND);
-     keywords.put("SAMETERM", SAMETERM);
-     keywords.put("ISIRI", ISIRI);
-     keywords.put("ISURI", ISURI);
-     keywords.put("ISBLANK", ISBLANK);
-     keywords.put("ISLITERAL", ISLITERAL); 
-     keywords.put("REGEX", REGEX); 
-     keywords.put("TRUE", TRUE); 
-     keywords.put("FALSE", FALSE); 
-  }
-  
-  private boolean checkForKeyword() {
- 
-     StringBuilder sb = new StringBuilder();
- 
-     int i = 1;
-         
-     while ( (input.LA(i) >= 'A' && input.LA(i) <= 'Y') || (input.LA(i) >= 'a' && input.LA(i) <= 'y') ) {
-         sb.append((char)input.LA(i++));
-     }
-
-     Integer keyword = keywords.get(sb.toString().toUpperCase());
-     
-     if ( null != keyword ) {
-        setKeyword(keyword.intValue());
-     } 
-     
-     return null != keyword;
-  }
-  
-  private void setKeyword(int keyword) {
-     this.keyword = keyword;
-  }
-
-  private int getKeyword() {
-     return keyword;
-  }
-  
+@lexer::members { 
   private void echo(String s) { System.out.println(s); System.out.flush(); }
 }
 
@@ -499,11 +392,146 @@ PNAME_LN
     : PNAME_NS PN_LOCAL
     ;
 
-KEYWORD
-    : { checkForKeyword() }? => ('A'|'B'|'C'|'D'|'F'|'G'|'I'|'L'|'N'|'O'|'P'|'R'|'S'|'T'|'U'|'W'|'a'|'b'|'c'|'d'|'f'|'g'|'i'|'l'|'n'|'o'|'p'|'r'|'s'|'t'|'u'|'w')('a'..'y' | 'A'..'Y')*
-      { $type = getKeyword(); }
+BASE
+    : ('B'|'b')('A'|'a')('S'|'s')('E'|'e')
+    ;
+
+PREFIX
+    : ('P'|'p')('R'|'r')('E'|'e')('F'|'f')('I'|'i')('X'|'x')
+    ;
+ 
+SELECT
+    : ('S'|'s')('E'|'e')('L'|'l')('E'|'e')('C'|'c')('T'|'t')
+    ;
+
+DISTINCT
+    : ('D'|'d')('I'|'i')('S'|'s')('T'|'t')('I'|'i')('N'|'n')('C'|'c')('T'|'t')
     ;
     
+REDUCED
+    : ('R'|'r')('E'|'e')('D'|'d')('U'|'u')('C'|'c')('E'|'e')('D'|'d')
+    ;
+    
+CONSTRUCT
+    : ('C'|'c')('O'|'o')('N'|'n')('S'|'s')('T'|'t')('R'|'r')('U'|'u')('C'|'c')('T'|'t')
+    ;
+    
+DESCRIBE
+    : ('D'|'d')('E'|'e')('S'|'s')('C'|'c')('R'|'r')('I'|'i')('B'|'b')('E'|'e')
+    ;
+
+ASK
+    : ('A'|'a')('S'|'s')('K'|'k')
+    ;
+
+FROM
+    : ('F'|'f')('R'|'r')('O'|'o')('M'|'m')
+    ;
+
+NAMED
+    : ('N'|'n')('A'|'a')('M'|'m')('E'|'e')('D'|'d')
+    ;   
+
+WHERE
+    : ('W'|'w')('H'|'h')('E'|'e')('R'|'r')('E'|'e')
+    ;
+
+ORDER
+    : ('O'|'o')('R'|'r')('D'|'d')('E'|'e')('R'|'r')
+    ;
+
+BY
+    : ('B'|'b')('Y'|'y')
+    ;
+    
+ASC
+    : ('A'|'a')('S'|'s')('C'|'c')
+    ;
+    
+DESC
+    : ('D'|'d')('E'|'e')('S'|'s')('C'|'c')
+    ;
+
+LIMIT
+    : ('L'|'l')('I'|'i')('M'|'m')('I'|'i')('T'|'t')
+    ;
+
+OFFSET
+    : ('O'|'o')('F'|'f')('F'|'f')('S'|'s')('E'|'e')('T'|'t')
+    ;
+    
+OPTIONAL
+    : ('O'|'o')('P'|'p')('T'|'t')('I'|'i')('O'|'o')('N'|'n')('A'|'a')('L'|'l')
+    ;  
+    
+GRAPH
+    : ('G'|'g')('R'|'r')('A'|'a')('P'|'p')('H'|'h')
+    ;   
+    
+UNION
+    : ('U'|'u')('N'|'n')('I'|'i')('O'|'o')('N'|'n')
+    ;
+    
+FILTER
+    : ('F'|'f')('I'|'i')('L'|'l')('T'|'t')('E'|'e')('R'|'r')
+    ;
+    
+A
+    : ('A'|'a')
+    ;
+    
+STR
+    : ('S'|'s')('T'|'t')('R'|'r')
+    ;
+
+LANG
+    : ('L'|'l')('A'|'a')('N'|'n')('G'|'g')
+    ;
+
+LANGMATCHES
+    : ('L'|'l')('A'|'a')('N'|'n')('G'|'g')('M'|'m')('A'|'a')('T'|'t')('C'|'c')('H'|'h')('E'|'e')('S'|'s')
+    ;
+    
+DATATYPE
+    : ('D'|'d')('A'|'a')('T'|'t')('A'|'a')('T'|'t')('Y'|'y')('P'|'p')('E'|'e')
+    ;
+    
+BOUND
+    : ('B'|'b')('O'|'o')('U'|'u')('N'|'n')('D'|'d')
+    ;
+
+SAMETERM
+    : ('S'|'s')('A'|'a')('M'|'m')('E'|'e')('T'|'t')('E'|'e')('R'|'r')('M'|'m')
+    ;
+    
+ISIRI
+    : ('I'|'i')('S'|'s')('I'|'i')('R'|'r')('I'|'i')
+    ;
+    
+ISURI
+    : ('I'|'i')('S'|'s')('U'|'u')('R'|'r')('I'|'i')
+    ;
+    
+ISBLANK
+    : ('I'|'i')('S'|'s')('B'|'b')('L'|'l')('A'|'a')('N'|'n')('K'|'k')
+    ;
+    
+ISLITERAL
+    : ('I'|'i')('S'|'s')('L'|'l')('I'|'i')('T'|'t')('E'|'e')('R'|'r')('A'|'a')('L'|'l')
+    ;
+           
+REGEX
+    : ('R'|'r')('E'|'e')('G'|'g')('E'|'e')('X'|'x')
+    ;
+   
+TRUE
+    : ('T'|'t')('R'|'r')('U'|'u')('E'|'e')
+    ;
+    
+FALSE
+    : ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e')
+    ;
+                     
 IRI_REF
     : LESS ( options {greedy=false;} : ~(LESS | GREATER | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | '|' | '^' | '\\' | '`' | ('\u0000'..'\u0020')) )* GREATER
     ;
