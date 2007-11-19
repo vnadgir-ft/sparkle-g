@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" dir="ltr" lang="en">
 
     <head>
@@ -74,8 +74,21 @@
                             <li class="date">2007-11-19: Juergen Pfundt joined the team</li>
                             <li class="date">2007-11-XX: Bugfix release
                                 <ul>
-                                    <li class="patch">Fixed warning compiling rules (Juergen Pfundt)</li>
-                                </ul>
+                                    <li class="patch">Fixed antlr3 warnings emitted when compiling the sparql.g file (Juergen Pfundt)</li>
+                                    <li class="patch">Added lexical rule "ANY" as fallback, in case no lexical rule matches (Juergen Pfundt)</li>
+                                    <li class="patch">Recognition of keywords (including "true" and "false") is case insensitive now (Juergen Pfundt)</li>
+                                    <li class="patch">Implemented lexical rule for comments (Juergen Pfundt)</li>
+                                    <li class="patch">Solved problem with graphterm and blankNode which implicitely
+                                                      referenced WS via lexical rules NIL and ANON. As WS sends its content
+                                                      to channel hidden this resulted in problems with WS before and after
+                                                      braces. (Juergen Pfundt)</li>
+                                    <li class="patch">Added a few test cases to the test suite referenced in W3C's SPARQL's <a href="http://www.w3.org/TR/rdf-sparql-query/#grammar">specifications</a>.
+                                                      Modified one test case to test "comments".
+                                                      Test cases still have to be enhanced! (Juergen Pfundt)</li>
+                                    <li class="patch">Replaced parser literals by lexer tokens as preparation for AST generation (Juergen Pfundt)</li>
+                                    <li class="patch">Added sparqlT.g as starting point for a tree grammar (Juergen Pfundt)</li>                  
+                                    <li class="patch">Adapted the build file to compile both grammars and to generate javadoc (Juergen Pfundt)</li> 
+                                 </ul>
                             </li>
                         </ul>
 
