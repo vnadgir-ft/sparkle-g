@@ -92,11 +92,18 @@
         <condition property="publish.revision" value="${project.version}-r${svn.revision}-dev${build.timestamp}">
             <equals arg1="${project.status}" arg2="development"/>
         </condition>
-        <copy todir="${target.grammar.dir}">
+
+        <property name="tmp.dir" value="${target.dir}/releases/Sparql-${publish.revision}"/>
+        <mkdir dir="${tmp.dir}"/>
+        <copy todir="${tmp.dir}">
             <fileset file="${main.grammar.src}"/>
+            <fileset dir="${main.doc.src}"/>
+            <filterset>
+                <filter token="SPARKLEG" value="Sparql-${publish.revision}.g"/>
+            </filterset>
         </copy>
-        <move tofile="${target.grammar.dir}/Sparql-${publish.revision}.g">
-            <fileset file="${target.grammar.dir}/Sparql.g"/>
+        <move tofile="${tmp.dir}/Sparql-${publish.revision}.g">
+            <fileset file="${tmp.dir}/Sparql.g"/>
         </move>
     </target>
 

@@ -27,12 +27,14 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * @author Simone Tripodi   (simone.tripodi)
  * @author Michele Mostarda (michele.mostarda)
+ * @author Simone Tripodi   (simone.tripodi)
+ * @author Juergen Pfundt   (juergen.pfundt)
  * @version $Id$
  */
 
 grammar Sparql;
+
 options {
     k=1;
 }
