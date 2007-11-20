@@ -54,10 +54,6 @@ options {
     ASTLabelType=CommonTree;
 }
 
-@lexer::header {
-import java.util.HashMap;
-}
-
 @lexer::members { 
   private void echo(String s) { System.out.println(s); System.out.flush(); }
 }
