@@ -29,41 +29,50 @@
 
     @author Simone Tripodi   (simone)
     @author Michele Mostarda (michele)
+    @author Juergen Pfundt   (Juergen.Pfundt)
     @version $Id$
 -->
-<project xmlns:antlr="antlib:org/apache/tools/ant/antlr" basedir="." name="sparql-grammar" default="test">
+<project name="sparkle-g" xmlns:antlr3="antlib:org.apache.tools.ant.antlr" xmlns:svn="antlib:org.tigris.subversion.svnant" basedir="." default="release">
 
     <property file="build.properties" />
-    
-    <taskdef name="antlr3" classname="org.apache.tools.ant.antlr.ANTLR3" classpath="tools/antlr3.jar"/>
+
+    <path id="antlib.classpath">
+        <fileset dir="${ant.tools.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <taskdef uri="antlib:org.apache.tools.ant.antlr" resource="org/apache/tools/ant/antlr/antlib.xml" classpathref="antlib.classpath"/>
+    <taskdef uri="antlib:org.tigris.subversion.svnant" resource="org/tigris/subversion/svnant/antlib.xml" classpathref="antlib.classpath"/>
+
+    <target name="init">
+        <mkdir dir="${src.java.dir}"/>
+        <mkdir dir="${target.classes.dir}"/>
+        <mkdir dir="${target.doc.dir}"/>
+    </target>
 
     <macrodef name="antlr.tool">
        <attribute name="grammar.name"/>
        <attribute name="package" default="${package}"/>
        <sequential>
-              <echo message="antlr ${grammar.dir}/@{grammar.name}" />
-              <antlr3 target="${grammar.dir}/@{grammar.name}" 
-                  outputdirectory="${src.dir}/@{package}"
-                  libdirectory="${src.dir}/@{package}"
+              <echo message="antlr ${src.grammar.dir}/@{grammar.name}"/>
+              <antlr3:antlr3 target="${src.grammar.dir}/@{grammar.name}" 
+                  outputdirectory="${src.java.dir}/@{package}"
                   multithreaded="true"
-                  depend="true"
+                  depend="false"
                   report="true"
                   debug="false"
                   profile="false">
                   <jvmarg value="-Xmx256m" />
                   <classpath>
-                      <fileset dir="${lib.dir}/compile-time" />
+                      <fileset dir="${lib.dir}/compile-time">
+                          <include name="*.jar"/>
+                      </fileset>
                   </classpath>
-              </antlr3>
+              </antlr3:antlr3>
         </sequential>
     </macrodef>
 
-    <target name="init">
-        <mkdir dir="${src.dir}" />
-        <mkdir dir="${target.classes.dir}" />
-        <mkdir dir="${doc.dir}" />
-    </target>
-    
     <target name="sparql" depends="init">
        <antlr.tool grammar.name="Sparql.g"/>
     </target>
@@ -71,52 +80,87 @@
     <target name="sparqlt" depends="init">
        <antlr.tool grammar.name="SparqlT.g"/>
     </target>
-    
-    <target name="compile" depends="init, sparql, sparqlt">
-        <javac srcdir="${src.dir}"
+
+    <!-- removed sparqlt between dependencies, it seems it doesn't work -->
+    <target name="compile" depends="sparql">
+        <javac srcdir="${src.java.dir}"
             destdir="${target.classes.dir}"
             verbose="true"
             optimize="true"
             debug="true">
             <classpath>
-                <fileset dir="${lib.dir}/compile-time" />
+                <fileset dir="${lib.dir}/compile-time"/>
             </classpath>
         </javac>
     </target>
 
-    <target name="test" depends="compile" description="Compiles and tests the SPARQL grammar">
+    <target name="test" depends="compile, doc" description="Compiles and tests the SPARQL grammar">
         <java classname="${test.classname}" fork="true" maxmemory="512M">
             <classpath>
-                <fileset dir="${lib.dir}/compile-time" />
-                <fileset dir="${lib.dir}/test" />
-                <pathelement location="${target.classes.dir}" />
+                <fileset dir="${lib.dir}/compile-time"/>
+                <fileset dir="${lib.dir}/test"/>
+                <pathelement location="${target.classes.dir}"/>
             </classpath>
-            <arg value="${test.grammar.src}" />
+            <arg value="${test.grammar.dir}/Sparql.testsuite"/>
         </java>
+    </target>
+
+    <target name="doc" description="generate documentation" depends="compile">
+       <javadoc destdir="${target.doc.dir}"
+                author="true"
+                version="true"
+                use="true"
+                windowtitle="${ant.project.name} API"
+                protected="all"
+                private="all"
+                public="all"
+                locale="en"
+                linksource="yes"
+                breakiterator="yes">
+           <fileset dir="${src.java.dir}">
+               <include name="**/*.java"/>
+           </fileset>
+           <classpath>
+               <fileset dir="${lib.dir}/compile-time"/>
+               <fileset dir="${lib.dir}/runtime"/>
+           </classpath>
+       </javadoc>
     </target>
 
     <target name="clean">
         <delete verbose="true" includeemptydirs="true">
-            <fileset dir="${src.dir}" />
-            <fileset dir="${target.classes.dir}" />
-            <fileset dir="${doc.dir}" />
+            <fileset dir="${src.java.dir}"/>
+            <fileset dir="${target.dir}"/>
         </delete>
     </target>
-    
-    <target name="doc" description="generate documentation" depends="init">
-       <javadoc destdir="${doc.dir}"
-                author="true"
-                version="true"
-                use="true"
-                windowtitle="${project.name}"
-                sourcefiles="${src.dir}/${package}/*.java"
-                Protected="All" Private="All"
-                Public="All"
-                Locale="de"
-                linksource="yes"
-                breakiterator="Yes">
-       </javadoc>
+
+    <target name="release" depends="clean, test">
+        <svn:svn javahl="false">
+            <status path="." revisionProperty="svn.revision" />
+        </svn:svn>
+        <tstamp>
+            <format pattern="yyyyMMddHHmmss" property="build.timestamp" />
+        </tstamp>
+        <condition property="publish.revision" value="${project.version}">
+            <equals arg1="${project.status}" arg2="release"/>
+        </condition>
+        <condition property="publish.revision" value="${project.version}-r${svn.revision}-dev">
+            <equals arg1="${project.status}" arg2="integration"/>
+        </condition>
+        <condition property="publish.revision" value="${project.version}-r${svn.revision}-dev${build.timestamp}">
+            <equals arg1="${project.status}" arg2="development"/>
+        </condition>
+
+        <property name="tmp.dir" value="${target.dir}/releases/Sparql-${publish.revision}"/>
+        <mkdir dir="${tmp.dir}"/>
+        <copy todir="${tmp.dir}">
+            <fileset file="${src.grammar.dir}/Sparql.g"/>
+            <fileset dir="${src.htmldoc.dir}"/>
+        </copy>
+        <zip destfile="${tmp.dir}.zip" basedir="${tmp.dir}"/>
+        <delete verbose="true" includeemptydirs="true">
+            <fileset dir="${tmp.dir}"/>
+        </delete>
     </target>
 
-    <target name="all" description="do all the work, but first clean up!" depends="clean, compile, doc, test"/>
 </project>
