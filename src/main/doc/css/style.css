@@ -228,8 +228,8 @@ div.pagetools a {
     list-style-image: url('images/patch.png');
 }
 
-.article ul li.bug {
-    list-style-image: url('images/bug.png');
+.article ul li.newstuff {
+    list-style-image: url('images/newstuff.png');
 }
 
 .article ul li.person {
