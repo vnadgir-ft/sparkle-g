@@ -27,8 +27,9 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * @author Simone Tripodi   (simone)
- * @author Michele Mostarda (michele)
+ * @author Simone Tripodi   (simone.tripodi)
+ * @author Michele Mostarda (michele.mostarda)
+ * @author Juergen Pfundt   (Juergen.Pfundt)
  * @version $Id$
  */
 
@@ -47,7 +48,6 @@ WHERE {
 >> OK
 
 /* TEST 2 */
-
 query:
 <<
 PREFIX cd: <http://example.org/cd/>
@@ -62,7 +62,6 @@ WHERE {
 >> OK
 
 /* TEST 3 */
-
 query:
 <<
 PREFIX cd: <http://example.org/cd/>
@@ -76,7 +75,6 @@ WHERE {
 >> OK
 
 /* TEST 4 */
-
 query:
 <<
 PREFIX cd: <http://example.org/cd/>
@@ -89,7 +87,6 @@ WHERE {
 >> OK
 
 /* TEST 5 */
-
 query:
 <<
 PREFIX cd: <http://example.org/cd/>
@@ -102,7 +99,6 @@ WHERE {
 >> OK
 
 /* TEST 6 */
-
 query:
 <<
 PREFIX cd: <http://example.org/cd/>
@@ -119,7 +115,6 @@ OFFSET 10
 >> OK
 
 /* TEST 7 */
-
 query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -129,7 +124,6 @@ SELECT ?name
 >> OK
 
 /* TEST 8 */
-
 query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -142,7 +136,6 @@ WHERE { ?x foaf:name  ?name ;
 
 
 /* TEST 9 */
-
 query:
 <<
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -153,7 +146,6 @@ SELECT ?title
 
 
 /* TEST 10 */
-
 query:
 <<
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -164,7 +156,6 @@ SELECT ?title
 >> OK
 
 /* TEST 11 */
-
 query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -179,7 +170,6 @@ SELECT ?name1 ?name2
 
 
 /* TEST 12 */
-
 query:
 <<
 PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
@@ -194,7 +184,6 @@ WHERE { ?annot  a:annotates  ?annotates .
 
 
 /* TEST 13 */
-
 query:
 <<
 # This is a test for comment
@@ -211,7 +200,6 @@ SELECT ?name1 ?name2
 
 
 /* TEST 14 */
-
 query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -222,9 +210,7 @@ SELECT ?name ?shoeSize
          FILTER (datatype(?shoeSize) = xsd:integer ) }
 >> OK
 
-
 /* TEST 15 */
-
 query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -235,18 +221,16 @@ SELECT ?name ?mbox
 >> OK
 
 /* TEST 16 */
-
 query:
 <<
 PREFIX where: <http://xmlns.com/foaf/0.1/>
 SELECT ?select ?mbox
  WHERE { ?from where:select  ?select ;
             where:mbox  ?mbox .
-         FILTER	(	lang ( ?select ) = "ES" ) }
+         FILTER ( lang ( ?select ) = "ES" ) }
 >> OK
 
 /* TEST 17 */
-
 query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>

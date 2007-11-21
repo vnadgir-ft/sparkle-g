@@ -27,8 +27,9 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * @author Simone Tripodi   (simone)
- * @author Michele Mostarda (michele)
+ * @author Simone Tripodi   (simone.tripodi)
+ * @author Michele Mostarda (michele.mostarda)
+ * @author Juergen Pfundt   (Juergen.Pfundt)
  * 
  * Jürgen Pfundt, 15.11.2007 Added STRING_LITERAL_LONG1 and STRING_LITERAL_LONG2
  * Jürgen Pfundt, 15.11.2007 Corrected IRI_REF to reflect the www3.org EBNF grammar definition
@@ -48,15 +49,6 @@
  */
 
 grammar Sparql;
-
-options {
-    output=AST;
-    ASTLabelType=CommonTree;
-}
-
-@lexer::members { 
-  private void echo(String s) { System.out.println(s); System.out.flush(); }
-}
 
 // $<Parser
 
@@ -375,11 +367,11 @@ blankNode
 // $>
 
 // $<Lexer
-    
+
 WS
     : (' '| '\t'| EOL)+ { $channel=HIDDEN; }
     ;
-        
+
 PNAME_NS
     : p=PN_PREFIX? ':'
     ;
@@ -395,7 +387,7 @@ BASE
 PREFIX
     : ('P'|'p')('R'|'r')('E'|'e')('F'|'f')('I'|'i')('X'|'x')
     ;
- 
+
 SELECT
     : ('S'|'s')('E'|'e')('L'|'l')('E'|'e')('C'|'c')('T'|'t')
     ;
@@ -403,15 +395,15 @@ SELECT
 DISTINCT
     : ('D'|'d')('I'|'i')('S'|'s')('T'|'t')('I'|'i')('N'|'n')('C'|'c')('T'|'t')
     ;
-    
+
 REDUCED
     : ('R'|'r')('E'|'e')('D'|'d')('U'|'u')('C'|'c')('E'|'e')('D'|'d')
     ;
-    
+
 CONSTRUCT
     : ('C'|'c')('O'|'o')('N'|'n')('S'|'s')('T'|'t')('R'|'r')('U'|'u')('C'|'c')('T'|'t')
     ;
-    
+
 DESCRIBE
     : ('D'|'d')('E'|'e')('S'|'s')('C'|'c')('R'|'r')('I'|'i')('B'|'b')('E'|'e')
     ;
@@ -439,11 +431,11 @@ ORDER
 BY
     : ('B'|'b')('Y'|'y')
     ;
-    
+
 ASC
     : ('A'|'a')('S'|'s')('C'|'c')
     ;
-    
+
 DESC
     : ('D'|'d')('E'|'e')('S'|'s')('C'|'c')
     ;
@@ -455,27 +447,27 @@ LIMIT
 OFFSET
     : ('O'|'o')('F'|'f')('F'|'f')('S'|'s')('E'|'e')('T'|'t')
     ;
-    
+
 OPTIONAL
     : ('O'|'o')('P'|'p')('T'|'t')('I'|'i')('O'|'o')('N'|'n')('A'|'a')('L'|'l')
     ;  
-    
+
 GRAPH
     : ('G'|'g')('R'|'r')('A'|'a')('P'|'p')('H'|'h')
     ;   
-    
+
 UNION
     : ('U'|'u')('N'|'n')('I'|'i')('O'|'o')('N'|'n')
     ;
-    
+
 FILTER
     : ('F'|'f')('I'|'i')('L'|'l')('T'|'t')('E'|'e')('R'|'r')
     ;
-    
+
 A
     : ('A'|'a')
     ;
-    
+
 STR
     : ('S'|'s')('T'|'t')('R'|'r')
     ;
@@ -487,11 +479,11 @@ LANG
 LANGMATCHES
     : ('L'|'l')('A'|'a')('N'|'n')('G'|'g')('M'|'m')('A'|'a')('T'|'t')('C'|'c')('H'|'h')('E'|'e')('S'|'s')
     ;
-    
+
 DATATYPE
     : ('D'|'d')('A'|'a')('T'|'t')('A'|'a')('T'|'t')('Y'|'y')('P'|'p')('E'|'e')
     ;
-    
+
 BOUND
     : ('B'|'b')('O'|'o')('U'|'u')('N'|'n')('D'|'d')
     ;
@@ -499,35 +491,35 @@ BOUND
 SAMETERM
     : ('S'|'s')('A'|'a')('M'|'m')('E'|'e')('T'|'t')('E'|'e')('R'|'r')('M'|'m')
     ;
-    
+
 ISIRI
     : ('I'|'i')('S'|'s')('I'|'i')('R'|'r')('I'|'i')
     ;
-    
+
 ISURI
     : ('I'|'i')('S'|'s')('U'|'u')('R'|'r')('I'|'i')
     ;
-    
+
 ISBLANK
     : ('I'|'i')('S'|'s')('B'|'b')('L'|'l')('A'|'a')('N'|'n')('K'|'k')
     ;
-    
+
 ISLITERAL
     : ('I'|'i')('S'|'s')('L'|'l')('I'|'i')('T'|'t')('E'|'e')('R'|'r')('A'|'a')('L'|'l')
     ;
-           
+
 REGEX
     : ('R'|'r')('E'|'e')('G'|'g')('E'|'e')('X'|'x')
     ;
-   
+
 TRUE
     : ('T'|'t')('R'|'r')('U'|'u')('E'|'e')
     ;
-    
+
 FALSE
     : ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e')
     ;
-                     
+
 IRI_REF
     : LESS ( options {greedy=false;} : ~(LESS | GREATER | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | '|' | '^' | '\\' | '`' | ('\u0000'..'\u0020')) )* GREATER
     ;
@@ -600,18 +592,18 @@ STRING_LITERAL2
     ;
 
 STRING_LITERAL_LONG1
-    :  	'\'\'\'' ( options {greedy=false;} : ( '\'' | '\'\'' )? ( ~('\''|'\\') | ECHAR ) )* '\'\'\''
+    :   '\'\'\'' ( options {greedy=false;} : ( '\'' | '\'\'' )? ( ~('\''|'\\') | ECHAR ) )* '\'\'\''
     ;
 
 STRING_LITERAL_LONG2
-    :  	'"""' ( options {greedy=false;} : ( '"' | '""' )? ( ~('"'|'\\') | ECHAR ) )* '"""'
+    :   '"""' ( options {greedy=false;} : ( '"' | '""' )? ( ~('"'|'\\') | ECHAR ) )* '"""'
     ;
-        
+
 fragment
 ECHAR
     : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '"' | '\'')
     ;
-   
+
 fragment
 PN_CHARS_U
     : PN_CHARS_BASE | '_'
@@ -663,108 +655,108 @@ fragment
 DIGIT
     : '0'..'9'
     ;
-    
-COMMENT	
+
+COMMENT 
     : '#' ( options{greedy=false;} : .)* EOL { $channel=HIDDEN; }
     ;
-       
+
 fragment
 EOL
     : '\n'| '\r'
     ;
 
 REFERENCE
-    :	'^^'
-	;
+    : '^^'
+ ;
 
 LESS_EQUAL
-    :	'<='
+    : '<='
     ;
 
 GREATER_EQUAL
-    :	'>='
+    : '>='
     ;
 
 NOT_EQUAL
-    :	'!='
+    : '!='
     ;
-	
+
 AND
-    :	'&&'
+    : '&&'
     ;
 
 OR
-    :	'||'
+    : '||'
     ;
 
 OPEN_BRACE
-    :	'('
+    : '('
     ;
 
 CLOSE_BRACE
-    :	')'
+    : ')'
     ;
 
 OPEN_CURLY_BRACE
-    :	'{'
+    : '{'
     ;
 
 CLOSE_CURLY_BRACE
-    :	'}'
+    : '}'
     ;
 
 OPEN_SQUARE_BRACE
-    :	'['
+    : '['
     ;
 
 CLOSE_SQUARE_BRACE
-    :	']'
+    : ']'
     ;
 
 SEMICOLON
-    :	';'
+    : ';'
     ;
 
 DOT
-    :	'.'
+    : '.'
     ;
 
 PLUS
-    :	'+'
+    : '+'
     ;
 
 MINUS
-    :	'-'
-    ;	    			
+    : '-'
+    ;
 
 ASTERISK
     : '*'
     ;
-    
+
 COMMA
-    :	','
+    : ','
     ;
 
 NOT
-    :	'!'
+    : '!'
     ;
 
 DIVIDE
-    :	'/'
+    : '/'
     ;
 
 EQUAL
-    :	'='
+    : '='
     ;
 
 LESS
-    :	'<'
+    : '<'
     ;
 
 GREATER
-    :	'>'
+    : '>'
     ;
-	            
+
 ANY : .
     ;
 
