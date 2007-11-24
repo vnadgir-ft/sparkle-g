@@ -240,3 +240,573 @@ SELECT ?name
          OPTIONAL { ?x dc:date ?date } .
          FILTER (!bound(?date)) }
 >> OK
+
+/* TEST 16 */
+/* 7 Matching Alternatives */
+query:
+<<
+PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
+PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
+
+SELECT ?title ?author
+WHERE  { { ?book dc10:title ?title .  ?book dc10:creator ?author }
+         UNION
+         { ?book dc11:title ?title .  ?book dc11:creator ?author }
+       }
+>> OK
+
+/* TEST 17 */
+/* 8.2.1 Specifying the Default Graph */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT  ?name
+FROM    <http://example.org/foaf/aliceFoaf>
+WHERE   { ?x foaf:name ?name }
+>> OK
+
+/* TEST 18 */
+/* 8.2.3 Combining FROM and FROM NAMED */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+SELECT ?who ?g ?mbox
+FROM <http://example.org/dft.ttl>
+FROM NAMED <http://example.org/alice>
+FROM NAMED <http://example.org/bob>
+WHERE
+{
+   ?g dc:publisher ?who .
+   GRAPH ?g { ?x foaf:mbox ?mbox }
+}
+>> OK
+
+/* TEST 19 */
+/* 8.3.1 Accessing Graph Names */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT ?src ?bobNick
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+  {
+    GRAPH ?src
+    { ?x foaf:mbox <mailto:bob@work.example> .
+      ?x foaf:nick ?bobNick
+    }
+  }
+>> OK
+
+/* TEST 20 */
+/* 8.3.2 Restricting by Graph IRI */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX data: <http://example.org/foaf/>
+
+SELECT ?nick
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+  {
+     GRAPH data:bobFoaf {
+         ?x foaf:mbox <mailto:bob@work.example> .
+         ?x foaf:nick ?nick }
+  }
+>> OK
+
+/* TEST 21 */
+/* 8.3.3 Restricting Possible Graph IRIs */
+query:
+<<
+PREFIX  data:  <http://example.org/foaf/>
+PREFIX  foaf:  <http://xmlns.com/foaf/0.1/>
+PREFIX  rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?mbox ?nick ?ppd
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+{
+  GRAPH data:aliceFoaf
+  {
+    ?alice foaf:mbox <mailto:alice@work.example> ;
+           foaf:knows ?whom .
+    ?whom  foaf:mbox ?mbox ;
+           rdfs:seeAlso ?ppd .
+    ?ppd  a foaf:PersonalProfileDocument .
+  } .
+  GRAPH ?ppd
+  {
+      ?w foaf:mbox ?mbox ;
+         foaf:nick ?nick
+  }
+}
+>> OK
+
+/* TEST 22 */
+/* 8.3.4 Named and Default Graphs */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+
+SELECT ?name ?mbox ?date
+WHERE
+  {  ?g dc:publisher ?name ;
+        dc:date ?date .
+    GRAPH ?g
+      { ?person foaf:name ?name ; foaf:mbox ?mbox }
+  }
+>> OK
+
+/* TEST 23 */
+/* 9.1 ORDER BY */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+ORDER BY ?name
+>> OK
+
+/* TEST 24 */
+/* 9.1 ORDER BY */
+query:
+<<
+PREFIX     :    <http://example.org/ns#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name ; :empId ?emp }
+ORDER BY DESC(?emp)
+>> OK
+
+/* TEST 25 */
+/* 9.1 ORDER BY */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name ; :empId ?emp }
+ORDER BY ?name DESC(?emp)
+>> OK
+
+/* TEST 26 */
+/* 9.2 Projection */
+query:
+<<
+PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+WHERE
+ { ?x foaf:name ?name }
+ >> OK
+
+/* TEST 27 */
+/* Duplicate Solutions */
+<< 
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name WHERE { ?x foaf:name ?name }
+>> OK
+
+/* TEST 28 */
+/* 9.3.1 DISTINCT */
+query:
+<< 
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT DISTINCT ?name WHERE { ?x foaf:name ?name }
+>> OK
+
+/* TEST 29 */
+/* 9.3.2 REDUCED */
+<< PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT REDUCED ?name WHERE { ?x foaf:name ?name }
+>> OK
+
+/* TEST 30 */
+/* 9.4 OFFSET */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT  ?name
+WHERE   { ?x foaf:name ?name }
+ORDER BY ?name
+LIMIT   5
+OFFSET  10
+>> OK
+
+/* TEST 31 */
+/* 9.5 LIMIT */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+LIMIT 20
+>> OK
+
+/* TEST 32 */
+/* 10.1 SELECT */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?nameX ?nameY ?nickY
+WHERE
+  { ?x foaf:knows ?y ;
+       foaf:name ?nameX .
+    ?y foaf:name ?nameY .
+    OPTIONAL { ?y foaf:nick ?nickY }
+  }
+>> OK
+
+/* TEST 33 */
+/* 10.2 CONSTRUCT */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+CONSTRUCT   { <http://example.org/person#Alice> vcard:FN ?name }
+WHERE       { ?x foaf:name ?name }
+>> OK
+
+/* TEST 33 */
+/* 10.2.1 Templates with Blank Nodes */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+
+CONSTRUCT { ?x  vcard:N _:v .
+            _:v vcard:givenName ?gname .
+            _:v vcard:familyName ?fname }
+WHERE
+ {
+    { ?x foaf:firstname ?gname } UNION  { ?x foaf:givenname   ?gname } .
+    { ?x foaf:surname   ?fname } UNION  { ?x foaf:family_name ?fname } .
+ }
+>> OK
+
+/* TEST 34 */
+/* 10.2.2 Accessing Graphs in the RDF Dataset */
+query:
+<<
+PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX app: <http://example.org/ns#>
+CONSTRUCT { ?s ?p ?o } WHERE
+ {
+   GRAPH ?g { ?s ?p ?o } .
+   { ?g dc:publisher <http://www.w3.org/> } .
+   { ?g dc:date ?date } .
+   FILTER ( app:customDate(?date) > "2005-02-28T00:00:00Z"^^xsd:dateTime ) .
+ }
+ >> OK
+
+/* TEST 35 */
+/* 10.2.3 Solution Modifiers and CONSTRUCT */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX site: <http://example.org/stats#>
+
+CONSTRUCT { [] foaf:name ?name }
+WHERE
+{ [] foaf:name ?name ;
+     site:hits ?hits .
+}
+ORDER BY desc(?hits)
+LIMIT 2
+>> OK
+
+/* TEST 36 */
+/* 10.3 ASK */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" }
+>> OK
+
+/* TEST 36 */
+/* 10.3 ASK */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" ;
+          foaf:mbox  <mailto:alice@work.example> }
+>> OK
+
+/* TEST 37 */
+/* 10.4.2 Identifying Resources */
+<<
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x
+WHERE    { ?x foaf:mbox <mailto:alice@org> }
+>> OK
+
+/* TEST 38 */
+/* 10.4.2 Identifying Resources */
+query:
+<<
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x
+WHERE    { ?x foaf:name "Alice" }
+>> OK
+
+/* TEST 39 */
+/* 10.4.2 Identifying Resources */
+query:
+<<
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x ?y <http://example.org/>
+WHERE    {?x foaf:knows ?y}
+>> OK
+
+/* TEST 40 */
+/* 10.4.3 Descriptions of Resources */
+query:
+<<
+PREFIX ent:  <http://org.example.com/employees#>
+DESCRIBE ?x WHERE { ?x ent:employeeId "1234" }
+>> OK
+
+/* TEST 41 */
+/* 11 Testing Values */
+query:
+<<
+PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?annot
+WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+        ?annot  dc:date      ?date .
+        FILTER ( ?date > "2005-01-01T00:00:00Z"^^xsd:dateTime ) }
+>> OK
+
+/* TEST 42 */
+/* 11.4.1 bound */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+SELECT ?name
+ WHERE { ?x foaf:givenName  ?givenName .
+         OPTIONAL { ?x dc:date ?date } .
+         FILTER ( bound(?date) ) }
+>> OK
+
+/* TEST 43 */
+/* 11.4.1 bound */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+SELECT ?name
+ WHERE { ?x foaf:givenName  ?name .
+         OPTIONAL { ?x dc:date ?date } .
+         FILTER (!bound(?date)) }
+>> OK
+
+/* TEST 44 */
+/* 11.4.2 isIRI */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER isIRI(?mbox) }
+>> OK
+
+/* TEST 45 */
+/* 11.4.3 isBlank */
+query:
+<<
+PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT ?given ?family
+ WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+         ?annot  dc:creator   ?c .
+         OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .
+         FILTER isBlank(?c)
+       }
+>> OK
+
+/* TEST 46 */
+/* 11.4.4 isLiteral */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+           foaf:mbox  ?mbox .
+         FILTER isLiteral(?mbox) }
+>> OK
+
+/* TEST 47 */
+/* 11.4.5 str */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER regex(str(?mbox), "@work.example") }
+>> OK
+
+/* TEST 48 */
+/* 11.4.6 lang */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER ( lang(?name) = "ES" ) }
+>> OK
+
+/* TEST 49 */
+/* 11.4.7 datatype */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX eg:   <http://biometrics.example/ns#>
+SELECT ?name ?shoeSize
+ WHERE { ?x foaf:name  ?name ; eg:shoeSize  ?shoeSize .
+         FILTER ( datatype(?shoeSize) = xsd:integer ) }
+>> OK
+
+/* TEST 50 */
+/* 11.4.10 RDFterm-equal */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name1 ?name2
+ WHERE { ?x foaf:name  ?name1 ;
+            foaf:mbox  ?mbox1 .
+         ?y foaf:name  ?name2 ;
+            foaf:mbox  ?mbox2 .
+         FILTER (?mbox1 = ?mbox2 && ?name1 != ?name2)
+       }
+>> OK
+
+/* TEST 51 */
+/* 11.4.10 RDFterm-equal */
+query:
+<<
+PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?annotates
+WHERE { ?annot  a:annotates  ?annotates .
+        ?annot  dc:date      ?date .
+        FILTER ( ?date = xsd:dateTime("2005-01-01T00:00:00Z") ) }
+>> OK
+
+/* TEST 52 */
+/* 11.4.11 sameTerm */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name1 ?name2
+ WHERE { ?x foaf:name  ?name1 ;
+            foaf:mbox  ?mbox1 .
+         ?y foaf:name  ?name2 ;
+            foaf:mbox  ?mbox2 .
+         FILTER (sameTerm(?mbox1, ?mbox2) && !sameTerm(?name1, ?name2))
+       }
+>> OK
+
+/* TEST 53 */
+/* 11.4.11 sameTerm */
+query:
+<<
+PREFIX  :      <http://example.org/WMterms#>
+PREFIX  t:     <http://example.org/types#>
+
+SELECT ?aLabel1 ?bLabel
+WHERE { ?a  :label        ?aLabel .
+        ?a  :weight       ?aWeight .
+        ?a  :displacement ?aDisp .
+
+        ?b  :label        ?bLabel .
+        ?b  :weight       ?bWeight .
+        ?b  :displacement ?bDisp .
+
+        FILTER ( sameTerm(?aWeight, ?bWeight) && !sameTerm(?aDisp, ?bDisp)) }
+>> OK
+
+/* TEST 54 */
+/* 11.4.12 langMatches */
+query:
+<<
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?title
+ WHERE { ?x dc:title  "That Seventies Show"@en ;
+            dc:title  ?title .
+         FILTER langMatches( lang(?title), "FR" ) }
+>> OK
+
+/* TEST 55 */
+/* 11.4.12 langMatches */
+query:
+<<
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?title
+ WHERE { ?x dc:title  ?title .
+         FILTER langMatches( lang(?title), "*" ) }
+>> OK
+
+/* TEST 56 */
+/* 11.4.13 regex */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+ WHERE { ?x foaf:name  ?name
+         FILTER regex(?name, "^ali", "i") }
+>> OK
+
+/* TEST 57 */
+/* 11.6 Extensible Value Testing */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX func: <http://example.org/functions#>
+SELECT ?name ?id
+WHERE { ?x foaf:name  ?name ;
+           func:empId   ?id .
+        FILTER (func:even(?id)) }
+>> OK
+
+/* TEST 58 */
+/* 11.6 Extensible Value Testing */
+query:
+<<
+PREFIX aGeo: <http://example.org/geo#>
+
+SELECT ?neighbor
+WHERE { ?a aGeo:placeName "Grenoble" .
+        ?a aGeo:location ?axLoc .
+        ?a aGeo:location ?ayLoc .
+
+        ?b aGeo:placeName ?neighbor .
+        ?b aGeo:location ?bxLoc .
+        ?b aGeo:location ?byLoc .
+
+        FILTER ( aGeo:distance(?axLoc, ?ayLoc, ?bxLoc, ?byLoc) < 10 ) .
+      }
+>> OK
