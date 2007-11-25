@@ -45,6 +45,9 @@
  *                           to channel hidden this resulted in problems with WS before and after
  *                           braces.
  * Jürgen Pfundt, 17.11.2007 Replaced parser literals by lexer tokens as preparation for AST generation
+ * Simone Tripodi,21.11.2007 Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation
+ * Jürgen Pfundt, 25.11.2007 The A token is case insensitive now as requested by the w3.org rdf-sparql-query
+ *                           document
  *
  */
 
@@ -465,7 +468,7 @@ FILTER
     ;
 
 A
-    : ('A'|'a')
+    : 'a'
     ;
 
 STR
