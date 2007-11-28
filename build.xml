@@ -27,14 +27,19 @@
     NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    @author Simone Tripodi   (simone)
-    @author Michele Mostarda (michele)
+    @author Simone Tripodi   (simone.tripodi)
+    @author Michele Mostarda (michele.mostarda)
     @author Juergen Pfundt   (Juergen.Pfundt)
     @version $Id$
 -->
-<project name="sparkle-g" xmlns:antlr3="antlib:org.apache.tools.ant.antlr" xmlns:svn="antlib:org.tigris.subversion.svnant" basedir="." default="release">
+<project name="sparkle-g" basedir="." default="test"
+    xmlns:antlr3="antlib:org.apache.tools.ant.antlr"
+    xmlns:svn="antlib:org.tigris.subversion.svnant"
+    xmlns:ivy="antlib:fr.jayasoft.ivy.ant">
 
-    <property file="build.properties" />
+    <property file="conf/build.properties"/>
+
+    <ivy:configure file="conf/ivyconf.xml"/>
 
     <path id="antlib.classpath">
         <fileset dir="${ant.tools.dir}">
@@ -44,6 +49,7 @@
 
     <taskdef uri="antlib:org.apache.tools.ant.antlr" resource="org/apache/tools/ant/antlr/antlib.xml" classpathref="antlib.classpath"/>
     <taskdef uri="antlib:org.tigris.subversion.svnant" resource="org/tigris/subversion/svnant/antlib.xml" classpathref="antlib.classpath"/>
+    <taskdef uri="antlib:fr.jayasoft.ivy.ant" resource="fr/jayasoft/ivy/ant/antlib.xml" classpathref="antlib.classpath"/>
 
     <target name="init">
         <mkdir dir="${src.java.dir}"/>
@@ -55,7 +61,7 @@
        <attribute name="grammar.name"/>
        <attribute name="package" default="${package}"/>
        <sequential>
-              <echo message="antlr ${src.grammar.dir}/@{grammar.name}"/>
+              <ivy:retrieve useOrigin="true" conf="compile-time" pattern="${lib.artifact.pattern}" />
               <antlr3:antlr3 target="${src.grammar.dir}/@{grammar.name}" 
                   outputdirectory="${src.java.dir}/@{package}"
                   multithreaded="true"
@@ -65,7 +71,7 @@
                   profile="false">
                   <jvmarg value="-Xmx256m" />
                   <classpath>
-                      <fileset dir="${lib.dir}/compile-time">
+                      <fileset dir="${ivy.lib.dir}/compile-time">
                           <include name="*.jar"/>
                       </fileset>
                   </classpath>
@@ -73,32 +79,25 @@
         </sequential>
     </macrodef>
 
-    <target name="sparql" depends="init">
-       <antlr.tool grammar.name="Sparql.g"/>
-    </target>
-
-    <target name="sparqlt" depends="init">
-       <antlr.tool grammar.name="SparqlT.g"/>
-    </target>
-
-    <!-- removed sparqlt between dependencies, it seems it doesn't work -->
-    <target name="compile" depends="sparql">
+    <target name="compile">
+        <antlr.tool grammar.name="Sparql.g"/>
         <javac srcdir="${src.java.dir}"
             destdir="${target.classes.dir}"
             verbose="true"
             optimize="true"
             debug="true">
             <classpath>
-                <fileset dir="${lib.dir}/compile-time"/>
+                <fileset dir="${ivy.lib.dir}/compile-time"/>
             </classpath>
         </javac>
     </target>
 
     <target name="test" depends="compile, doc" description="Compiles and tests the SPARQL grammar">
+        <ivy:retrieve useOrigin="true" conf="runtime, test" pattern="${lib.artifact.pattern}" />
         <java classname="${test.classname}" fork="true" maxmemory="512M">
             <classpath>
-                <fileset dir="${lib.dir}/compile-time"/>
-                <fileset dir="${lib.dir}/test"/>
+                <fileset dir="${ivy.lib.dir}/runtime"/>
+                <fileset dir="${ivy.lib.dir}/test"/>
                 <pathelement location="${target.classes.dir}"/>
             </classpath>
             <arg value="${test.grammar.dir}/Sparql.testsuite"/>
@@ -121,8 +120,8 @@
                <include name="**/*.java"/>
            </fileset>
            <classpath>
-               <fileset dir="${lib.dir}/compile-time"/>
-               <fileset dir="${lib.dir}/runtime"/>
+               <fileset dir="${ivy.lib.dir}/compile-time"/>
+               <fileset dir="${ivy.lib.dir}/runtime"/>
            </classpath>
        </javadoc>
     </target>
@@ -131,6 +130,7 @@
         <delete verbose="true" includeemptydirs="true">
             <fileset dir="${src.java.dir}"/>
             <fileset dir="${target.dir}"/>
+            <fileset dir="${ivy.lib.dir}"/>
         </delete>
     </target>
 
@@ -141,13 +141,13 @@
         <tstamp>
             <format pattern="yyyyMMddHHmmss" property="build.timestamp" />
         </tstamp>
-        <condition property="publish.revision" value="${project.version}">
+        <condition property="publish.revision" value="${ivy.revision}">
             <equals arg1="${project.status}" arg2="release"/>
         </condition>
-        <condition property="publish.revision" value="${project.version}-r${svn.revision}-dev">
+        <condition property="publish.revision" value="${ivy.revision}-r${svn.revision}-dev">
             <equals arg1="${project.status}" arg2="integration"/>
         </condition>
-        <condition property="publish.revision" value="${project.version}-r${svn.revision}-dev${build.timestamp}">
+        <condition property="publish.revision" value="${ivy.revision}-r${svn.revision}-dev${build.timestamp}">
             <equals arg1="${project.status}" arg2="development"/>
         </condition>
 
