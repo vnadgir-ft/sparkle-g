@@ -39,8 +39,6 @@
 
     <property file="conf/build.properties"/>
 
-    <ivy:configure file="conf/ivyconf.xml"/>
-
     <path id="antlib.classpath">
         <fileset dir="${ant.tools.dir}">
             <include name="*.jar"/>
@@ -50,6 +48,8 @@
     <taskdef uri="antlib:org.apache.tools.ant.antlr" resource="org/apache/tools/ant/antlr/antlib.xml" classpathref="antlib.classpath"/>
     <taskdef uri="antlib:org.tigris.subversion.svnant" resource="org/tigris/subversion/svnant/antlib.xml" classpathref="antlib.classpath"/>
     <taskdef uri="antlib:fr.jayasoft.ivy.ant" resource="fr/jayasoft/ivy/ant/antlib.xml" classpathref="antlib.classpath"/>
+
+    <ivy:configure file="conf/ivyconf.xml"/>
 
     <target name="init">
         <mkdir dir="${src.java.dir}"/>
@@ -79,7 +79,7 @@
         </sequential>
     </macrodef>
 
-    <target name="compile">
+    <target name="compile" depends="init">
         <antlr.tool grammar.name="Sparql.g"/>
         <javac srcdir="${src.java.dir}"
             destdir="${target.classes.dir}"
@@ -92,8 +92,8 @@
         </javac>
     </target>
 
-    <target name="test" depends="compile, doc" description="Compiles and tests the SPARQL grammar">
-        <ivy:retrieve useOrigin="true" conf="runtime, test" pattern="${lib.artifact.pattern}" />
+    <target name="test" depends="compile" description="Compiles and tests the SPARQL grammar">
+        <ivy:retrieve useOrigin="true" conf="runtime,test" pattern="${lib.artifact.pattern}"/>
         <java classname="${test.classname}" fork="true" maxmemory="512M">
             <classpath>
                 <fileset dir="${ivy.lib.dir}/runtime"/>
