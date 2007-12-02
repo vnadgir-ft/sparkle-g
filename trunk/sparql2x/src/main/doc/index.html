@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" dir="ltr" lang="en">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="en" />
+        <meta name="keywords" content="sparql grammar parser antlr" />
+        <link rel="shortcut icon" href="favicon.ico" />
+        <link rel="license" href="" />
+        <link rel="stylesheet" type="text/css" media="all" href="css/style.css" />
+        <title>the SPARQL to X project</title>
+    </head>
+
+    <body>
+        <div id="container">
+            <div id="header">
+                <h1>the SPARQL to X project</h1>
+            </div>
+
+            <div id="page">
+                <!-- START SIDEBAR -->
+                <div id="sidebar">
+                    <div id="sidebarslidebox">
+                        <div>
+
+                            <div class="related">
+                                <div>
+                                    <h3>Main</h3>
+                                    <ul>
+                                        <li><a href="#overview">Overview</a></li>
+                                        <li><a href="#download">Download</a></li>
+                                        <li><a href="#releasenotes">Release Notes</a></li>
+                                        <li><a href="#bugs">Bugs</a></li>
+                                        <li><a href="#sourcerepository">Source Repository</a></li>
+                                        <li><a href="#getinvolved">Get Involved</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="pagetools">
+                                <div>
+                                    <h3>About</h3>
+                                    <ul>
+                                        <li><a href="#license">License</a></li>
+                                        <li><a href="#whoweare">Who we are</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END SIDEBAR -->
+
+                <div id="content">
+                    <div class="article">
+                        <h1 class="firstHeading">Main</h1>
+
+                        <a name="overview"></a>
+                        <h2>Overview</h2>
+                        <p>The SPARQL query language for RDF is designed to meet the use cases and requirements identified by the RDF
+                        Data Access Working Group in RDF Data Access Use Cases and Requirements; detailed explanations can be found
+                        on the official W3C's SPARQL's <a href="http://www.w3.org/TR/rdf-sparql-query/">specifications</a>.<br/>
+                        Purpose of this project is to provide a SPARQL to X converter. Where X stands for various output formats, e.g. JSON.</p>
+
+                        <a name="download"></a>
+                        <h2>Download</h2>
+                        <p>SPARQL grammar is available for download <a href="Sparql.g">here</a></p>
+
+                        <a name="releasenotes"></a>
+                        <h2>Release Notes</h2>
+                        <ul>
+                            <li class="date">2007-10-30: First release (Michele Mostarda, Simone Tripodi)</li>
+                            <li class="date">2007-11-19: Juergen Pfundt joined the team</li>
+                            <li class="date">2007-11-XX: Bugfix release
+                                <ul>
+                                    <li class="newstuff">Created project space on Google Code (Simone Tripodi)</li>
+                                    <li class="newstuff">Created html-doc's project (Simone Tripodi)</li>
+                                    <li class="patch">Fixed antlr3 warnings emitted when compiling the Sparql.g file (Juergen Pfundt)</li>
+                                    <li class="newstuff">Added lexical rule "ANY" as fallback, in case no lexical rule matches (Juergen Pfundt)</li>
+                                    <li class="newstuff">Recognition of keywords (including "true" and "false") is case insensitive now (Juergen Pfundt)</li>
+                                    <li class="newstuff">Implemented lexical rule for comments (Juergen Pfundt)</li>
+                                    <li class="patch">Solved problem with graphterm and blankNode which implicitely
+                                                      referenced WS via lexical rules NIL and ANON. As WS sends its content
+                                                      to channel hidden this resulted in problems with WS before and after
+                                                      braces. (Juergen Pfundt)</li>
+                                    <li class="newstuff">Added a few test cases to the test suite referenced in W3C's SPARQL's <a href="http://www.w3.org/TR/rdf-sparql-query/#grammar">specifications</a>.
+                                                      Modified one test case to test "comments".
+                                                      Test cases still have to be enhanced! (Juergen Pfundt)</li>
+                                    <li class="patch">Replaced parser literals by lexer tokens as preparation for AST generation (Juergen Pfundt)</li>
+                                    <li class="newstuff">Added sparqlT.g as starting point for a tree grammar (Juergen Pfundt)</li>
+                                    <li class="newstuff">Adapted the build file to compile both grammars and to generate javadoc (Juergen Pfundt)</li>
+                                    <li class="newstuff">Modified build system to create releases (Simone Tripodi)</li>
+                                    <li class="patch">Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation  (Simone Tripodi)</li>
+                                    <li class="patch">The <i>A</i> token is case insensitive now as requested by the w3.org rdf-sparql-query document (Juergen Pfundt)</li>
+                                 </ul>
+                            </li>
+                        </ul>
+
+                        <a name="bugs"></a>
+                        <h2>Bugs</h2>
+                        <p>Our workflow works using the provided Google Code's Issue Tracking, you can find it following
+                        this <a href="http://code.google.com/p/sparkle-g/issues/list">link</a>.<br/>
+                        Did you find a bug? Please report it!!!
+                        </p>
+
+                        <a name="sourcerepository"></a>
+                        <h2>Source Repository</h2>
+                        <p>Follow the Google-Code <a href="http://code.google.com/p/sparkle-g/source">page</a></p>
+
+                        <a name="getinvolved"></a>
+                        <h2>Get Involved</h2>
+                        <p>Comments? Suggestions? Any idea? Don't hesitate, write to us! This small team was born with the
+                        <a href="http://www.opensource.org/docs/osd">Open Source</a> philosophy, so we need also your collaboration!</p>
+                    </div>
+
+                    <div class="article">
+                        <h1 class="firstHeading">About</h1>
+
+                        <a name="license"></a>
+                        <h2>License</h2>
+                        <p>the SPARQL grammar is licensed under the <a href="http://www.antlr.org/license.html">ANTLR3 License</a> [the BSD License]</p>
+
+                        <a name="whoweare"></a>
+                        <h2>Who we are</h2>
+                        <p>The folks, in alphabetical order:
+                            <ul>
+                                <li class="person">Juergen Pfundt (juergen.pfundt)
+                                    <p>Juergen is working for a System Integrator which has a large emphasis in ICT.<br/>
+                                    He wrote the <a href="http://www.antlr.org/share/list">ANTLR V3 task</a> for 
+                                    <a href="http://ant.apache.org/">Apache Ant</a></p>
+                                </li>
+                                <li class="person">Michele Mostarda (michele.mostarda)
+                                    <p>Michele is working as Software Engineer at <a href="http://www.asemantics.com">@semantics</a>,
+                                    the semantic web company.<br/>
+                                    He has been worked on the first grammar's implementation.</p>
+                                </li>
+                                <li class="person">Simone Tripodi (simone.tripodi)
+                                    <p>Simone is working as Software Engineer at <a href="http://www.asemantics.com">@semantics</a>,
+                                    the semantic web company.<br/>
+                                    He has been worked on the first grammar's implementation, and he's the project's maintainer.</p>
+                                </li>
+                            </ul>
+                        </p>
+                    </div>
+                </div>
+                <!-- end id content -->
+
+                <div id="footer">
+                    <ul>
+                        <li>Copyright &copy; 2007 - The <a href="http://code.google.com/p/sparkle-g/">sparkle-g</a> team</li>
+                    </ul>
+                    <ul>
+                        <li>Content is available under <a href="http://www.antlr.org/license.html">ANTLR3 License</a> [the BSD License].</li>
+                    </ul>
+                </div>
+
+            </div>
+            <!-- end id page -->
+
+        </div>
+        <!-- end id container -->
+    </body>
+
+</html>
