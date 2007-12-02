@@ -30,13 +30,12 @@
  * @author Simone Tripodi   (simone.tripodi)
  * @author Michele Mostarda (michele.mostarda)
  * @author Juergen Pfundt   (Juergen.Pfundt)
- * @version $Id: Sparql.testsuite 19 2007-11-30 20:17:59Z Juergen.Pfundt@web.de $
  */
-
-gunit Sparql;
+gunit SparqlT walks Sparql;
+@header{package org.sparql.x;}
 
 /* TEST 1 */
-query:
+query walks query:
 <<
 PREFIX cd: <http://example.org/cd/>
 SELECT ?titolo ?autore ?anno
@@ -48,7 +47,7 @@ WHERE {
 >> OK
 
 /* TEST 2 */
-query:
+query walks query:
 <<
 PREFIX cd: <http://example.org/cd/>
 SELECT ?titolo ?autore ?anno
@@ -62,7 +61,7 @@ WHERE {
 >> OK
 
 /* TEST 3 */
-query:
+query walks query:
 <<
 PREFIX cd: <http://example.org/cd/>
 SELECT ?titolo ?autore ?anno
@@ -75,7 +74,7 @@ WHERE {
 >> OK
 
 /* TEST 4 */
-query:
+query walks query:
 <<
 PREFIX cd: <http://example.org/cd/>
 SELECT ?titolo ?anno
@@ -87,7 +86,7 @@ WHERE {
 >> OK
 
 /* TEST 5 */
-query:
+query walks query:
 <<
 PREFIX cd: <http://example.org/cd/>
 SELECT ?titolo ?autore
@@ -99,7 +98,7 @@ WHERE {
 >> OK
 
 /* TEST 6 */
-query:
+query walks query:
 <<
 PREFIX cd: <http://example.org/cd/>
 SELECT ?titolo ?autore ?anno
@@ -115,7 +114,7 @@ OFFSET 10
 >> OK
 
 /* TEST 7 */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name
@@ -124,7 +123,7 @@ SELECT ?name
 >> OK
 
 /* TEST 8 */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX func: <http://example.org/functions#>
@@ -135,7 +134,7 @@ WHERE { ?x foaf:name  ?name ;
 >> OK
 
 /* TEST 9 */
-query:
+query walks query:
 <<
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
 SELECT ?title
@@ -144,7 +143,7 @@ SELECT ?title
 >> OK
 
 /* TEST 10 */
-query:
+query walks query:
 <<
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
 SELECT ?title
@@ -154,7 +153,7 @@ SELECT ?title
 >> OK
 
 /* TEST 11 */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name1 ?name2
@@ -167,7 +166,7 @@ SELECT ?name1 ?name2
 >> OK
 
 /* TEST 12 */
-query:
+query walks query:
 <<
 PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
 PREFIX dc:     <http://purl.org/dc/elements/1.1/>
@@ -180,7 +179,7 @@ WHERE { ?annot  a:annotates  ?annotates .
 >> OK
 
 /* TEST 13 */
-query:
+query walks query:
 <<
 # This is a test for comment
 PREFIX foaf: <http://xmlns.com/foaf/0.1/> # Comments are welcome
@@ -196,7 +195,7 @@ SELECT ?name1 ?name2
 
 /* TEST 14 */
 /* 4.2 Syntax for Triple Patterns */
-query:
+query walks query:
 <<
 PREFIX  dc: <http://purl.org/dc/elements/1.1/>
 SELECT  ?title
@@ -205,7 +204,7 @@ WHERE   { <http://example.org/book/book1> dc:title ?title }
 
 /* TEST 15 */
 /* 4.2 Syntax for Triple Patterns */
-query:
+query walks query:
 <<
 PREFIX  dc: <http://purl.org/dc/elements/1.1/>
 PREFIX  : <http://example.org/book/>
@@ -216,7 +215,7 @@ WHERE   { :book1  dc:title  $title }
 
 /* TEST 16 */
 /* 4.2 Syntax for Triple Patterns */
-query:
+query walks query:
 <<
 BASE    <http://example.org/book/>
 PREFIX  dc: <http://purl.org/dc/elements/1.1/>
@@ -227,7 +226,7 @@ WHERE   { <book1>  dc:title  ?title }
 
 /* TEST 17 */
 /* 5.2 Group Graph Patterns */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 SELECT ?name ?mbox
@@ -239,7 +238,7 @@ WHERE  {
 
 /* TEST 18 */
 /* 5.2 Group Graph Patterns */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 SELECT ?name ?mbox
@@ -250,7 +249,7 @@ WHERE  { { ?x foaf:name ?name . }
 
 /* TEST 19 */
 /* 5.2.1 Empty Group Pattern */
-query:
+query walks query:
 <<
 SELECT ?x
 WHERE {}
@@ -258,7 +257,7 @@ WHERE {}
 
 /* TEST 20 */
 /* 6.1 Optional Pattern Matching */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name ?mbox
@@ -269,7 +268,7 @@ WHERE  { ?x foaf:name  ?name .
 
 /* TEST 21 */
 /* 6.2 Constraints in Optional Pattern Matching */
-query:
+query walks query:
 <<
 PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
 PREFIX  ns:  <http://example.org/ns#>
@@ -281,7 +280,7 @@ WHERE   { ?x dc:title ?title .
 
 /* TEST 22 */
 /* 6.3 Multiple Optional Graph Patterns */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name ?mbox ?hpage
@@ -293,7 +292,7 @@ WHERE  { ?x foaf:name  ?name .
 
 /* TEST 23 */
 /* 7 Matching Alternatives */
-query:
+query walks query:
 <<
 PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
 PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
@@ -304,7 +303,7 @@ WHERE  { { ?book dc10:title  ?title } UNION { ?book dc11:title  ?title } }
 
 /* TEST 24 */
 /* 7 Matching Alternatives */
-query:
+query walks query:
 <<
 PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
 PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
@@ -318,7 +317,7 @@ WHERE  { { ?book dc10:title ?title .  ?book dc10:creator ?author }
 
 /* TEST 25 */
 /* 8.2.1 Specifying the Default Graph */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT  ?name
@@ -328,7 +327,7 @@ WHERE   { ?x foaf:name ?name }
 
 /* TEST 26 */
 /* 8.2.3 Combining FROM and FROM NAMED */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -346,7 +345,7 @@ WHERE
 
 /* TEST 27 */
 /* 8.3.1 Accessing Graph Names */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 
@@ -364,7 +363,7 @@ WHERE
 
 /* TEST 28 */
 /* 8.3.2 Restricting by Graph IRI */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX data: <http://example.org/foaf/>
@@ -382,7 +381,7 @@ WHERE
 
 /* TEST 29 */
 /* 8.3.3 Restricting Possible Graph IRIs */
-query:
+query walks query:
 <<
 PREFIX  data:  <http://example.org/foaf/>
 PREFIX  foaf:  <http://xmlns.com/foaf/0.1/>
@@ -411,7 +410,7 @@ WHERE
 
 /* TEST 30 */
 /* 8.3.4 Named and Default Graphs */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX dc:   <http://purl.org/dc/elements/1.1/>
@@ -427,7 +426,7 @@ WHERE
 
 /* TEST 31 */
 /* 9.1 ORDER BY */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 
@@ -438,7 +437,7 @@ ORDER BY ?name
 
 /* TEST 32 */
 /* 9.1 ORDER BY */
-query:
+query walks query:
 <<
 PREFIX     :    <http://example.org/ns#>
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
@@ -451,7 +450,7 @@ ORDER BY DESC(?emp)
 
 /* TEST 33 */
 /* 9.1 ORDER BY */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 
@@ -462,7 +461,7 @@ ORDER BY ?name DESC(?emp)
 
 /* TEST 34 */
 /* 9.2 Projection */
-query:
+query walks query:
 <<
 PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
 SELECT ?name
@@ -479,7 +478,7 @@ SELECT ?name WHERE { ?x foaf:name ?name }
 
 /* TEST 36 */
 /* 9.3.1 DISTINCT */
-query:
+query walks query:
 << 
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 SELECT DISTINCT ?name WHERE { ?x foaf:name ?name }
@@ -493,7 +492,7 @@ SELECT REDUCED ?name WHERE { ?x foaf:name ?name }
 
 /* TEST 38 */
 /* 9.4 OFFSET */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 
@@ -506,7 +505,7 @@ OFFSET  10
 
 /* TEST 39 */
 /* 9.5 LIMIT */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 
@@ -517,7 +516,7 @@ LIMIT 20
 
 /* TEST 40 */
 /* 10.1 SELECT */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 SELECT ?nameX ?nameY ?nickY
@@ -531,7 +530,7 @@ WHERE
 
 /* TEST 41 */
 /* 10.2 CONSTRUCT */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
@@ -541,7 +540,7 @@ WHERE       { ?x foaf:name ?name }
 
 /* TEST 42 */
 /* 10.2.1 Templates with Blank Nodes */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
@@ -558,7 +557,7 @@ WHERE
 
 /* TEST 43 */
 /* 10.2.2 Accessing Graphs in the RDF Dataset */
-query:
+query walks query:
 <<
 PREFIX  dc: <http://purl.org/dc/elements/1.1/>
 PREFIX app: <http://example.org/ns#>
@@ -573,7 +572,7 @@ CONSTRUCT { ?s ?p ?o } WHERE
 
 /* TEST 44 */
 /* 10.2.3 Solution Modifiers and CONSTRUCT */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX site: <http://example.org/stats#>
@@ -589,7 +588,7 @@ LIMIT 2
 
 /* TEST 45 */
 /* 10.3 ASK */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 ASK  { ?x foaf:name  "Alice" }
@@ -597,7 +596,7 @@ ASK  { ?x foaf:name  "Alice" }
 
 /* TEST 46 */
 /* 10.3 ASK */
-query:
+query walks query:
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
 ASK  { ?x foaf:name  "Alice" ;
@@ -614,7 +613,7 @@ WHERE    { ?x foaf:mbox <mailto:alice@org> }
 
 /* TEST 48 */
 /* 10.4.2 Identifying Resources */
-query:
+query walks query:
 <<
 PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
 DESCRIBE ?x
@@ -623,7 +622,7 @@ WHERE    { ?x foaf:name "Alice" }
 
 /* TEST 49 */
 /* 10.4.2 Identifying Resources */
-query:
+query walks query:
 <<
 PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
 DESCRIBE ?x ?y <http://example.org/>
@@ -632,7 +631,7 @@ WHERE    {?x foaf:knows ?y}
 
 /* TEST 50 */
 /* 10.4.3 Descriptions of Resources */
-query:
+query walks query:
 <<
 PREFIX ent:  <http://org.example.com/employees#>
 DESCRIBE ?x WHERE { ?x ent:employeeId "1234" }
@@ -640,7 +639,7 @@ DESCRIBE ?x WHERE { ?x ent:employeeId "1234" }
 
 /* TEST 51 */
 /* 11 Testing Values */
-query:
+query walks query:
 <<
 PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
 PREFIX dc:     <http://purl.org/dc/elements/1.1/>
@@ -654,7 +653,7 @@ WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
 
 /* TEST 52 */
 /* 11.4.1 bound */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX dc:   <http://purl.org/dc/elements/1.1/>
@@ -667,7 +666,7 @@ SELECT ?name
 
 /* TEST 53 */
 /* 11.4.1 bound */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX dc:   <http://purl.org/dc/elements/1.1/>
@@ -679,7 +678,7 @@ SELECT ?name
 
 /* TEST 54 */
 /* 11.4.2 isIRI */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name ?mbox
@@ -690,7 +689,7 @@ SELECT ?name ?mbox
 
 /* TEST 55 */
 /* 11.4.3 isBlank */
-query:
+query walks query:
 <<
 PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
 PREFIX dc:     <http://purl.org/dc/elements/1.1/>
@@ -706,7 +705,7 @@ SELECT ?given ?family
 
 /* TEST 56 */
 /* 11.4.4 isLiteral */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name ?mbox
@@ -717,7 +716,7 @@ SELECT ?name ?mbox
 
 /* TEST 57 */
 /* 11.4.5 str */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name ?mbox
@@ -728,7 +727,7 @@ SELECT ?name ?mbox
 
 /* TEST 58 */
 /* 11.4.6 lang */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name ?mbox
@@ -738,7 +737,7 @@ SELECT ?name ?mbox
 >> OK
 
 /* TEST 59 */
-query:
+query walks query:
 <<
 PREFIX where: <http://xmlns.com/foaf/0.1/>
 SELECT ?select ?mbox
@@ -749,7 +748,7 @@ SELECT ?select ?mbox
 
 /* TEST 60 */
 /* 11.4.7 datatype */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
@@ -761,7 +760,7 @@ SELECT ?name ?shoeSize
 
 /* TEST 61 */
 /* 11.4.10 RDFterm-equal */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name1 ?name2
@@ -775,7 +774,7 @@ SELECT ?name1 ?name2
 
 /* TEST 62 */
 /* 11.4.10 RDFterm-equal */
-query:
+query walks query:
 <<
 PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
 PREFIX dc:     <http://purl.org/dc/elements/1.1/>
@@ -789,7 +788,7 @@ WHERE { ?annot  a:annotates  ?annotates .
 
 /* TEST 63 */
 /* 11.4.11 sameTerm */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name1 ?name2
@@ -803,7 +802,7 @@ SELECT ?name1 ?name2
 
 /* TEST 64 */
 /* 11.4.11 sameTerm */
-query:
+query walks query:
 <<
 PREFIX  :      <http://example.org/WMterms#>
 PREFIX  t:     <http://example.org/types#>
@@ -822,7 +821,7 @@ WHERE { ?a  :label        ?aLabel .
 
 /* TEST 65 */
 /* 11.4.12 langMatches */
-query:
+query walks query:
 <<
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
 SELECT ?title
@@ -833,7 +832,7 @@ SELECT ?title
 
 /* TEST 66 */
 /* 11.4.12 langMatches */
-query:
+query walks query:
 <<
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
 SELECT ?title
@@ -843,7 +842,7 @@ SELECT ?title
 
 /* TEST 67 */
 /* 11.4.13 regex */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name
@@ -853,7 +852,7 @@ SELECT ?name
 
 /* TEST 68 */
 /* 11.6 Extensible Value Testing */
-query:
+query walks query:
 <<
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX func: <http://example.org/functions#>
@@ -865,7 +864,7 @@ WHERE { ?x foaf:name  ?name ;
 
 /* TEST 69 */
 /* 11.6 Extensible Value Testing */
-query:
+query walks query:
 <<
 PREFIX aGeo: <http://example.org/geo#>
 
