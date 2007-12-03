@@ -881,3 +881,118 @@ WHERE { ?a aGeo:placeName "Grenoble" .
         FILTER ( aGeo:distance(?axLoc, ?ayLoc, ?bxLoc, ?byLoc) < 10 ) .
       }
 >> OK
+
+/* TEST 70 */
+/* 10.3 ASK (http://www.w3.org/TR/rdf-sparql-query/#ask) */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" }
+>> OK
+
+/* TEST 71 */
+/* 10.3 ASK (http://www.w3.org/TR/rdf-sparql-query/#ask) */
+query:
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+ASK
+  FROM <data.n3>
+  WHERE { ?x foaf:name ?name }
+>> OK
+
+/* TEST 72 */
+/* 10.3 ASK (http://www.w3.org/TR/rdf-sparql-query/#ask) */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" ;
+          foaf:mbox  <mailto:alice@work.example> }
+>> OK
+
+/**/
+
+/* TEST 73 */
+/* 10.2 CONSTRUCT (http://www.w3.org/TR/rdf-sparql-query/#construct) */
+query:
+<<
+# The CONSTRUCT form returns an RDF graph specified by either a
+# graph template or by "*". If a graph template is supplied, then
+# the RDF graph is formed by taking each query solution and substituting
+# the variables into the graph template and merging the triples into a
+# single RDF graph:
+
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+CONSTRUCT   { ?x foaf:name ?name }
+WHERE       { ?x vcard:FN ?name }
+>> OK
+
+/* TEST 74 */
+/* 10.2 CONSTRUCT (http://www.w3.org/TR/rdf-sparql-query/#construct) */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+CONSTRUCT   { <http://example.org/person#Alice> vcard:FN ?name }
+WHERE       { ?x foaf:name ?name }
+>> OK
+
+/* TEST 75 */
+/* 10.2.1 Templates with Blank Nodes (http://www.w3.org/TR/rdf-sparql-query/#construct) */
+query:
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+
+CONSTRUCT { ?x  vcard:N _:v .
+            _:v vcard:givenName ?gname .
+            _:v vcard:familyName ?fname }
+WHERE
+ {
+    { ?x foaf:firstname ?gname } UNION  { ?x foaf:givenname   ?gname } .
+    { ?x foaf:surname   ?fname } UNION  { ?x foaf:family_name ?fname } .
+ }
+>> OK
+
+/* TEST 76 */
+/* 10.4.1 Explicit IRIs (http://www.w3.org/TR/rdf-sparql-query/#describe) */
+query:
+<<
+DESCRIBE <http://example.org/>
+>> OK
+
+/* TEST 77 */
+/* 10.4.2 Identifying Resources (http://www.w3.org/TR/rdf-sparql-query/#describe) */
+query:
+<<
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x
+WHERE    { ?x foaf:mbox <mailto:alice@org> }
+>> OK
+
+/* TEST 78 */
+/* 10.4.2 Identifying Resources (http://www.w3.org/TR/rdf-sparql-query/#describe) */
+query:
+<<
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x
+WHERE    { ?x foaf:name "Alice" }
+>> OK
+
+/* TEST 79 */
+/* 10.4.2 Identifying Resources (http://www.w3.org/TR/rdf-sparql-query/#describe) */
+query:
+<<
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x ?y <http://example.org/>
+WHERE    {?x foaf:knows ?y}
+>> OK
+
+/* TEST 80 */
+/* 10.4.3 Descriptions of Resources (http://www.w3.org/TR/rdf-sparql-query/#describe) */
+query:
+<<
+PREFIX ent:  <http://org.example.com/employees#>
+DESCRIBE ?x WHERE { ?x ent:employeeId "1234" }
+>> OK
