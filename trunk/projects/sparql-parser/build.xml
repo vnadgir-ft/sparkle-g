@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
     Copyright 2007 the original author or authors.
 
     All rights reserved.
@@ -28,24 +27,18 @@
     NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    @author Simone Tripodi (simone.tripodi)
+    @author Simone Tripodi   (simone.tripodi)
+    @author Michele Mostarda (michele.mostarda)
+    @author Juergen Pfundt   (Juergen.Pfundt)
     @version $Id$
 -->
-<ivysettings>
-    <conf defaultResolver="stivyres" />
+<project name="sparkle-parser" basedir="."
+    xmlns:antlr3="antlib:org.apache.tools.ant.antlr"
+    xmlns:svn="antlib:org.tigris.subversion.svnant"
+    xmlns:ivy="antlib:fr.jayasoft.ivy.ant">
 
-    <properties file="${basedir}/conf/build.properties" override="true" />
+    <property file="conf/build.properties"/>
 
-    <resolvers>
-        <filesystem name="local">
-            <ivy pattern="${ivy.local.default.root}/${ivy.local.default.ivy.pattern}" />
-            <artifact pattern="${ivy.local.default.root}/${ivy.local.default.artifact.pattern}" />
-        </filesystem>
+    <import file="${common.dir}/common-build.xml"/>
 
-        <url name="stivyres">
-            <ivy pattern="${ivy.public.default.root}/${ivy.local.default.ivy.pattern}" />
-            <artifact pattern="${ivy.public.default.root}/${ivy.local.default.ivy.pattern}" />
-        </url>
-    </resolvers>
-
-</ivysettings>
+</project>
