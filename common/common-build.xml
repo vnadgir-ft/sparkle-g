@@ -30,14 +30,14 @@
     @author Simone Tripodi   (simone.tripodi)
     @author Michele Mostarda (michele.mostarda)
     @author Juergen Pfundt   (Juergen.Pfundt)
-    @version $Id: build.xml 18 2007-12-02 19:37:46Z simone.tripodi $
+    @version $Id$
 -->
-<project name="sparkle2x" basedir="." default="test"
+<project name="sparkle-g" basedir="." default="test"
     xmlns:antlr3="antlib:org.apache.tools.ant.antlr"
     xmlns:svn="antlib:org.tigris.subversion.svnant"
     xmlns:ivy="antlib:fr.jayasoft.ivy.ant">
 
-    <property file="conf/build.properties"/>
+    <property file="${common.dir}/common-build.properties"/>
 
     <path id="antlib.classpath">
         <fileset dir="${ant.tools.dir}">
@@ -49,9 +49,10 @@
     <taskdef uri="antlib:org.tigris.subversion.svnant" resource="org/tigris/subversion/svnant/antlib.xml" classpathref="antlib.classpath"/>
     <taskdef uri="antlib:fr.jayasoft.ivy.ant" resource="fr/jayasoft/ivy/ant/antlib.xml" classpathref="antlib.classpath"/>
 
-    <ivy:configure file="conf/ivyconf.xml"/>
+    <ivy:configure file="${common.dir}/ivyconf.xml"/>
 
     <target name="init">
+        <mkdir dir="${src.java.dir}"/>
         <mkdir dir="${src.java.dir}/${package}"/>
         <mkdir dir="${target.classes.dir}"/>
         <mkdir dir="${target.doc.dir}"/>
@@ -63,10 +64,9 @@
        <sequential>
               <ivy:retrieve useOrigin="true" conf="compile-time" pattern="${lib.artifact.pattern}" />
               <antlr3:antlr3 target="${src.grammar.dir}/@{grammar.name}" 
-                  libdirectory="${src.java.dir}/@{package}"
                   outputdirectory="${src.java.dir}/@{package}"
                   multithreaded="true"
-                  depend="true"
+                  depend="false"
                   report="true"
                   debug="false"
                   profile="false">
@@ -80,15 +80,7 @@
         </sequential>
     </macrodef>
 
-    <target name="sparql" depends="init">
-        <antlr.tool grammar.name="Sparql.g"/>
-    </target>
-
-    <target name="sparqlt" depends="init">
-        <antlr.tool grammar.name="SparqlT.g"/>
-    </target>
-    
-    <target name="compile" depends="init, sparql, sparqlt">
+    <target name="compile" depends="init">
         <antlr.tool grammar.name="Sparql.g"/>
         <javac srcdir="${src.java.dir}"
             destdir="${target.classes.dir}"
