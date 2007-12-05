@@ -46,8 +46,9 @@
  *                           braces.
  * Jürgen Pfundt, 17.11.2007 Replaced parser literals by lexer tokens as preparation for AST generation
  * Simone Tripodi,21.11.2007 Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation
- * Jürgen Pfundt, 25.11.2007 The A token is case insensitive now as requested by the w3.org rdf-sparql-query
+ * Jürgen Pfundt, 25.11.2007 The A token is case sensitive now as requested by the w3.org rdf-sparql-query
  *                           document
+ * Jürgen Pfundt, 25.11.2007 Continued work on rewrite rules in expressions
  *
  */
 
@@ -97,7 +98,7 @@ queryType
     ;
     
 prologue
-    : baseDecl? prefixDecl*
+    : baseDecl? prefixDecl* -> ^(PROLOGUE baseDecl? prefixDecl*)
     ;
 
 baseDecl
@@ -111,10 +112,10 @@ prefixDecl
 selectQuery
     : SELECT variables datasetClause* whereClause solutionModifier
     -> ^(SELECT variables datasetClause* whereClause solutionModifier)
-    | SELECT DISTINCT ( var+ | ASTERISK ) datasetClause* whereClause solutionModifier
-    -> ^(SELECT DISTINCT var* ASTERISK* datasetClause* whereClause solutionModifier)
-    | SELECT REDUCED ( var+ | ASTERISK ) datasetClause* whereClause solutionModifier
-    -> ^(SELECT REDUCED var* ASTERISK* datasetClause* whereClause solutionModifier)
+    | SELECT DISTINCT variables datasetClause* whereClause solutionModifier
+    -> ^(SELECT DISTINCT variables datasetClause* whereClause solutionModifier)
+    | SELECT REDUCED variables datasetClause* whereClause solutionModifier
+    -> ^(SELECT REDUCED variables datasetClause* whereClause solutionModifier)
     ;
 
 constructQuery
@@ -123,8 +124,8 @@ constructQuery
     ;
 
 describeQuery
-    : DESCRIBE ( varOrIRIref+ | ASTERISK ) datasetClause* whereClause? solutionModifier
-    -> ^(DESCRIBE varOrIRIref* ASTERISK* datasetClause* whereClause? solutionModifier)
+    : DESCRIBE variables datasetClause* whereClause? solutionModifier
+    -> ^(DESCRIBE variables datasetClause* whereClause? solutionModifier)
     ;
 
 askQuery
@@ -316,11 +317,11 @@ expression
     ;
 
 conditionalOrExpression
-    : conditionalAndExpression ( OR conditionalAndExpression )* -> ^(OR_EXPRESSION conditionalAndExpression+)
+    : conditionalAndExpression (OR^ conditionalAndExpression)*
     ;
 
 conditionalAndExpression
-    : valueLogical ( AND valueLogical )*  -> ^(AND_EXPRESSION valueLogical+)
+    : valueLogical (AND^ valueLogical)*
     ;
 
 valueLogical
@@ -336,11 +337,16 @@ numericExpression
     ;
 
 additiveExpression
-    : multiplicativeExpression ( PLUS^ multiplicativeExpression | MINUS^ multiplicativeExpression | numericLiteralPositive | numericLiteralNegative )*
+    : multiplicativeExpression ( PLUS^ multiplicativeExpression | MINUS^ multiplicativeExpression | numericLiteralPositive^ | numericLiteralNegative^ )*
     ;
 
 multiplicativeExpression
-    : unaryExpression ( ASTERISK^ unaryExpression | DIVIDE^ unaryExpression )*
+    : unaryExpression ( multiplicativeOperation^ unaryExpression)*
+    ;
+
+multiplicativeOperation
+    : ASTERISK
+    | DIVIDE
     ;
 
 unaryExpression

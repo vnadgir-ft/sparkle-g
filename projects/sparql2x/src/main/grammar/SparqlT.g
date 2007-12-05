@@ -33,6 +33,7 @@
  * 
  * Jürgen Pfundt, 02.12.2007 Resolved some recursions
  * Jürgen Pfundt, 02.12.2007 Added rewrite rules 
+ * Jürgen Pfundt, 06.12.2007 Continued work on rewrite rules in expressions
  */
 
 tree grammar SparqlT;
@@ -63,7 +64,7 @@ queryType
     ;
     
 prologue
-    : baseDecl? prefixDecl*
+    : ^(PROLOGUE baseDecl? prefixDecl*)
     ;
 
 baseDecl
@@ -76,8 +77,8 @@ prefixDecl
 
 selectQuery
     : ^(SELECT variables datasetClause* whereClause solutionModifier)
-    | ^(SELECT DISTINCT var* ASTERISK* datasetClause* whereClause solutionModifier)
-    | ^(SELECT REDUCED var* ASTERISK* datasetClause* whereClause solutionModifier)
+    | ^(SELECT DISTINCT variables datasetClause* whereClause solutionModifier)
+    | ^(SELECT REDUCED variables datasetClause* whereClause solutionModifier)
     ;
 
 constructQuery
@@ -85,7 +86,7 @@ constructQuery
     ;
 
 describeQuery
-    : ^(DESCRIBE varOrIRIref* ASTERISK* datasetClause* whereClause? solutionModifier)
+    : ^(DESCRIBE variables datasetClause* whereClause? solutionModifier)
     ;
 
 askQuery
@@ -276,11 +277,13 @@ expression
     ;
 
 conditionalOrExpression
-    : ^(OR_EXPRESSION conditionalAndExpression+)
+    : ^(OR conditionalAndExpression+)
+    | conditionalAndExpression
     ;
 
 conditionalAndExpression
-    : ^(AND_EXPRESSION valueLogical+)
+    : ^(AND valueLogical+)
+    | valueLogical
     ;
 
 valueLogical
@@ -288,7 +291,13 @@ valueLogical
     ;
 
 relationalExpression
-    : numericExpression ( EQUAL numericExpression | NOT_EQUAL numericExpression | LESS numericExpression | GREATER numericExpression | LESS_EQUAL numericExpression | GREATER_EQUAL numericExpression )?
+    : ^(EQUAL numericExpression numericExpression)
+    | ^(NOT_EQUAL numericExpression numericExpression)
+    | ^(LESS numericExpression numericExpression)
+    | ^(GREATER numericExpression numericExpression)
+    | ^(LESS_EQUAL numericExpression numericExpression)
+    | ^(GREATER_EQUAL numericExpression numericExpression)
+    | numericExpression
     ;
 
 numericExpression
@@ -300,7 +309,9 @@ additiveExpression
     ;
 
 multiplicativeExpression
-    : unaryExpression ( ASTERISK unaryExpression | DIVIDE unaryExpression )*
+    : ^(ASTERISK unaryExpression unaryExpression)
+    | ^(DIVIDE unaryExpression unaryExpression )
+    | unaryExpression
     ;
 
 unaryExpression
