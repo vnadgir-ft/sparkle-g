@@ -32,7 +32,7 @@
     @author Juergen Pfundt   (Juergen.Pfundt)
     @version $Id$
 -->
-<project name="sparkle2x" basedir="."
+<project name="sparkle2x" basedir="." default="test"
     xmlns:antlr3="antlib:org.apache.tools.ant.antlr"
     xmlns:svn="antlib:org.tigris.subversion.svnant"
     xmlns:ivy="antlib:fr.jayasoft.ivy.ant">
