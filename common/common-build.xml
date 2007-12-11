@@ -32,7 +32,7 @@
     @author Juergen Pfundt   (Juergen.Pfundt)
     @version $Id$
 -->
-<project name="sparkle-g" basedir="." default="test"
+<project name="sparkle-g" basedir="."
     xmlns:antlr3="antlib:org.apache.tools.ant.antlr"
     xmlns:svn="antlib:org.tigris.subversion.svnant"
     xmlns:ivy="antlib:fr.jayasoft.ivy.ant">
@@ -132,35 +132,6 @@
             <fileset dir="${src.java.dir}"/>
             <fileset dir="${target.dir}"/>
             <fileset dir="${ivy.lib.dir}"/>
-        </delete>
-    </target>
-
-    <target name="release" depends="clean, test">
-        <svn:svn javahl="false">
-            <status path="." revisionProperty="svn.revision" />
-        </svn:svn>
-        <tstamp>
-            <format pattern="yyyyMMddHHmmss" property="build.timestamp" />
-        </tstamp>
-        <condition property="publish.revision" value="${ivy.revision}">
-            <equals arg1="${project.status}" arg2="release"/>
-        </condition>
-        <condition property="publish.revision" value="${ivy.revision}-r${svn.revision}-dev">
-            <equals arg1="${project.status}" arg2="integration"/>
-        </condition>
-        <condition property="publish.revision" value="${ivy.revision}-r${svn.revision}-dev${build.timestamp}">
-            <equals arg1="${project.status}" arg2="development"/>
-        </condition>
-
-        <property name="tmp.dir" value="${target.dir}/releases/Sparql-${publish.revision}"/>
-        <mkdir dir="${tmp.dir}"/>
-        <copy todir="${tmp.dir}">
-            <fileset file="${src.grammar.dir}/Sparql.g"/>
-            <fileset dir="${src.htmldoc.dir}"/>
-        </copy>
-        <zip destfile="${tmp.dir}.zip" basedir="${tmp.dir}"/>
-        <delete verbose="true" includeemptydirs="true">
-            <fileset dir="${tmp.dir}"/>
         </delete>
     </target>
 
