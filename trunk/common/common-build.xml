@@ -65,8 +65,9 @@
               <ivy:retrieve useOrigin="true" conf="compile-time" pattern="${lib.artifact.pattern}" />
               <antlr3:antlr3 target="${src.grammar.dir}/@{grammar.name}" 
                   outputdirectory="${src.java.dir}/@{package}"
+                  libdirectory="${src.java.dir}/@{package}"
                   multithreaded="true"
-                  depend="false"
+                  depend="true"
                   report="true"
                   debug="false"
                   profile="false">
