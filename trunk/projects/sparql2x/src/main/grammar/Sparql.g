@@ -58,7 +58,7 @@ options {
     output=AST;
 }
 
-tokens{
+tokens {
    PROLOGUE;
    WHERE_CLAUSE;
    OBJECTLIST;
@@ -77,11 +77,11 @@ tokens{
 }
 
 @header{
-package org.sparql.x;
+    package org.sparql.x;
 }
 
 @lexer::header{
-package org.sparql.x;
+    package org.sparql.x;
 }
 
 // $<Parser

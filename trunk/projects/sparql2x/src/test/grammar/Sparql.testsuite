@@ -32,6 +32,7 @@
  * @author Juergen Pfundt   (Juergen.Pfundt)
  */
 gunit SparqlT walks Sparql;
+
 @header{package org.sparql.x;}
 
 /* TEST 1 */

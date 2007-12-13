@@ -32,7 +32,7 @@
     @author Juergen Pfundt   (Juergen.Pfundt)
     @version $Id$
 -->
-<project name="sparkle-g" basedir="."
+<project name="common-build" basedir="."
     xmlns:antlr3="antlib:org.apache.tools.ant.antlr"
     xmlns:svn="antlib:org.tigris.subversion.svnant"
     xmlns:ivy="antlib:fr.jayasoft.ivy.ant">
@@ -81,7 +81,6 @@
     </macrodef>
 
     <target name="compile" depends="init">
-        <antlr.tool grammar.name="Sparql.g"/>
         <javac srcdir="${src.java.dir}"
             destdir="${target.classes.dir}"
             verbose="true"

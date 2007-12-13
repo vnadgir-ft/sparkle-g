@@ -62,7 +62,7 @@ queryType
     | describeQuery
     | askQuery
     ;
-    
+
 prologue
     : ^(PROLOGUE baseDecl? prefixDecl*)
     ;

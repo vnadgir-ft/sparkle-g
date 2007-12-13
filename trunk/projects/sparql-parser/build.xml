@@ -41,7 +41,10 @@
 
     <import file="${common.dir}/common-build.xml"/>
 
-    
+    <target name="compile">
+        <antlr.tool grammar.name="Sparql.g"/>
+        <antcall target="common-build.compile"/>
+    </target>
 
     <target name="release" depends="clean, test">
         <svn:svn javahl="false">
