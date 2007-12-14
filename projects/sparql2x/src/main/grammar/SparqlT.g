@@ -46,7 +46,7 @@ options {
 }
 
 @header{
-package org.sparql.x;
+package org.sparkleg;
 }
 
 // $<Parser
