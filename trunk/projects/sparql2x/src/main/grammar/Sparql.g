@@ -77,11 +77,11 @@ tokens {
 }
 
 @header{
-    package org.sparql.x;
+package org.sparkleg;
 }
 
 @lexer::header{
-    package org.sparql.x;
+package org.sparkleg;
 }
 
 // $<Parser

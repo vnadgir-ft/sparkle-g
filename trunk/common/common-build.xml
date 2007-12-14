@@ -59,17 +59,19 @@
     </target>
 
     <macrodef name="antlr.tool">
+	   <attribute name="grammar.dir" default="${src.grammar.dir}"/>
        <attribute name="grammar.name"/>
        <attribute name="package" default="${package}"/>
+	   <attribute name="debug"   default="false"/>
        <sequential>
               <ivy:retrieve useOrigin="true" conf="compile-time" pattern="${lib.artifact.pattern}" />
-              <antlr3:antlr3 target="${src.grammar.dir}/@{grammar.name}" 
+              <antlr3:antlr3 target="@{grammar.dir}/@{grammar.name}" 
                   outputdirectory="${src.java.dir}/@{package}"
                   libdirectory="${src.java.dir}/@{package}"
                   multithreaded="true"
-                  depend="true"
+                  depend="false"
                   report="true"
-                  debug="false"
+                  debug="@{debug}"
                   profile="false">
                   <jvmarg value="-Xmx256m" />
                   <classpath>
@@ -86,7 +88,7 @@
             destdir="${target.classes.dir}"
             verbose="true"
             optimize="true"
-            debug="true">
+            debug="false">
             <classpath>
                 <fileset dir="${ivy.lib.dir}/compile-time"/>
             </classpath>
