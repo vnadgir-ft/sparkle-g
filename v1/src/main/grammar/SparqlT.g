@@ -33,7 +33,8 @@
  * 
  * Jürgen Pfundt, 02.12.2007 Resolved some recursions
  * Jürgen Pfundt, 02.12.2007 Added rewrite rules 
- * Jürgen Pfundt, 06.12.2007 Continued work on rewrite rules in expressions
+ * Jürgen Pfundt, 16.12.2007 Quite a lot of corrections and enhancements of rewrite rules
+ *                           Started to adapt the output tree to deliver the rq24-algebra
  */
 
 tree grammar SparqlT;
@@ -46,7 +47,7 @@ options {
 }
 
 @header{
-package org.sparkleg;
+package org.sparql.x;
 }
 
 // $<Parser
@@ -62,7 +63,7 @@ queryType
     | describeQuery
     | askQuery
     ;
-
+    
 prologue
     : ^(PROLOGUE baseDecl? prefixDecl*)
     ;
@@ -86,7 +87,7 @@ constructQuery
     ;
 
 describeQuery
-    : ^(DESCRIBE variables datasetClause* whereClause? solutionModifier)
+    : ^(DESCRIBE varOrIRIrefs datasetClause* whereClause? solutionModifier)
     ;
 
 askQuery
@@ -98,25 +99,19 @@ variables
     | ^(VARIABLES ASTERISK)
     ;
     
+varOrIRIrefs
+    : ^(VARIABLES varOrIRIref+)
+    | ^(VARIABLES ASTERISK)
+    ;
+    
 datasetClause
-    : ^(FROM defaultGraphClause)
-    | ^(FROM namedGraphClause)
-    ;
-
-defaultGraphClause
-    : sourceSelector
-    ;
-
-namedGraphClause
-    : ^(NAMED sourceSelector)
-    ;
-
-sourceSelector
-    : iriRef
+    : ^(FROM iriRef)
+    | ^(FROM NAMED iriRef)
     ;
 
 whereClause
-    : ^(WHERE_CLAUSE groupGraphPattern)
+    : ^(WHERE groupGraphPattern)
+    | groupGraphPattern
     ;
 
 solutionModifier
@@ -156,7 +151,7 @@ groupGraphPatternContent
     ;
     
 triplesBlock
-    : triplesSameSubject+
+    : ^(BGP triplesSameSubject+)
     ;
 
 graphPatternNotTriples
@@ -170,11 +165,13 @@ optionalGraphPattern
     ;
 
 graphGraphPattern
-    : ^(GRAPH varOrIRIref groupGraphPattern)
+    : ^(GRAPH var groupGraphPattern)
+    | ^(GRAPH iriRef groupGraphPattern)
     ;
 
 groupOrUnionGraphPattern
-    : ^(UNION_EXPRESSION groupGraphPattern+) 
+    : ^(UNION groupOrUnionGraphPattern groupOrUnionGraphPattern) 
+    | groupGraphPattern
     ;
 
 filter
@@ -205,20 +202,16 @@ constructTriples
     ;
 
 triplesSameSubject
-    : ^(SAME_SUBJECT varOrTerm propertyListNotEmpty)
-    | ^(SAME_SUBJECT triplesNode propertyList)
+    : ^(SAME_SUBJECT propertyListNotEmpty)
     ;
 
 propertyListNotEmpty
-    : ^(PROPERTY_LIST (verb objectList)+)
-    ;
-
-propertyList
-    : propertyListNotEmpty?
+    : ^(PROPERTY_LIST objectList+)
     ;
 
 objectList
-    : ^(OBJECTLIST object+)
+    : SPO (varOrTerm verb object)+
+    | SPO (triplesNode verb object)+
     ;
 
 object
@@ -226,8 +219,8 @@ object
     ;
 
 verb
-    : varOrIRIref
-    | A
+    : var
+    | iriRef
     ;
 
 triplesNode
@@ -236,11 +229,11 @@ triplesNode
     ;
 
 blankNodePropertyList
-    : propertyListNotEmpty
+    : PROPERTY_LIST propertyListNotEmpty
     ;
 
 collection
-    : ^(COLLECTION graphNode+)
+    : GRAPH_NODE (BLANK_NODE_LABEL IRI_REF graphNode BLANK_NODE_LABEL IRI_REF BLANK_NODE_LABEL)+ GRAPH_NODE
     ;
 
 graphNode
@@ -277,12 +270,12 @@ expression
     ;
 
 conditionalOrExpression
-    : ^(OR conditionalAndExpression+)
+    : ^(OR conditionalOrExpression conditionalOrExpression)
     | conditionalAndExpression
     ;
 
 conditionalAndExpression
-    : ^(AND valueLogical+)
+    : ^(AND conditionalAndExpression conditionalAndExpression)
     | valueLogical
     ;
 
@@ -291,12 +284,12 @@ valueLogical
     ;
 
 relationalExpression
-    : ^(EQUAL numericExpression numericExpression)
-    | ^(NOT_EQUAL numericExpression numericExpression)
-    | ^(LESS numericExpression numericExpression)
-    | ^(GREATER numericExpression numericExpression)
-    | ^(LESS_EQUAL numericExpression numericExpression)
-    | ^(GREATER_EQUAL numericExpression numericExpression)
+    : ^(EQUAL relationalExpression relationalExpression)
+    | ^(NOT_EQUAL relationalExpression relationalExpression)
+    | ^(LESS relationalExpression relationalExpression)
+    | ^(GREATER relationalExpression relationalExpression)
+    | ^(LESS_EQUAL relationalExpression relationalExpression)
+    | ^(GREATER_EQUAL relationalExpression relationalExpression)
     | numericExpression
     ;
 
@@ -305,12 +298,18 @@ numericExpression
     ;
 
 additiveExpression
-    : multiplicativeExpression ( PLUS multiplicativeExpression | MINUS multiplicativeExpression | numericLiteralPositive | numericLiteralNegative )*
+    : ^(PLUS additiveExpression additiveExpression)
+    | ^(MINUS additiveExpression additiveExpression)
+    | ^(numericLiteralPositive additiveExpression)
+    | ^(numericLiteralNegative additiveExpression)
+    | numericLiteralPositive
+    | numericLiteralNegative
+    | multiplicativeExpression
     ;
 
 multiplicativeExpression
-    : ^(ASTERISK unaryExpression unaryExpression)
-    | ^(DIVIDE unaryExpression unaryExpression )
+    : ^(ASTERISK multiplicativeExpression multiplicativeExpression)
+    | ^(DIVIDE multiplicativeExpression multiplicativeExpression )
     | unaryExpression
     ;
 
