@@ -1,0 +1,415 @@
+/*
+ * Copyright 2007 the original author or authors.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following
+ * conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+ * disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+ * disclaimer in the documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the author or authors nor the names of its contributors may be used to endorse or promote
+ * products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @author Simone Tripodi   (simone.tripodi)
+ * @author Michele Mostarda (michele.mostarda)
+ * @author Juergen Pfundt   (Juergen.Pfundt)
+ * 
+ * Jürgen Pfundt, 20.12.2007 First draft of JSON template
+ */
+
+group json;
+
+query(prologue, queryType) ::= <<
+{
+   "Query" : {
+      $prologue$$queryType$
+   }
+}
+>>
+
+prologue(baseDecl, prefixDecl) ::= <<
+"Prologue" : {
+   $baseDecl$
+   "Prefix" : {
+      $prefixDecl; separator=",\n"$
+   }
+}
+>>
+
+baseDecl(iriref) ::= <<
+"BaseDeclaration" : {
+   "BASE" : "$iriref$"
+}
+>>
+
+prefixDecl(pname, iriref) ::= <<
+"$pname$" : "$iriref$"
+>>
+
+queryType(query)  ::= <<
+$query$
+>>
+
+selectQuery(variables, datasetClause, whereClause, solutionModifier)  ::= <<
+,
+"Select" : {
+   $if(variables)$
+   $variables$,
+   $endif$
+   $if(datasetClause)$
+   $datasetClause; separator=",\n"$,
+   $endif$
+   $whereClause$$solutionModifier$
+}
+>>
+
+selectDistinctQuery(variables, datasetClause, whereClause, solutionModifier)  ::= <<
+,
+"Select" : {
+   "Distinct" : "null"
+   $if(variables)$
+   $variables$,
+   $endif$
+   $if(datasetClause)$
+   $datasetClause; separator=",\n"$,
+   $endif$
+   $whereClause$$solutionModifier$}
+>>
+
+selectReducedQuery(variables, datasetClause, whereClause, solutionModifier)  ::= <<
+,
+"Select" : {
+   "Reduced" : "null"
+   $if(variables)$
+   $variables$,
+   $endif$
+   $if(datasetClause)$
+   $datasetClause; separator=",\n"$,
+   $endif$
+   $whereClause$$solutionModifier$
+}
+>>
+
+constructQuery(constructTemplate, datasetClause, whereClause, solutionModifier) ::= <<
+"Construct" : {
+   $constructTemplate$$datasetClause; separator=",\n"$$whereClause$$solutionModifier$
+}
+>>
+
+describeQuery(varOrIRIrefs, datasetClause, whereClause, solutionModifier) ::= <<
+"Describe" : {
+   $varOrIRIrefs$$datasetClause; separator=",\n"$$whereClause$$solutionModifier$
+}
+>>
+
+askQuery(datasetClause, whereClause) ::= <<
+"Ask" : {
+   $datasetClause; separator=",\n"$$whereClause$)
+}
+>>
+
+variables(var) ::= <<
+"Variables" : [
+   "$var; separator="\",\n   \""$"
+]
+>>
+
+varOrIRIrefs(varOrIRIref) ::= <<
+"Variables" : [
+   "$varOrIRIref; separator="\",\n   \""$
+]
+>>
+
+datasetClause(clauseType, graph) ::= <<
+"$clauseType$" : "$graph$"
+>>
+ 
+whereClause(groupGraphPattern) ::= <<
+"Where" : {
+   $groupGraphPattern$
+}
+>>
+
+solutionModifier(orderClause, limitOffsetClause) ::= <<
+$orderClause$$limitOffsetClause$
+>>
+
+limitOffsetClause(limitClause, offsetClause) ::= <<
+$limitClause$$offsetClause$
+>>
+
+orderClause(orderCondition) ::= <<
+,
+"Order_By" : [
+   $orderCondition; separator=",\n"$
+]
+>>
+
+orderCondition(constraint) ::= <<
+$constraint$
+>>
+
+limitClause(limit, integer) ::= <<
+,
+"Limit" : $integer$
+>>
+
+offsetClause(integer) ::= <<
+,
+"Offset" : $integer$
+>>
+
+groupGraphPattern(groupGraphPatternContent) ::= <<$groupGraphPatternContent$>>
+
+groupGraphPatternContent(leadingTriples, groupGraphPatternSequence) ::= <<
+$leadingTriples$$groupGraphPatternSequence; separator=",\n"$
+>>
+
+groupGraphPatternSequence(groupGraphPatternAlternation, triplesBlock)::= <<
+$groupGraphPatternAlternation$$triplesBlock$
+>>
+
+groupGraphPatternAlternation(type) ::= <<
+$type$
+>>
+
+triplesBlock(triplesSameSubject) ::= <<
+"BGP" : [ 
+   $triplesSameSubject; separator=",\n"$
+]>>
+
+graphPatternNotTriples(graph) ::= <<
+$graph$
+>>
+
+optionalGraphPattern(optionalGraphPattern) ::= <<
+"Optional" : { 
+   $optionalGraphPattern$
+}
+>>
+
+graphGraphPattern(var, groupGraphPattern) ::= <<
+$var$$groupGraphPattern$
+>>
+
+groupOrUnionGraphPattern(groupOrUnionGraphPattern1, groupOrUnionGraphPattern2) ::= <<
+"Union" : {
+   $groupOrUnionGraphPattern1$,
+   $groupOrUnionGraphPattern2$
+}
+>>
+
+filter(constraint) ::= <<
+,
+"Filter" : {
+   $constraint$
+}
+>>
+
+constraint(type) ::= <<
+$type$
+>>
+
+functionCall(iriRef, argList) ::= <<
+"Function" : {
+   "Name" : $iriRef$$argList$
+}
+>>
+
+argList(expression) ::= <<
+,
+"Arglist" : [
+   $expression; separator=",\n"$
+]
+>>
+
+constructTemplate(constructTriples) ::= <<
+$constructTriples$
+>>
+
+constructTriples(triples) ::= <<
+$triples; separator=",\n"$
+>>
+
+triplesSameSubject(propertyListNotEmpty) ::= <<
+$propertyListNotEmpty$
+>>
+
+propertyListNotEmpty(objectList) ::= <<
+$objectList; separator=",\n"$
+>>
+
+objectList(sentence) ::= <<
+$sentence; separator=",\n"$
+>>
+
+spo(subject, predicate, object)  ::= <<
+"$subject$", "$predicate$", "$object$"
+>>
+
+object(graphNode) ::= <<
+$graphNode$
+>>
+
+verb(var) ::= <<
+$var$
+>>
+
+triplesNode(node) ::= <<
+$node$
+>>
+
+blankNodePropertyList(propertyListNotEmpty) ::= <<
+$propertyListNotEmpty$
+>>
+
+collection(collectionElement) ::= <<
+$collectionElement$
+>>
+
+collectionElement(b1, i1, g, b2, i2, b3) ::= <<
+$b1$, $i1$, $g$, $b2$, $i2$, $b3$
+>>
+
+graphNode(node) ::= <<
+$node$
+>>
+
+varOrTerm(var) ::= <<
+$var$
+>>
+
+varOrIRIref(var) ::= <<
+$var$
+>>
+
+var(v) ::= <<
+$v$
+>>
+
+graphTerm(value) ::= <<
+$value$
+>>
+
+expression(conditionalOrExpression) ::= <<
+$conditionalOrExpression$
+>>
+
+conditionalOrExpression (conditionalOrExpression1, conditionalOrExpression2) ::= <<
+$conditionalOrExpression1$$conditionalOrExpression2$
+>>
+
+conditionalAndExpression (conditionalAndExpression1, conditionalAndExpression2) ::= <<
+$conditionalAndExpression1$$conditionalAndExpression2$
+>>
+
+valueLogical(relationalExpression) ::= <<
+$relationalExpression$
+>>
+
+relationalExpression (type, relationalExpression1, relationalExpression2) ::= <<
+$type$$relationalExpression1$$relationalExpression2$
+>>
+
+numericExpression(additiveExpression) ::= <<
+$additiveExpression$
+>>
+
+additiveExpression(type, additiveExpression1, additiveExpression2) ::= <<
+$type$$additiveExpression1$$additiveExpression2$
+>>
+
+multiplicativeExpression(multiplicativeExpression1, multiplicativeExpression2) ::= <<
+$multiplicativeExpression1$$multiplicativeExpression2$
+>>
+
+unaryExpression(operand, primaryExpression) ::= <<
+$operand$$primaryExpression$
+>>
+
+primaryExpression(value) ::= <<
+$value$
+>>
+
+brackettedExpression(expression) ::= <<
+$expression$
+>>
+
+builtInCall(type, expression) ::= <<
+"BuiltInCall" : {
+   $type$$expression; separator=",\n"$
+}
+>>
+
+regexExpression(expression) ::= <<
+$expression; separator=",\n"$
+>>
+
+iriRefOrFunction(iriRef, argList) ::= <<
+$iriRef$$argList$
+>>
+
+rdfLiteral(string, langTagOrReference) ::= <<
+$string$$langTagOrReference$
+>>
+
+langTagOrReference(value) ::= <<
+$value$
+>>
+
+numericLiteral(value) ::= <<
+$value$
+>>
+
+numericLiteralUnsigned(value) ::= <<
+$value$
+>>
+
+numericLiteralPositive(value) ::= <<
+$value$
+>>
+
+numericLiteralNegative(value) ::= <<
+$value$
+>>
+
+booleanLiteral(value) ::= <<
+$value$
+>>
+
+string(value) ::= <<
+$value$
+>>
+
+iriRef(value) ::= <<
+$value$
+>>
+
+prefixedName(value) ::= <<
+$value$
+>>
+
+blankNode(value) ::= <<
+$value$
+>>
+
+pair(string, value) ::= <<
+"$string$" : "$value$"
+>>
