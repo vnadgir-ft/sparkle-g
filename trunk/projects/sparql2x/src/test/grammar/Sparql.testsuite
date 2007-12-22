@@ -33,7 +33,7 @@
  */
 gunit SparqlT walks Sparql;
 
-@header{package org.sparql.x;}
+@header{package org.sparkleg;}
 
 /* TEST 1 */
 query walks query:
