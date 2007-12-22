@@ -42,36 +42,32 @@
     <import file="${common.dir}/common-build.xml"/>
 
     <target name="generate" 
-	        description="Generates the parser only.">
-        <antlr.tool 
-			grammar.dir="${projects.dir}/sparql-parser/src/main/grammar" 
-			grammar.name="Sparql.g"
-		/>
+            description="Generates the parser only.">
+        <antlr.tool
+            grammar.dir="${projects.dir}/sparql-parser/src/main/grammar" 
+            grammar.name="Sparql.g"/>
     </target>
 
     <target name="generate-debug" 
-	        description="Generates the parser only with debug options.">
-        <antlr.tool 
-			grammar.name="Sparql.g"  
-			debug="true" />
+            description="Generates the parser only with debug options.">
+        <antlr.tool
+            grammar.name="Sparql.g"
+            debug="true"/>
     </target>
 
     <target name="compile">
         <antlr.tool
-	 		grammar.dir="${projects.dir}/sparql-parser/src/main/grammar"
-			grammar.name="Sparql.g"
-		/>
+            grammar.dir="${projects.dir}/sparql-parser/src/main/grammar"
+            grammar.name="Sparql.g"/>
         <antcall target="common-build.compile"/>
     </target>
 
     <target name="compile-debug">
         <antlr.tool
-	 			grammar.dir="${projects.dir}/sparql-parser/src/main/grammar" 
-				grammar.name="Sparql.g" 
-				debug="true"
-		/>
+            grammar.dir="${projects.dir}/sparql-parser/src/main/grammar"
+            grammar.name="Sparql.g" 
+            debug="true"/>
         <antcall target="common-build.compile"/>
     </target>
-
 
 </project>

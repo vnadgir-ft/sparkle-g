@@ -46,9 +46,9 @@
     </configurations>
 
     <dependencies>
-        <dependency org="terenceparr" name="antlr" rev="3.0.1" conf="compile-time->default"/>
-        <dependency org="terenceparr" name="gunit" rev="1.0" conf="test->default" />
-        <dependency org="terenceparr" name="antlr-runtime" rev="3.0.1" conf="runtime->default"/>
+        <dependency org="antlr.org" name="antlr3" rev="3.0.1" conf="compile-time->default"/>
+        <dependency org="antlr.org" name="gunit" rev="1.0" conf="test->default" />
+        <dependency org="antlr.org" name="antlr3-runtime" rev="3.0.1" conf="runtime->default"/>
     </dependencies>
 
 </ivy-module>
