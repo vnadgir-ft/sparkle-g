@@ -32,6 +32,7 @@
  * @author Juergen Pfundt   (Juergen.Pfundt)
  * 
  * Jürgen Pfundt, 20.12.2007 First draft of JSON template
+ * Jürgen Pfundt, 29.12.2007 Some changes related to blank nodes and collections
  */
 
 group json;
@@ -39,7 +40,8 @@ group json;
 query(prologue, queryType) ::= <<
 {
    "Query" : {
-      $prologue$$queryType$
+      $prologue$
+      $queryType$
    }
 }
 >>
@@ -137,8 +139,12 @@ varOrIRIrefs(varOrIRIref) ::= <<
 ]
 >>
 
-datasetClause(clauseType, graph) ::= <<
-"$clauseType$" : "$graph$"
+defaultDatasetClause(graph) ::= <<
+"DefaultGraphClause" : "$graph$"
+>>
+
+namedDatasetClause(graph) ::= <<
+"NamedGraphClause" : "$graph$"
 >>
  
 whereClause(groupGraphPattern) ::= <<
@@ -160,6 +166,16 @@ orderClause(orderCondition) ::= <<
 "Order_By" : [
    $orderCondition; separator=",\n"$
 ]
+>>
+
+orderConditionAscending(constraint) ::= <<
+"Ascending" : "null"
+$constraint$
+>>
+
+orderConditionDescending(constraint) ::= <<
+"Descending" : "null"
+$constraint$
 >>
 
 orderCondition(constraint) ::= <<
@@ -257,11 +273,7 @@ $objectList; separator=",\n"$
 >>
 
 objectList(sentence) ::= <<
-$sentence; separator=",\n"$
->>
-
-spo(subject, predicate, object)  ::= <<
-"$subject$", "$predicate$", "$object$"
+$sentence; separator=", "$
 >>
 
 object(graphNode) ::= <<
@@ -276,8 +288,9 @@ triplesNode(node) ::= <<
 $node$
 >>
 
-blankNodePropertyList(propertyListNotEmpty) ::= <<
-$propertyListNotEmpty$
+blankNodePropertyList(propertyListNotEmpty, s) ::= <<
+$propertyListNotEmpty$,
+$s$
 >>
 
 collection(collectionElement) ::= <<
@@ -285,7 +298,9 @@ $collectionElement$
 >>
 
 collectionElement(b1, i1, g, b2, i2, b3) ::= <<
-$b1$, $i1$, $g$, $b2$, $i2$, $b3$
+$b1$, $i1$, $g$,
+$b2$, $i2$, $b3$,
+
 >>
 
 graphNode(node) ::= <<
