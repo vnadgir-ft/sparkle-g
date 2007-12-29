@@ -36,6 +36,8 @@
  * Jürgen Pfundt, 16.12.2007 Quite a lot of corrections and enhancements of rewrite rules
  *                           Started to adapt the output tree to deliver the rq24-algebra
  * Jürgen Pfundt, 19.12.2007 Added template output with JSON target in mind
+ * Jürgen Pfundt, 29.12.2007 Some enhancements mainly related to blank nodes and collections.
+ *                           Collections and blank nodes still not finished.
  */
 
 tree grammar SparqlT;
@@ -45,6 +47,8 @@ options {
     tokenVocab=Sparql;
     ASTLabelType=CommonTree;
     output=template;
+/*    k=1;
+    backtrack=true; */
 }
 
 @header{
@@ -116,8 +120,8 @@ varOrIRIrefs
     ;
     
 datasetClause
-    : ^(FROM i=iriRef) -> datasetClause(clauseType={"DefaultGraphClause"}, graph={$i.st})
-    | ^(FROM NAMED i=iriRef) -> datasetClause(clauseType={"NamedGraphClause"}, graph={$i.st})
+    : ^(FROM i=iriRef) -> defaultDatasetClause(graph={$i.st})
+    | ^(FROM NAMED i=iriRef) -> namedDatasetClause(graph={$i.st})
     ;
 
 whereClause
@@ -140,8 +144,8 @@ orderClause
     ;
 
 orderCondition
-    : ^(ASC b=brackettedExpression) -> orderCondition(constraint={$b.st})
-    | ^(DESC b=brackettedExpression) -> orderCondition(constraint={$b.st})
+    : ^(ASC b=brackettedExpression) -> orderConditionAscending(constraint={$b.st})
+    | ^(DESC b=brackettedExpression) -> orderConditionDescending(constraint={$b.st})
     | constraint -> orderCondition(constraint={$constraint.st})
     | var -> orderCondition(constraint={$var.st})
     ;
@@ -234,17 +238,8 @@ propertyListNotEmpty
     ;
 
 objectList
-    : SPO (s1+=spo1)+ -> objectList(sentence={s1})
-    | SPO (s2+=spo2)+ -> objectList(sentence={s2})
-    ;
-
-spo1
-    : varOrTerm verb object -> spo(subject={$varOrTerm.st}, predicate={$verb.st}, object={$object.st})
-    ;
-    
-spo2
-    : triplesNode verb object -> spo(subject={$triplesNode.st}, predicate={$verb.st}, object={$object.st})
-    ;
+    : SPO (o+=object)+ -> objectList(sentence={$o})
+;
 
 object
     : graphNode -> object(graphNode={$graphNode.st})
@@ -261,7 +256,7 @@ triplesNode
     ;
 
 blankNodePropertyList
-    : PROPERTY_LIST propertyListNotEmpty -> blankNodePropertyList(propertyListNotEmpty={$propertyListNotEmpty.st})
+    : ^(BLANK_PROPERTY_LIST propertyListNotEmpty BLANK_NODE_LABEL) -> blankNodePropertyList(propertyListNotEmpty={$propertyListNotEmpty.st},s={$BLANK_NODE_LABEL.text})
     ;
 
 collection
