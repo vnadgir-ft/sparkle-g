@@ -58,12 +58,16 @@
  *                           between comma and parameters or add perl script into build process before compiling.
  *                           Started to adapt the output tree to deliver the rq24-algebra
  *                           Rewrite rules for collections and blank not yet finished
+ * Jürgen Pfundt, 29.12.2007 Some enhancements mainly related to blank nodes and collections.
+ *                           Collections and blank nodes still not finished.
  */
 
 grammar Sparql;
 
 options {
     output=AST;
+/*    k=1;
+    backtrack=true;*/
 }
 
 tokens{
@@ -75,6 +79,7 @@ tokens{
    GROUP_GRAPH;
    VARIABLES;
    PROPERTY_LIST;
+   BLANK_PROPERTY_LIST;
    PRIMARY;
    BGP;
    SPO;
@@ -259,15 +264,15 @@ triplesSameSubject
     ;
 
 propertyListNotEmpty[Object s]
-    : v=verb objectList[$s,$v.tree] ( SEMICOLON ( v=verb objectList[$s,$v.tree] )? )* -> ^(PROPERTY_LIST objectList+)
+    : v1=verb objectList[$s,$v1.tree] ( SEMICOLON (v2=verb objectList[$s,$v2.tree])?)* -> ^(PROPERTY_LIST objectList+)
     ;
 
 objectList[Object s,Object p]
-    : object ( COMMA object )* -> SPO ({$s} {$p} object)+
+    : object[$s,$p] ( COMMA object[$s,$p] )* -> (SPO object)+
     ;
 
-object
-    : graphNode
+object[Object s,Object p]
+    : graphNode -> {$s} {$p} graphNode
     ;
 
 verb
@@ -276,36 +281,32 @@ verb
     | a=A -> IRI_REF[$a, "rdf:type"]
     ;
 
-triplesNode 
+triplesNode
     : collection
-    | c=blankNodePropertyList 
+    | blankNodePropertyList
     ;
 
-blankNodePropertyList returns [Object s]
+blankNodePropertyList
 @init{
-CommonTree blankNode = Node(BLANK_NODE_LABEL, "_:b"+blankNodeLabelCount++);
+   CommonTree blankNode = Node(BLANK_NODE_LABEL, "_:b"+blankNodeLabelCount++);
 }
-@after{
-$s = blankNode;
-}
-    : OPEN_SQUARE_BRACE propertyListNotEmpty[blankNode] CLOSE_SQUARE_BRACE -> PROPERTY_LIST propertyListNotEmpty
+    : OPEN_SQUARE_BRACE propertyListNotEmpty[blankNode] CLOSE_SQUARE_BRACE -> ^(BLANK_PROPERTY_LIST propertyListNotEmpty {blankNode})
     ;
 
 collection
-@init{
-CommonTree s = null;
-CommonTree t = null;
-CommonTree rdf_first = null;
-CommonTree rdf_rest = null;
-}
-    : OPEN_BRACE (graphNode 
-    {s = Node(BLANK_NODE_LABEL, "_:l"+blankNodeLabelCount++);
-     t = Node(BLANK_NODE_LABEL, "_:l"+blankNodeLabelCount++);
-     rdf_first = Node(IRI_REF, "rdf:first");
-     rdf_rest = Node(IRI_REF, "rdf:rest");
-     })+ CLOSE_BRACE -> GRAPH_NODE ({s} {rdf_first} graphNode {s} {rdf_rest} {t})+ GRAPH_NODE
+    : OPEN_BRACE collectionElement+ CLOSE_BRACE -> GRAPH_NODE collectionElement+ GRAPH_NODE
     ;
 
+collectionElement
+@init{
+   CommonTree s = Node(BLANK_NODE_LABEL, "_:l"+blankNodeLabelCount++);;
+   CommonTree t = Node(BLANK_NODE_LABEL, "_:l"+blankNodeLabelCount++);;
+   CommonTree rdf_first = Node(IRI_REF, "rdf:first");
+   CommonTree rdf_rest = Node(IRI_REF, "rdf:rest");
+}
+   : graphNode -> {s} {rdf_first} graphNode {s} {rdf_rest} {t}
+   ;
+   
 graphNode
     : varOrTerm
     | triplesNode
