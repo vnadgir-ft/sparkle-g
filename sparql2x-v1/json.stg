@@ -33,6 +33,7 @@
  * 
  * Jürgen Pfundt, 20.12.2007 First draft of JSON template
  * Jürgen Pfundt, 29.12.2007 Some changes related to blank nodes and collections
+ * Jürgen Pfundt, 31.12.2007 Some changes related to blank nodes
  */
 
 group json;
@@ -40,8 +41,7 @@ group json;
 query(prologue, queryType) ::= <<
 {
    "Query" : {
-      $prologue$
-      $queryType$
+      $prologue$$queryType$
    }
 }
 >>
@@ -65,11 +65,12 @@ prefixDecl(pname, iriref) ::= <<
 "$pname$" : "$iriref$"
 >>
 
-queryType(query)  ::= <<
+queryType(query) ::= <<
 $query$
 >>
 
-selectQuery(variables, datasetClause, whereClause, solutionModifier)  ::= <<
+
+selectQuery(variables, datasetClause, whereClause, solutionModifier) ::= <<
 ,
 "Select" : {
    $if(variables)$
@@ -92,7 +93,8 @@ selectDistinctQuery(variables, datasetClause, whereClause, solutionModifier)  ::
    $if(datasetClause)$
    $datasetClause; separator=",\n"$,
    $endif$
-   $whereClause$$solutionModifier$}
+   $whereClause$$solutionModifier$
+}
 >>
 
 selectReducedQuery(variables, datasetClause, whereClause, solutionModifier)  ::= <<
@@ -110,20 +112,25 @@ selectReducedQuery(variables, datasetClause, whereClause, solutionModifier)  ::=
 >>
 
 constructQuery(constructTemplate, datasetClause, whereClause, solutionModifier) ::= <<
+,
 "Construct" : {
-   $constructTemplate$$datasetClause; separator=",\n"$$whereClause$$solutionModifier$
+   $constructTemplate$
+   $datasetClause; separator=",\n"$$whereClause$$solutionModifier$
 }
 >>
 
 describeQuery(varOrIRIrefs, datasetClause, whereClause, solutionModifier) ::= <<
+,
 "Describe" : {
-   $varOrIRIrefs$$datasetClause; separator=",\n"$$whereClause$$solutionModifier$
+   $varOrIRIrefs$$datasetClause; separator=",\n"$
+   $whereClause$$solutionModifier$
 }
 >>
 
 askQuery(datasetClause, whereClause) ::= <<
+,
 "Ask" : {
-   $datasetClause; separator=",\n"$$whereClause$)
+   $datasetClause; separator=",\n"$$whereClause$
 }
 >>
 
@@ -207,17 +214,19 @@ $type$
 >>
 
 triplesBlock(triplesSameSubject) ::= <<
-"BGP" : [ 
+"BGP" : [
    $triplesSameSubject; separator=",\n"$
-]>>
+]
+>>
 
 graphPatternNotTriples(graph) ::= <<
 $graph$
 >>
 
-optionalGraphPattern(optionalGraphPattern) ::= <<
+optionalGraphPattern(groupGraphPattern) ::= <<
+,
 "Optional" : { 
-   $optionalGraphPattern$
+   $groupGraphPattern$
 }
 >>
 
@@ -257,7 +266,9 @@ argList(expression) ::= <<
 >>
 
 constructTemplate(constructTriples) ::= <<
-$constructTriples$
+"BGP" : [
+   $constructTriples$
+],
 >>
 
 constructTriples(triples) ::= <<
@@ -288,9 +299,8 @@ triplesNode(node) ::= <<
 $node$
 >>
 
-blankNodePropertyList(propertyListNotEmpty, s) ::= <<
-$propertyListNotEmpty$,
-$s$
+blankNodePropertyList(propertyListNotEmpty, subject) ::= <<
+$propertyListNotEmpty$, $subject$
 >>
 
 collection(collectionElement) ::= <<
