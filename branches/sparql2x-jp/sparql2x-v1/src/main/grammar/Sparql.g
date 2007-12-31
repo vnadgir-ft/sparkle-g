@@ -60,14 +60,13 @@
  *                           Rewrite rules for collections and blank not yet finished
  * Jürgen Pfundt, 29.12.2007 Some enhancements mainly related to blank nodes and collections.
  *                           Collections and blank nodes still not finished.
+ * Jürgen Pfundt, 31.12.2007 Some enhancements for BlankNodes and JSON output
  */
 
 grammar Sparql;
 
 options {
     output=AST;
-/*    k=1;
-    backtrack=true;*/
 }
 
 tokens{
@@ -259,16 +258,16 @@ constructTriples
     ;
 
 triplesSameSubject
-    : s=varOrTerm propertyListNotEmpty[$s.tree] -> ^(SAME_SUBJECT propertyListNotEmpty)
-    | t=triplesNode propertyListNotEmpty[$t.tree]? -> ^(SAME_SUBJECT propertyListNotEmpty?)
+    : s=varOrTerm propertyListNotEmpty[s.tree] -> ^(SAME_SUBJECT propertyListNotEmpty)
+    | t=triplesNode propertyListNotEmpty[t.tree]? -> ^(SAME_SUBJECT propertyListNotEmpty?)
     ;
 
 propertyListNotEmpty[Object s]
-    : v1=verb objectList[$s,$v1.tree] ( SEMICOLON (v2=verb objectList[$s,$v2.tree])?)* -> ^(PROPERTY_LIST objectList+)
+    : v1=verb objectList[s,v1.tree] ( SEMICOLON (v2=verb objectList[s,v2.tree])?)* -> ^(PROPERTY_LIST objectList+)
     ;
 
 objectList[Object s,Object p]
-    : object[$s,$p] ( COMMA object[$s,$p] )* -> (SPO object)+
+    : object[$s,$p] (COMMA object[$s,$p])* -> ^(SPO object+)
     ;
 
 object[Object s,Object p]
@@ -299,8 +298,8 @@ collection
 
 collectionElement
 @init{
-   CommonTree s = Node(BLANK_NODE_LABEL, "_:l"+blankNodeLabelCount++);;
-   CommonTree t = Node(BLANK_NODE_LABEL, "_:l"+blankNodeLabelCount++);;
+   CommonTree s = Node(BLANK_NODE_LABEL, "_:l"+blankNodeLabelCount++);
+   CommonTree t = Node(BLANK_NODE_LABEL, "_:l"+blankNodeLabelCount++);
    CommonTree rdf_first = Node(IRI_REF, "rdf:first");
    CommonTree rdf_rest = Node(IRI_REF, "rdf:rest");
 }
@@ -467,7 +466,7 @@ prefixedName
 
 blankNode
     : BLANK_NODE_LABEL
-    | OPEN_SQUARE_BRACE CLOSE_SQUARE_BRACE
+    | brace=OPEN_SQUARE_BRACE CLOSE_SQUARE_BRACE -> BLANK_NODE_LABEL[$brace, "_:a"+blankNodeLabelCount++]
     ;
 
 // $>
