@@ -38,6 +38,7 @@
  * Jürgen Pfundt, 19.12.2007 Added template output with JSON target in mind
  * Jürgen Pfundt, 29.12.2007 Some enhancements mainly related to blank nodes and collections.
  *                           Collections and blank nodes still not finished.
+ * Jürgen Pfundt, 31.12.2007 Some enhancements for BlankNodes and JSON output
  */
 
 tree grammar SparqlT;
@@ -47,8 +48,6 @@ options {
     tokenVocab=Sparql;
     ASTLabelType=CommonTree;
     output=template;
-/*    k=1;
-    backtrack=true; */
 }
 
 @header{
@@ -188,7 +187,7 @@ graphPatternNotTriples
     ;
 
 optionalGraphPattern
-    : ^(OPTIONAL groupGraphPattern) -> optionalGraphPattern(optionalGraphPattern={$groupGraphPattern.st})
+    : ^(OPTIONAL groupGraphPattern) -> optionalGraphPattern(groupGraphPattern={$groupGraphPattern.st})
     ;
 
 graphGraphPattern
@@ -238,7 +237,7 @@ propertyListNotEmpty
     ;
 
 objectList
-    : SPO (o+=object)+ -> objectList(sentence={$o})
+    : ^(SPO (o+=object)+) -> objectList(sentence={$o})
 ;
 
 object
@@ -256,7 +255,7 @@ triplesNode
     ;
 
 blankNodePropertyList
-    : ^(BLANK_PROPERTY_LIST propertyListNotEmpty BLANK_NODE_LABEL) -> blankNodePropertyList(propertyListNotEmpty={$propertyListNotEmpty.st},s={$BLANK_NODE_LABEL.text})
+    : ^(BLANK_PROPERTY_LIST propertyListNotEmpty BLANK_NODE_LABEL) -> blankNodePropertyList(propertyListNotEmpty={$propertyListNotEmpty.st},subject={$BLANK_NODE_LABEL.text})
     ;
 
 collection
@@ -465,7 +464,6 @@ prefixedName
 
 blankNode
     : BLANK_NODE_LABEL -> blankNode(value={$BLANK_NODE_LABEL.text})
-    | OPEN_SQUARE_BRACE CLOSE_SQUARE_BRACE -> blankNode(value={"[]"})
     ;
 
 // $>
