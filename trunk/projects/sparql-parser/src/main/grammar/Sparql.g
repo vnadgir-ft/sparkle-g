@@ -48,6 +48,9 @@
  * Simone Tripodi,21.11.2007 Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation
  * Jürgen Pfundt, 25.11.2007 The A token is case insensitive now as requested by the w3.org rdf-sparql-query
  *                           document
+ * Jürgen Pfundt, 18.01.2008 Made EXPONENT a fragment.
+ *                           Added missing backslash to fragment ECHAR as defined by the w3.org rdf-sparql-query
+ *                           document.
  *
  */
 
@@ -582,6 +585,7 @@ DOUBLE_NEGATIVE
     : MINUS DOUBLE
     ;
 
+fragment
 EXPONENT
     : ('e'|'E') (PLUS|MINUS)? DIGIT+
     ;
@@ -604,7 +608,7 @@ STRING_LITERAL_LONG2
 
 fragment
 ECHAR
-    : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '"' | '\'')
+    : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'')
     ;
 
 fragment
@@ -665,7 +669,7 @@ COMMENT
 
 fragment
 EOL
-    : '\n'| '\r'
+    : '\n' | '\r'
     ;
 
 REFERENCE
