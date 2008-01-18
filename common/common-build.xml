@@ -105,6 +105,14 @@
             </classpath>
             <arg value="${test.grammar.dir}/Sparql.testsuite"/>
         </java>
+        <java classname="${test.classname}" fork="true" maxmemory="512M">
+            <classpath>
+                <fileset dir="${ivy.lib.dir}/runtime"/>
+                <fileset dir="${ivy.lib.dir}/test"/>
+                <pathelement location="${target.classes.dir}"/>
+            </classpath>
+            <arg value="${test.grammar.dir}/dawg.testsuite"/>
+        </java>
     </target>
 
     <target name="doc" description="generate documentation" depends="compile">
