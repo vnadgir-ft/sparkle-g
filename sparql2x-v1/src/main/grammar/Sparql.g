@@ -61,6 +61,9 @@
  * Jürgen Pfundt, 29.12.2007 Some enhancements mainly related to blank nodes and collections.
  *                           Collections and blank nodes still not finished.
  * Jürgen Pfundt, 31.12.2007 Some enhancements for BlankNodes and JSON output
+ * Jürgen Pfundt, 18.01.2008 Made EXPONENT a fragment.
+ *                           Added missing backslash to fragment ECHAR as defined by the w3.org rdf-sparql-query
+ *                           document.
  */
 
 grammar Sparql;
@@ -684,6 +687,7 @@ DOUBLE_NEGATIVE
     : MINUS DOUBLE
     ;
 
+fragment
 EXPONENT
     : ('e'|'E') (PLUS|MINUS)? DIGIT+
     ;
@@ -706,7 +710,7 @@ STRING_LITERAL_LONG2
 
 fragment
 ECHAR
-    : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '"' | '\'')
+    : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'')
     ;
 
 fragment
