@@ -1,4 +1,5 @@
-<!--
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
     Copyright 2007 the original author or authors.
 
     All rights reserved.
@@ -27,47 +28,27 @@
     NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    @author Simone Tripodi   (simone.tripodi)
-    @author Michele Mostarda (michele.mostarda)
-    @author Juergen Pfundt   (Juergen.Pfundt)
+    @author Simone Tripodi (simone.tripodi)
     @version $Id$
 -->
-<project name="sparkle2x" basedir="." default="test"
-    xmlns:antlr3="antlib:org.apache.tools.ant.antlr"
-    xmlns:svn="antlib:org.tigris.subversion.svnant"
-    xmlns:ivy="antlib:fr.jayasoft.ivy.ant">
+<ivy-module version="1.0">
 
-    <property file="conf/build.properties"/>
+    <info organisation="sparkle-g Team" module="sparkle-g" revision="1.1" status="integration">
+        <license name="ANTLR 3 License" url="http://www.antlr.org/license.html"/>
+        <ivyauthor name="Simone Tripodi" url="http://code.google.com/u/simone.tripodi/"/>
+    </info>
 
-    <import file="${common.dir}/common-build.xml"/>
+    <configurations>
+        <conf name="default" />
+        <conf name="compile-time" extends="default" description="for source compiling" />
+        <conf name="runtime" extends="default" description="for execution only" />
+        <conf name="test" extends="default" description="for test only" />
+    </configurations>
 
-    <target name="generate" 
-            description="Generates the parser only.">
-        <antlr.tool
-            grammar.dir="${projects.dir}/sparql-parser/src/main/grammar" 
-            grammar.name="Sparql.g"/>
-    </target>
+    <dependencies>
+        <dependency org="antlr.org" name="antlr3" rev="3.0.1" conf="compile-time->default"/>
+        <dependency org="antlr.org" name="gunit" rev="1.0" conf="test->default" />
+        <dependency org="antlr.org" name="antlr3-runtime" rev="3.0.1" conf="runtime->default"/>
+    </dependencies>
 
-    <target name="generate-debug" 
-            description="Generates the parser only with debug options.">
-        <antlr.tool
-            grammar.name="Sparql.g"
-            debug="true"/>
-    </target>
-
-    <target name="compile">
-        <antlr.tool
-            grammar.dir="${projects.dir}/sparql-parser/src/main/grammar"
-            grammar.name="Sparql.g"/>
-        <antcall target="common-build.compile"/>
-    </target>
-
-    <target name="compile-debug">
-        <antlr.tool
-            grammar.dir="${projects.dir}/sparql-parser/src/main/grammar"
-            grammar.name="Sparql.g" 
-            debug="true"/>
-        <antcall target="common-build.compile"/>
-    </target>
-
-</project>
+</ivy-module>
