@@ -42,11 +42,12 @@
     <import file="${common.dir}/common-build.xml"/>
 
     <target name="compile">
+        <mkdir dir="${src.java.dir}"/>
         <antlr.tool grammar.name="Sparql.g"/>
         <antcall target="common-build.compile"/>
     </target>
 
-    <target name="release" depends="clean, test">
+    <target name="release" depends="test">
         <svn:svn javahl="false">
             <status path="." revisionProperty="svn.revision" />
         </svn:svn>
@@ -68,6 +69,7 @@
         <copy todir="${tmp.dir}">
             <fileset file="${src.grammar.dir}/Sparql.g"/>
             <fileset file="${test.grammar.dir}/Sparql.testsuite"/>
+            <fileset file="${test.grammar.dir}/dawg.testsuite"/>
             <fileset dir="${src.htmldoc.dir}"/>
         </copy>
         <zip destfile="${tmp.dir}.zip" basedir="${tmp.dir}"/>
