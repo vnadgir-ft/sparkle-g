@@ -33,7 +33,7 @@
 -->
 <ivy-module version="1.0">
 
-    <info organisation="sparkle-g Team" module="sparkle-g" revision="1.0.1" status="development">
+    <info organisation="sparkle-g Team" module="sparkle-g" revision="1.1" status="integration">
         <license name="ANTLR 3 License" url="http://www.antlr.org/license.html"/>
         <ivyauthor name="Simone Tripodi" url="http://code.google.com/u/simone.tripodi/"/>
     </info>
