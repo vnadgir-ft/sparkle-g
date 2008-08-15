@@ -88,7 +88,7 @@
         <dependencySet>
             <outputDirectory>/lib</outputDirectory>
             <unpack>false</unpack>
-            <scope>compile</scope>
+            <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
 
