@@ -1,0 +1,9 @@
+PREFIX cd: <http://example.org/cd/>
+SELECT ?titolo ?autore ?anno
+FROM <http://cd.com/listacd.ttl>
+WHERE {
+    ?titolo cd:autore ?autore.
+    OPTIONAL {
+        ?titolo cd:anno ?anno
+    }
+}

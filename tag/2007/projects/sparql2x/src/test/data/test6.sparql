@@ -1,0 +1,11 @@
+PREFIX cd: <http://example.org/cd/>
+SELECT ?titolo ?autore ?anno
+FROM  <http://cd.com/listacd.ttl>
+WHERE {
+    { ?titolo cd:autore ?autore }
+        UNION
+    { ?titolo cd:anno ?anno }
+}
+ORDER BY DESC(?autore)
+LIMIT 10
+OFFSET 10
