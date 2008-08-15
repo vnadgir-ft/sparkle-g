@@ -1,60 +1,65 @@
 /*
- * Copyright 2007 the original author or authors.
+ *       Copyright (c) 2008 All rights reserved
+ *               Asemantics S.r.l
  *
- * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following
- * conditions are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
- * Redistributions of source code must retain the above copyright notice, this list of conditions and the following
- * disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
  *
- * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
- * disclaimer in the documentation and/or other materials provided with the distribution.
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by
+ *        Asemantics S.r.l."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
  *
- * Neither the name of the author or authors nor the names of its contributors may be used to endorse or promote
- * products derived from this software without specific prior written permission.
+ * 4. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Asemantics S.r.l.
+ *    the Semantic Web company, Rome, London, Leiden and its contributors.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 5. Neither the name of the company nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
- * @author Simone Tripodi   (simone.tripodi)
- * @author Michele Mostarda (michele.mostarda)
- * @author Juergen Pfundt   (Juergen.Pfundt)
- * 
- * Jürgen Pfundt, 15.11.2007 Added STRING_LITERAL_LONG1 and STRING_LITERAL_LONG2
- * Jürgen Pfundt, 15.11.2007 Corrected IRI_REF to reflect the www3.org EBNF grammar definition
- * Jürgen Pfundt, 15.11.2007 Extended lexical rule PN_CHARS to reflect the www3.org EBNF grammar definition 
- * Jürgen Pfundt, 15.11.2007 Added fragment to lexical rules ECHAR, PN_CHARS_U,
- *                           VARNAME, PN_PREFIX, PN_LOCAL as they are used only
- *                           by other lexical rules.
- * Jürgen Pfundt, 15.11.2007 Added lexical rule ANY as fallback, in case no lexical rule matches
- * Jürgen Pfundt, 17.11.2007 Recognition of keywords (including "true" and "false") is case insensitive now
- * Jürgen Pfundt, 17.11.2007 Implemented lexical rule for comments
- * Jürgen Pfundt, 17.11.2007 Solved problem with graphterm and blankNode which implicitely
- *                           referenced WS via lexical rules NIL and ANON. As WS sends its content
- *                           to channel hidden this resulted in problems with WS before and after
- *                           braces.
- * Jürgen Pfundt, 17.11.2007 Replaced parser literals by lexer tokens as preparation for AST generation
- * Simone Tripodi,21.11.2007 Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation
- * Jürgen Pfundt, 25.11.2007 The A token is case insensitive now as requested by the w3.org rdf-sparql-query
- *                           document
- * Jürgen Pfundt, 18.01.2008 Made EXPONENT a fragment.
- *                           Added missing backslash to fragment ECHAR as defined by the w3.org rdf-sparql-query
- *                           document.
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
+/**
+ * @author Simone Tripodi   (simone.tripodi)
+ * @author Michele Mostarda (michele.mostarda)
+ * @author Juergen Pfundt   (Juergen.Pfundt)
+ * @version $Id$
+ */
 grammar Sparql;
+
+@header {
+    package com.asemantics.sparkleg;
+}
+
+@lexer::header {
+    package com.asemantics.sparkleg;
+}
 
 // $<Parser
 
