@@ -1,36 +1,55 @@
 /*
- * Copyright 2007 the original author or authors.
+ *       Copyright (c) 2008 All rights reserved
+ *               Asemantics S.r.l
  *
- * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following
- * conditions are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
- * Redistributions of source code must retain the above copyright notice, this list of conditions and the following
- * disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
  *
- * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
- * disclaimer in the documentation and/or other materials provided with the distribution.
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by
+ *        Asemantics S.r.l."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
  *
- * Neither the name of the author or authors nor the names of its contributors may be used to endorse or promote
- * products derived from this software without specific prior written permission.
+ * 4. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Asemantics S.r.l.
+ *    the Semantic Web company, Rome, London, Leiden and its contributors.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 5. Neither the name of the company nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/**
  * @author Simone Tripodi   (simone.tripodi)
  * @author Michele Mostarda (michele.mostarda)
  * @author Juergen Pfundt   (Juergen.Pfundt)
- * @version $Id: Sparql.testsuite 25 2007-12-03 17:05:59Z simone.tripodi $
+ * @version $Id$
  */
 gunit Sparql;
 /*
@@ -39,7 +58,7 @@ Document Editor
 Lee Feigenbaum – invited expert 
 Version: 
 $Revision: 1.6 1008/code> 
-Copyright © 2004 W3C® (MIT, ERCIM, Keio), All Rights Reserved. W3C liability, trademark, and document use rules apply.
+Copyright © 2004 W3C (MIT, ERCIM, Keio), All Rights Reserved. W3C liability, trademark, and document use rules apply.
 
 
 --------------------------------------------------------------------------------
@@ -3771,7 +3790,7 @@ data-r2/syntax-sparql3/syn-blabel-cross-filter.rq
 
 query:
 <<
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 # BNode label used across a FILTER.
 PREFIX : <http://xmlns.com/foaf/0.1/>
 
@@ -3794,7 +3813,7 @@ data-r2/syntax-sparql3/syn-blabel-cross-graph-bad.rq
 
 query:
 <<
-# $Id: syn-blabel-cross-graph-bad.rq,v 1.2 2007/04/18 23:11:57 eric Exp $
+# $Id$
 # BNode label used across a GRAPH.
 PREFIX : <http://xmlns.com/foaf/0.1/>
 
@@ -3817,7 +3836,7 @@ data-r2/syntax-sparql3/syn-blabel-cross-optional-bad.rq
 
 query:
 <<
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 # BNode label used across an OPTIONAL.
 # This isn't necessarily a *syntax* test, but references to bnode labels
 # may not span basic graph patterns.
@@ -3842,7 +3861,7 @@ data-r2/syntax-sparql3/syn-blabel-cross-union-bad.rq
 
 query:
 <<
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 # BNode label used across a UNION.
 # This isn't necessarily a *syntax* test, but references to bnode labels
 # may not span basic graph patterns.
@@ -4946,7 +4965,7 @@ data-r2/syntax-sparql4/syn-bad-GRAPH-breaks-BGP.rq
 query:
 <<
 # bad: re-used BNode label after GRAPH
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX : <http://example.org/>
 SELECT *
@@ -4973,7 +4992,7 @@ data-r2/syntax-sparql4/syn-bad-OPT-breaks-BGP.rq
 query:
 <<
 # bad: re-used BNode label after OPTIONAL
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX : <http://example.org/>
 SELECT *
@@ -5000,7 +5019,7 @@ data-r2/syntax-sparql4/syn-bad-UNION-breaks-BGP.rq
 query:
 <<
 # bad: re-used BNode label after UNION
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 # This isn't necessarily a *syntax* test, but references to bnode labels
 # may not span basic graph patterns.
 
@@ -9872,7 +9891,7 @@ Default Graph
 data-r2/expr-builtin/data-langMatches-de.ttl
 
 # data-langMatches-de.ttl
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix : <http://example.org/#> .
 
@@ -9890,7 +9909,7 @@ data-r2/expr-builtin/q-langMatches-de-de.rq
 query:
 <<
 # q-langMatches-de-de.rq
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX : <http://example.org/#>
 
@@ -10127,7 +10146,7 @@ Default Graph
 data-r2/expr-builtin/lang-case-sensitivity.ttl
 
 # Data: minimal test of plain literal language sensitivity
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix     : <http://example/> .
 
@@ -10144,7 +10163,7 @@ data-r2/expr-builtin/lang-case-sensitivity-eq.rq
 query:
 <<
 # Test: 'xyz'@en = 'xyz'@EN
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX     :    <http://example/>
 
@@ -10173,7 +10192,7 @@ Default Graph
 data-r2/expr-builtin/lang-case-sensitivity.ttl
 
 # Data: minimal test of plain literal language sensitivity
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix     : <http://example/> .
 
@@ -10190,7 +10209,7 @@ data-r2/expr-builtin/lang-case-sensitivity-ne.rq
 query:
 <<
 # Test: 'xyz'@en != 'xyz'@EN
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX     :    <http://example/>
 PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
@@ -10250,7 +10269,7 @@ data-r2/expr-builtin/sameTerm-eq.rq
 query:
 <<
 # Test: sameTerm and eq
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX     :    <http://example.org/things#>
 
@@ -10309,7 +10328,7 @@ data-r2/expr-builtin/sameTerm-not-eq.rq
 query:
 <<
 # Test: !sameTerm and eq
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX     :    <http://example.org/things#>
 
@@ -10368,7 +10387,7 @@ data-r2/expr-builtin/sameTerm.rq
 query:
 <<
 # Test: sameTerm
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX     :    <http://example.org/things#>
 
@@ -11949,7 +11968,7 @@ Approved by http://lists.w3.org/Archives/Public/public-rdf-dawg/2007JulSep/att-0
 Default Graph
 data-r2/i18n/kanji.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 # See DOCUMENT INFO below.
 
 # NAMESPACES
@@ -11960,7 +11979,7 @@ data-r2/i18n/kanji.ttl
 
 # DOCUMENT INFO
 <> rdfs:comment "test kanji IRIs (composed from QNames)" ;
-   owl:versionInfo "$Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $".
+   owl:versionInfo "$Id$".
 
 # DOCUMENT
 _:alice foaf:name "Alice" ;
@@ -11978,7 +11997,7 @@ data-r2/i18n/kanji-01.rq
 
 query:
 <<
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 # test kanji QNames
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX é£Ÿ: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/kanji.ttl#>
@@ -12001,7 +12020,7 @@ Approved by http://lists.w3.org/Archives/Public/public-rdf-dawg/2007JulSep/att-0
 Default Graph
 data-r2/i18n/kanji.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 # See DOCUMENT INFO below.
 
 # NAMESPACES
@@ -12012,7 +12031,7 @@ data-r2/i18n/kanji.ttl
 
 # DOCUMENT INFO
 <> rdfs:comment "test kanji IRIs (composed from QNames)" ;
-   owl:versionInfo "$Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $".
+   owl:versionInfo "$Id$".
 
 # DOCUMENT
 _:alice foaf:name "Alice" ;
@@ -12031,7 +12050,7 @@ data-r2/i18n/kanji-02.rq
 
 query:
 <<
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 # test wide spaces
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX é£Ÿ: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/kanji.ttl#>
@@ -12054,7 +12073,7 @@ Approved by http://lists.w3.org/Archives/Public/public-rdf-dawg/2007JulSep/att-0
 Default Graph
 data-r2/i18n/normalization-01.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 # See DOCUMENT INFO below.
 
 # NAMESPACES
@@ -12065,7 +12084,7 @@ data-r2/i18n/normalization-01.ttl
 
 # DOCUMENT INFO
 <> rdfs:comment "Normalized and non-normalized IRIs" ;
-   owl:versionInfo "$Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $".
+   owl:versionInfo "$Id$".
 
 # DOCUMENT
 [] foaf:name "Alice" ;
@@ -12113,7 +12132,7 @@ data-r2/i18n/normalization-02.ttl
 
 # Example 1 from
 # http://lists.w3.org/Archives/Public/public-rdf-dawg/2005JulSep/0096
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 @prefix : <http://example/vocab#>.
 
 :s1 :p <example://a/b/c/%7Bfoo%7D#xyz>.
@@ -12131,7 +12150,7 @@ query:
 <<
 # Example 1 from
 # http://lists.w3.org/Archives/Public/public-rdf-dawg/2005JulSep/0096
-# $Id: normalization-02.rq,v 1.1 2005/08/09 14:35:26 eric Exp $
+# $Id$
 PREFIX : <http://example/vocab#>
 PREFIX p1: <eXAMPLE://a/./b/../b/%63/%7bfoo%7d#>
 
@@ -12157,7 +12176,7 @@ data-r2/i18n/normalization-03.ttl
 
 # Example 1 from
 # http://lists.w3.org/Archives/Public/public-rdf-dawg/2005JulSep/0096
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 @prefix : <http://example/vocab#>.
 
 :s3 :p <http://example.com:80/#abc>.
@@ -12176,7 +12195,7 @@ query:
 <<
 # Example 2 from
 # http://lists.w3.org/Archives/Public/public-rdf-dawg/2005JulSep/0096
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 PREFIX : <http://example/vocab#>
 PREFIX p2: <http://example.com:80/#>
 
@@ -15711,7 +15730,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -15750,7 +15769,7 @@ data-r2/type-promotion/tP-double-double.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -15777,7 +15796,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -15816,7 +15835,7 @@ data-r2/type-promotion/tP-double-float.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -15843,7 +15862,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -15882,7 +15901,7 @@ data-r2/type-promotion/tP-double-decimal.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -15909,7 +15928,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -15948,7 +15967,7 @@ data-r2/type-promotion/tP-float-float.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -15975,7 +15994,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16014,7 +16033,7 @@ data-r2/type-promotion/tP-float-decimal.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16041,7 +16060,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16080,7 +16099,7 @@ data-r2/type-promotion/tP-decimal-decimal.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16107,7 +16126,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16146,7 +16165,7 @@ data-r2/type-promotion/tP-integer-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16173,7 +16192,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16212,7 +16231,7 @@ data-r2/type-promotion/tP-nonPositiveInteger-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16239,7 +16258,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16278,7 +16297,7 @@ data-r2/type-promotion/tP-negativeInteger-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16305,7 +16324,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16344,7 +16363,7 @@ data-r2/type-promotion/tP-long-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16371,7 +16390,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16410,7 +16429,7 @@ data-r2/type-promotion/tP-int-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16437,7 +16456,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16476,7 +16495,7 @@ data-r2/type-promotion/tP-short-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16503,7 +16522,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16542,7 +16561,7 @@ data-r2/type-promotion/tP-byte-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16569,7 +16588,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16608,7 +16627,7 @@ data-r2/type-promotion/tP-nonNegativeInteger-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16635,7 +16654,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16674,7 +16693,7 @@ data-r2/type-promotion/tP-unsignedLong-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16701,7 +16720,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16740,7 +16759,7 @@ data-r2/type-promotion/tP-unsignedInt-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16767,7 +16786,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16806,7 +16825,7 @@ data-r2/type-promotion/tP-unsignedShort-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16833,7 +16852,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16872,7 +16891,7 @@ data-r2/type-promotion/tP-unsignedByte-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16899,7 +16918,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16938,7 +16957,7 @@ data-r2/type-promotion/tP-positiveInteger-short.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -16965,7 +16984,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17004,7 +17023,7 @@ data-r2/type-promotion/tP-short-double.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17031,7 +17050,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17070,7 +17089,7 @@ data-r2/type-promotion/tP-short-float.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17097,7 +17116,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17136,7 +17155,7 @@ data-r2/type-promotion/tP-short-decimal.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17163,7 +17182,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17202,7 +17221,7 @@ data-r2/type-promotion/tP-short-short-fail.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17229,7 +17248,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17268,7 +17287,7 @@ data-r2/type-promotion/tP-byte-short-fail.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17295,7 +17314,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17334,7 +17353,7 @@ data-r2/type-promotion/tP-short-long-fail.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17361,7 +17380,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17400,7 +17419,7 @@ data-r2/type-promotion/tP-short-int-fail.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17427,7 +17446,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17466,7 +17485,7 @@ data-r2/type-promotion/tP-short-byte-fail.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17493,7 +17512,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17532,7 +17551,7 @@ data-r2/type-promotion/tP-double-float-fail.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17559,7 +17578,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17598,7 +17617,7 @@ data-r2/type-promotion/tP-double-decimal-fail.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -17625,7 +17644,7 @@ Positive test: product of type promotion within the xsd:decimal type tree.
 Default Graph
 data-r2/type-promotion/tP.ttl
 
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -17664,7 +17683,7 @@ data-r2/type-promotion/tP-float-decimal-fail.rq
 query:
 <<
 # Positive test: product of type promotion within the xsd:decimal type tree.
-# $Id: r2.html,v 1.11 2008/01/09 21:15:21 lfeigenb Exp $
+# $Id$
 
 PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

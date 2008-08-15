@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+        Copyright (c) 2008 All rights reserved
+                Asemantics S.r.l
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer. 
+
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
+     the documentation and/or other materials provided with the
+     distribution.
+
+  3. The end-user documentation included with the redistribution,
+     if any, must include the following acknowledgment:
+        "This product includes software developed by 
+         Asemantics S.r.l."
+     Alternately, this acknowledgment may appear in the software itself,
+     if and wherever such third-party acknowledgments normally appear.
+
+  4. All advertising materials mentioning features or use of this software
+     must display the following acknowledgement:
+     This product includes software developed by Asemantics S.r.l.
+     the Semantic Web company, Rome, London, Leiden and its contributors. 
+
+  5. Neither the name of the company nor the names of its contributors
+     may be used to endorse or promote products derived from this software
+     without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+  ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+  FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+  OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!--
+    author: Simone Tripodi (simone.tripodi)
+    version: $Id$
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+            http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.asemantics</groupId>
+    <artifactId>sparkle-g</artifactId>
+    <packaging>jar</packaging>
+    <version>1.1</version>
+    <name>sparkle-g</name>
+    <description>The SPARQL (pron: sparkle) query language Grammar for ANTLR3</description>
+    <url>http://code.google.com/p/sparkle-g/</url>
+
+    <organization>
+        <name>Asemantics S.r.l.</name>
+        <url>http://www.asemantics.com/</url>
+    </organization>
+
+    <licenses>
+        <license>
+        <name>Asemantics License</name>
+        <url>http://www.asemantics.com/LICENSE</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <developerConnection>scm:svn:https://sparkle-g.googlecode.com/svn/trunk/</developerConnection>
+        <connection>scm:svn:http://sparkle-g.googlecode.com/svn/trunk/</connection>
+        <url>http://code.google.com/p/sparkle-g/source/browse/</url>
+    </scm>
+
+    <issueManagement>
+        <system>Google-Code Issue Management</system>
+        <url>http://code.google.com/p/sparkle-g/issues/list</url>
+    </issueManagement>
+
+    <developers>
+        <developer>
+            <id>simone.tripodi</id>
+            <name>Simone Tripodi</name>
+            <email>stripodi@asemantics.com</email>
+            <organization>Asemantics S.r.l.</organization>
+            <organizationUrl>http://www.asemantics.com/</organizationUrl>
+            <roles>
+                <role>Mainteiner</role>
+                <role>Developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+
+        <developer>
+            <id>michele.mostarda</id>
+            <name>Michele Mostarda</name>
+            <email>michele@asemantics.com</email>
+            <organization>Asemantics S.r.l.</organization>
+            <organizationUrl>http://www.asemantics.com/</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+
+        <developer>
+            <id>Juergen.Pfundt</id>
+            <name>Juergen Pfundt</name>
+            <email>Juergen....@web.de</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <version>3.0.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr-runtime</artifactId>
+            <version>3.0.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>gunit</artifactId>
+            <version>1.0.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <reporting>
+        <plugins>
+            
+        </plugins>
+    </reporting>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>antlr3-maven-plugin</artifactId>
+                <version>1.0</version>
+                <configuration>
+                    <grammars>Sparql.g</grammars>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>antlr</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-doap-plugin</artifactId>
+                <configuration>
+                    <category>library</category>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptor>etc/assembly.xml</descriptor>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+    </build>
+
+</project>

@@ -1,7 +1,6 @@
 /*
- ******************************************************************************
- *   Copyright (c) 2008 All rights reserved
- *       Asemantics S.r.l
+ *       Copyright (c) 2008 All rights reserved
+ *               Asemantics S.r.l
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -18,7 +17,7 @@
  * 3. The end-user documentation included with the redistribution,
  *    if any, must include the following acknowledgment:
  *       "This product includes software developed by 
- *    Asemantics S.r.l."
+ *        Asemantics S.r.l."
  *    Alternately, this acknowledgment may appear in the software itself,
  *    if and wherever such third-party acknowledgments normally appear.
  *
@@ -44,7 +43,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- ******************************************************************************
  */
 
-$Id: LICENSE 19860 2008-04-02 15:44:11Z /C=IT/ST=Roma/O=Asemantics S.R.L./L=Roma/OU=Asemantics, partner/CN=Alberto Reggiori 2007-2009/emailAddress=alberto@asemantics.com $
+/**
+ * 
+ * @author Simone Tripodi (simone.tripodi)
+ * @version $Id$
+ */
+
+@import url("http://commons.apache.org/style/commons-maven.css");
