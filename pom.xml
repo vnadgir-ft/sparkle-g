@@ -83,7 +83,7 @@
 
     <issueManagement>
         <system>Google-Code Issue Management</system>
-        <url>http://code.google.com/p/sparkle-g/issues/list</url>
+        <url>http://code.google.com/p/sparkle-g/issues/</url>
     </issueManagement>
 
     <developers>
@@ -166,6 +166,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-changes-plugin</artifactId>
+                <configuration>
+                    <issueLinkTemplate>%URL%/detail?id=%ISSUE%</issueLinkTemplate>
+                </configuration>
                 <reportSets>
                     <reportSet>
                         <reports>
