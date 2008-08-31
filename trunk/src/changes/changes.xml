@@ -63,7 +63,7 @@
             <action dev="Juergen.Pfundt" type="add">
                 Added lexical rule "ANY" as fallback, in case no lexical rule matches
             </action>
-            <action dev="Juergen.Pfundt" type="add">
+            <action dev="Juergen.Pfundt" type="fix" issue="1">
                 Recognition of keywords (including "true" and "false") is case insensitive now
             </action>
             <action dev="Juergen.Pfundt" type="add">
@@ -75,21 +75,21 @@
                 to channel hidden this resulted in problems with WS before and after
                 braces
             </action>
-            <action dev="Juergen.Pfundt" type="add">
+            <action dev="Juergen.Pfundt" type="add" issue="2">
                 Added a few test cases to the test suite referenced in W3C's SPARQL's <a href="http://www.w3.org/TR/rdf-sparql-query/#grammar">specifications</a>.
                 Modified one test case to test "comments".
                 Test cases still have to be enhanced!
             </action>
-            <action dev="Juergen.Pfundt" type="add">
+            <action dev="Juergen.Pfundt" type="add" issue="3">
                 Replaced parser literals by lexer tokens as preparation for AST generation
             </action>
-            <action dev="simone.tripodi" type="add">
+            <action dev="simone.tripodi" type="add" issue="3">
                 Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation
             </action>
-            <action dev="Juergen.Pfundt" type="add">
+            <action dev="Juergen.Pfundt" type="add" issue="1">
                 The <i>A</i> token is case insensitive now as requested by the w3.org rdf-sparql-query document
             </action>
-            <action dev="Juergen.Pfundt" type="add">
+            <action dev="Juergen.Pfundt" type="add" issue="2">
                 Added DAWG Testcases
             </action>
         </release>
