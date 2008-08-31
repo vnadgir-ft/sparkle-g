@@ -61,6 +61,7 @@
     <version>1.1</version>
     <name>sparkle-g</name>
     <description>The SPARQL (pron: sparkle) query language Grammar for ANTLR3</description>
+    <inceptionYear>2007</inceptionYear>
     <url>http://code.google.com/p/sparkle-g/</url>
 
     <organization>
