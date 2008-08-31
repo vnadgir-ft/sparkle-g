@@ -102,6 +102,17 @@
         </developer>
 
         <developer>
+            <id>Juergen.Pfundt</id>
+            <name>Juergen Pfundt</name>
+            <email>Juergen dot Pfundt at web dot de</email>
+            <roles>
+                <role>Developer</role>
+                <role>ANTLR Expert</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+
+        <developer>
             <id>alexandre.porcelli</id>
             <name>Alexandre Porcelli</name>
             <email>alexandre dot porcelli at gmail com com</email>
@@ -119,17 +130,6 @@
             <organizationUrl>http://www.asemantics.com/</organizationUrl>
             <roles>
                 <role>Developer</role>
-            </roles>
-            <timezone>+1</timezone>
-        </developer>
-
-        <developer>
-            <id>Juergen.Pfundt</id>
-            <name>Juergen Pfundt</name>
-            <email>Juergen dot Pfundt at web dot de</email>
-            <roles>
-                <role>Developer</role>
-                <role>ANTLR Expert</role>
             </roles>
             <timezone>+1</timezone>
         </developer>
