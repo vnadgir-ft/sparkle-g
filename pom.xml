@@ -91,7 +91,7 @@
         <developer>
             <id>simone.tripodi</id>
             <name>Simone Tripodi</name>
-            <email>stripodi@asemantics.com</email>
+            <email>stripodi at asemantics dot com</email>
             <organization>Asemantics S.r.l.</organization>
             <organizationUrl>http://www.asemantics.com/</organizationUrl>
             <roles>
@@ -102,8 +102,9 @@
         </developer>
 
         <developer>
-            <id></id>
+            <id>alexandre.porcelli</id>
             <name>Alexandre Porcelli</name>
+            <email>alexandre dot porcelli at gmail com com</email>
             <roles>
                 <role>Developer</role>
                 <role>ANTLR Expert</role>
@@ -113,7 +114,7 @@
         <developer>
             <id>michele.mostarda</id>
             <name>Michele Mostarda</name>
-            <email>michele@asemantics.com</email>
+            <email>michele at asemantics dot com</email>
             <organization>Asemantics S.r.l.</organization>
             <organizationUrl>http://www.asemantics.com/</organizationUrl>
             <roles>
@@ -125,7 +126,7 @@
         <developer>
             <id>Juergen.Pfundt</id>
             <name>Juergen Pfundt</name>
-            <email>Juergen....@web.de</email>
+            <email>Juergen dot Pfundt at web dot de</email>
             <roles>
                 <role>Developer</role>
                 <role>ANTLR Expert</role>
