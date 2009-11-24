@@ -173,9 +173,6 @@
                         <goals>
                             <goal>antlr</goal>
                         </goals>
-                        <configuration>
-                            <sourceDirectory>src/main/antlr3</sourceDirectory>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
