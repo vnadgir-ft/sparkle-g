@@ -191,7 +191,7 @@
                         <configuration>
                             <classpathScope>test</classpathScope>
                             <executable>java</executable>
-                            <workingDirectory>${basedir}/targed/generated-test-sources/com/sparkleg</workingDirectory>
+                            <workingDirectory>${basedir}/target/generated-test-sources/com/sparkleg</workingDirectory>
                             <arguments>
                                 <argument>-classpath</argument>
                                 <classpath/>
