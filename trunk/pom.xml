@@ -264,6 +264,15 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
+
+            <resource>
+                <directory>.</directory>
+                <targetPath>META-INF</targetPath>
+                <includes>
+                    <include>LICENSE</include>
+                    <include>doap_sparkle-g.rdf</include>
+                </includes>
+            </resource>
         </resources>
     </build>
 
