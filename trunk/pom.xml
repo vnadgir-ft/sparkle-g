@@ -163,15 +163,15 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr3-maven-plugin</artifactId>
                 <version>3.1.3-1</version>
-                <configuration>
-                    <grammars>Sparql.g</grammars>
-                </configuration>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>antlr</goal>
                         </goals>
+                        <configuration>
+                            <sourceDirectory>src/main/antlr3</sourceDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -190,8 +190,8 @@
                         <configuration>
                             <classpathScope>test</classpathScope>
                             <executable>java</executable>
-                            <testSourceRoot>src\test\gunit</testSourceRoot>
-                            <workingDirectory>src\test\gunit</workingDirectory>
+                            <testSourceRoot>src/test/gunit</testSourceRoot>
+                            <workingDirectory>src/test/gunit</workingDirectory>
                             <arguments>
                                 <argument>-classpath</argument>
                                 <!-- automatically creates the classpath using all project dependencies,
@@ -204,6 +204,32 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.3</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/generated-sources/antlr3</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.4.2</version>
             </plugin>
 
             <plugin>
