@@ -52,6 +52,15 @@
         <url>http://code.google.com/p/sparkle-g/issues/</url>
     </issueManagement>
 
+    <repositories>
+        <repository>
+            <id>fluido-skin-repository</id>
+            <name>fluido-skin Repository for Maven</name>
+            <url>http://fluido-skin.googlecode.com/svn/repo</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+
     <developers>
         <developer>
             <id>simone.tripodi</id>
