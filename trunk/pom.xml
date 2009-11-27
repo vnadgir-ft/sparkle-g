@@ -104,6 +104,8 @@
             <id>alexandre.porcelli</id>
             <name>Alexandre Porcelli</name>
             <email>alexandre dot porcelli at gmail dot com</email>
+            <organization>Caravela Technologies</organization>
+            <organizationUrl>http://www.caravelatech.com/</organizationUrl>
             <roles>
                 <role>Developer</role>
                 <role>ANTLR Expert</role>
