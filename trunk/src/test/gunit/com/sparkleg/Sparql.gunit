@@ -26,8 +26,58 @@ gunit Sparql;
 }
 
 query:
-/* Testcase 1 */
+
 <<
 SELECT *
 WHERE { }
+>> OK
+
+<<
+SELECT * {}
+>> OK
+
+<<
+# No trailing dot
+PREFIX : <http://example.org/ns#> 
+SELECT *
+WHERE { ?x ?y ?z }
+>> OK
+
+<<
+# With trailing dot
+SELECT *
+WHERE { ?x ?y ?z . }
+>> OK
+
+<<
+# Two triples : no trailing dot
+SELECT *
+WHERE { ?x ?y ?z . ?a ?b ?c }
+>> OK
+
+<<
+# Two triples : with trailing dot
+SELECT *
+WHERE { ?x ?y ?z . ?a ?b ?c . }
+>> OK
+
+<<
+PREFIX : <http://example.org/ns#>
+SELECT * WHERE { [:p :q ] }
+>> OK
+
+<<
+PREFIX : <http://example.org/ns#>
+SELECT * WHERE { [] :p :q }
+>> OK
+
+<<
+PREFIX : <http://example.org/ns#>
+SELECT * WHERE { [ ?x ?y ] :p [ ?pa ?b ] }
+>> OK
+
+<<
+PREFIX : <http://example.org/ns#> 
+SELECT *
+WHERE { [ :p :q ; ] }
 >> OK
