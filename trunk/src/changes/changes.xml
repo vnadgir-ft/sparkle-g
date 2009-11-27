@@ -30,6 +30,9 @@
             <action dev="simone.tripodi" type="fix">
                 Switched to commercial friendly Apache 2.0 License
             </action>
+            <action dev="simone.tripodi" type="add">
+                Switched to Maven2 build
+            </action>
         </release>
 
         <release version="1.1" date="2008-01-21" description="Bugfix release">
@@ -52,7 +55,7 @@
                 braces
             </action>
             <action dev="Juergen.Pfundt" type="add" issue="2">
-                Added a few test cases to the test suite referenced in W3C's SPARQL's <a href="http://www.w3.org/TR/rdf-sparql-query/#grammar">specifications</a>.
+                Added a few test cases to the test suite referenced in W3C SPARQL specifications.
                 Modified one test case to test "comments".
                 Test cases still have to be enhanced!
             </action>
@@ -63,7 +66,7 @@
                 Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation
             </action>
             <action dev="Juergen.Pfundt" type="add" issue="1">
-                The <i>A</i> token is case insensitive now as requested by the w3.org rdf-sparql-query document
+                The A token is case insensitive now as requested by the w3.org rdf-sparql-query document
             </action>
             <action dev="Juergen.Pfundt" type="add" issue="2">
                 Added DAWG Testcases
