@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sparkle-g</groupId>
     <artifactId>sparkle-g</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
     <version>2.0-SNAPSHOT</version>
     <name>sparkle-g</name>
     <description>The SPARQL (pron: sparkle) query language Grammar for ANTLR3</description>
@@ -260,21 +260,6 @@
                 <version>1.8</version>
             </extension>
         </extensions>
-
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-
-            <resource>
-                <directory>.</directory>
-                <targetPath>META-INF</targetPath>
-                <includes>
-                    <include>LICENSE</include>
-                    <include>doap_sparkle-g.rdf</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
 
 </project>
