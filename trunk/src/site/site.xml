@@ -34,7 +34,8 @@
 
         <menu ref="reports"/>
 
-        <links>
+        <menu name="External Links">
+            <item name="Project Page" href="http://code.google.com/p/sparkle-g"/>
             <item name="ANTLR" href="http://www.antlr.org/"/>
         </links>
     </body>
