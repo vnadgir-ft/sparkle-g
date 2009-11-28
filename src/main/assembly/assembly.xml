@@ -23,17 +23,19 @@
     <id>dist</id>
     <formats>
         <format>tar.gz</format>
+        <format>zip</format>
     </formats>
 
     <fileSets>
         <fileSet>
             <includes>
-                <include>LICENSE*</include>
+                <include>LICENSE</include>
+                <include>doap_sparkle-g.rdf</include>
             </includes>
         </fileSet>
 
         <fileSet>
-            <directory>src/main/antlr</directory>
+            <directory>src/main/antlr3</directory>
             <outputDirectory></outputDirectory>
             <includes>
                 <include>*.g</include>
@@ -45,12 +47,5 @@
             <outputDirectory>/doc</outputDirectory>
         </fileSet>
     </fileSets>
-
-    <dependencySets>
-        <dependencySet>
-            <outputDirectory>/lib</outputDirectory>
-            <unpack>false</unpack>
-        </dependencySet>
-    </dependencySets>
 
 </assembly>
