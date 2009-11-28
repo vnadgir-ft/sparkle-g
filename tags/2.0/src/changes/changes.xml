@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright 2007-2009 The sparkle-g Team
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!--
+    author: Simone Tripodi (simone.tripodi)
+    version: $Id$
+-->
+<document>
+    <properties>
+        <author email="stripodi at asemantics dot com">Simone Tripodi</author>
+        <title>Introduction</title>
+    </properties>
+
+    <body>
+        <release version="2.0" date="TBD" description="upgrade release">
+            <action dev="simone.tripodi" type="fix">
+                Switched to commercial friendly Apache 2.0 License
+            </action>
+            <action dev="simone.tripodi" type="add">
+                Switched to Maven2 build
+            </action>
+        </release>
+
+        <release version="1.1" date="2008-01-21" description="Bugfix release">
+            <action dev="Juergen.Pfundt" type="fix">
+                Fixed antlr3 warnings emitted when compiling the Sparql.g file
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
+                Added lexical rule "ANY" as fallback, in case no lexical rule matches
+            </action>
+            <action dev="Juergen.Pfundt" type="fix" issue="1">
+                Recognition of keywords (including "true" and "false") is case insensitive now
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
+                Implemented lexical rule for comments
+            </action>
+            <action dev="Juergen.Pfundt" type="fix">
+                Solved problem with graphterm and blankNode which implicitely
+                referenced WS via lexical rules NIL and ANON. As WS sends its content
+                to channel hidden this resulted in problems with WS before and after
+                braces
+            </action>
+            <action dev="Juergen.Pfundt" type="add" issue="2">
+                Added a few test cases to the test suite referenced in W3C SPARQL specifications.
+                Modified one test case to test "comments".
+                Test cases still have to be enhanced!
+            </action>
+            <action dev="Juergen.Pfundt" type="add" issue="3">
+                Replaced parser literals by lexer tokens as preparation for AST generation
+            </action>
+            <action dev="simone.tripodi" type="add" issue="3">
+                Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation
+            </action>
+            <action dev="Juergen.Pfundt" type="add" issue="1">
+                The A token is case insensitive now as requested by the w3.org rdf-sparql-query document
+            </action>
+            <action dev="Juergen.Pfundt" type="add" issue="2">
+                Added DAWG Testcases
+            </action>
+        </release>
+
+        <release version="1.0" date="2007-10-30" description="First release">
+            <action dev="michele.mostarda, simone.tripodi" type="update">
+                First version of the cross platform SPARQL Grammar.
+            </action>
+        </release>
+    </body>
+
+</document>
