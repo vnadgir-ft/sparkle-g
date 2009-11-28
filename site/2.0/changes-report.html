@@ -1,0 +1,281 @@
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <title>sparkle-g - Introduction</title>
+    <link rel="stylesheet" href="./css/maven-theme.css" type="text/css" />
+    <link rel="stylesheet" href="./css/maven-base.css" type="text/css"/>
+    <link rel="stylesheet" href="./css/prettify.css" type="text/css"/>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+    <script type="text/javascript" src="./js/prettify.js"></script>
+    <script type="text/javascript" src="./js/niftycube.js"></script>
+    <script type="text/javascript">
+        window.onload=function() {
+            Nifty("div\#wrapper", "big");
+            Nifty("div#breadcrumbs", "small");
+            Nifty("div\#navcolumn", "small");
+            Nifty("div.source", "medium");
+            prettyPrint();
+        }
+    </script>
+          <meta name="author" content="Simone Tripodi" />
+          </head>
+  <body>
+    <div id="wrapper">
+        <div id="banner">
+                        <div id="bannerLeft">
+    
+            sparkle-g
+    
+            </div>
+                            <div class="clear">
+            <hr/>
+          </div>
+        </div>
+        <div id="breadcrumbs">
+              
+  
+
+  
+    
+    
+  
+    
+            <div class="xleft">
+        <span id="publishDate">Last Published: 2009-11-28</span>
+                  &nbsp;| <span id="projectVersion">Version: 2.0</span>
+                      </div>
+                <div class="xright">      
+  
+
+  
+    
+    
+  
+    
+  </div>
+          <div class="clear">
+            <hr/>
+          </div>
+        </div>
+        <div id="leftColumn">
+          <div id="navcolumn">
+               
+  
+
+  
+    
+    
+  
+    
+                       <h5>sparkle-g</h5>
+            <ul>
+              
+    <li class="none">
+                    <a href="index.html">Home</a>
+          </li>
+          </ul>
+              <h5>Project Documentation</h5>
+            <ul>
+              
+                
+                    
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+              
+        <li class="collapsed">
+                    <a href="project-info.html">Project Information</a>
+                </li>
+              
+                
+                          
+                  
+              
+            <li class="expanded">
+                    <a href="project-reports.html">Project Reports</a>
+                  <ul>
+                  
+    <li class="none">
+              <strong>Changes Report</strong>
+        </li>
+                  
+    <li class="none">
+                    <a href="surefire-report.html">Surefire Report</a>
+          </li>
+              </ul>
+        </li>
+          </ul>
+              <h5>External Links</h5>
+            <ul>
+              
+    <li class="none">
+                    <a href="">Project Page</a>
+          </li>
+              
+    <li class="none">
+                    <a href="http://www.antlr.org/" class="externalLink">ANTLR</a>
+          </li>
+          </ul>
+                                               <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img class="poweredBy"
+                 alt="Built by Maven"
+                 src="./images/logos/maven-feather.png"
+                 width="90"
+                 height="30"
+                 border="1" />
+          </a>
+                           
+  
+
+  
+    
+    
+  
+    
+            </div>
+        </div>
+        <div id="bodyColumn">
+          <div id="contentBox">
+            <div class="section"><h2><a name="Introduction"></a>Introduction</h2>
+<div class="section"><h3><a name="Release_History"></a>Release History</h3>
+<table class="bodyTable"><tr class="a"><th>Version</th>
+<th>Date</th>
+<th>Description</th>
+</tr>
+<tr class="b"><td><a href="#a2.0">2.0</a></td>
+<td>TBD</td>
+<td>upgrade release</td>
+</tr>
+<tr class="a"><td><a href="#a1.1">1.1</a></td>
+<td>2008-01-21</td>
+<td>Bugfix release</td>
+</tr>
+<tr class="b"><td><a href="#a1.0">1.0</a></td>
+<td>2007-10-30</td>
+<td>First release</td>
+</tr>
+</table>
+</div>
+<div class="section"><h3><a name="a2.0"></a>Release 2.0 - TBD</h3>
+<table class="bodyTable"><tr class="a"><th>Type</th>
+<th>Changes</th>
+<th>By</th>
+</tr>
+<tr class="b"><td><img src="images/fix.gif" alt="fix" /></td>
+<td>Switched to commercial friendly Apache 2.0 License</td>
+<td><a href="team-list.html#simone.tripodi">simone.tripodi</a></td>
+</tr>
+<tr class="a"><td><img src="images/add.gif" alt="add" /></td>
+<td>Switched to Maven2 build</td>
+<td><a href="team-list.html#simone.tripodi">simone.tripodi</a></td>
+</tr>
+</table>
+</div>
+<div class="section"><h3><a name="a1.1"></a>Release 1.1 - 2008-01-21</h3>
+<table class="bodyTable"><tr class="b"><th>Type</th>
+<th>Changes</th>
+<th>By</th>
+</tr>
+<tr class="a"><td><img src="images/fix.gif" alt="fix" /></td>
+<td>Fixed antlr3 warnings emitted when compiling the Sparql.g file</td>
+<td><a href="team-list.html#Juergen.Pfundt">Juergen.Pfundt</a></td>
+</tr>
+<tr class="b"><td><img src="images/add.gif" alt="add" /></td>
+<td>Added lexical rule "ANY" as fallback, in case no lexical rule matches</td>
+<td><a href="team-list.html#Juergen.Pfundt">Juergen.Pfundt</a></td>
+</tr>
+<tr class="a"><td><img src="images/fix.gif" alt="fix" /></td>
+<td>Recognition of keywords (including "true" and "false") is case insensitive now Fixes <a href="http://code.google.com/p/sparkle-g/issues/detail?id=1" class="externalLink">1</a>.</td>
+<td><a href="team-list.html#Juergen.Pfundt">Juergen.Pfundt</a></td>
+</tr>
+<tr class="b"><td><img src="images/add.gif" alt="add" /></td>
+<td>Implemented lexical rule for comments</td>
+<td><a href="team-list.html#Juergen.Pfundt">Juergen.Pfundt</a></td>
+</tr>
+<tr class="a"><td><img src="images/fix.gif" alt="fix" /></td>
+<td>Solved problem with graphterm and blankNode which implicitely
+                referenced WS via lexical rules NIL and ANON. As WS sends its content
+                to channel hidden this resulted in problems with WS before and after
+                braces</td>
+<td><a href="team-list.html#Juergen.Pfundt">Juergen.Pfundt</a></td>
+</tr>
+<tr class="b"><td><img src="images/add.gif" alt="add" /></td>
+<td>Added a few test cases to the test suite referenced in W3C SPARQL specifications.
+                Modified one test case to test "comments".
+                Test cases still have to be enhanced! Fixes <a href="http://code.google.com/p/sparkle-g/issues/detail?id=2" class="externalLink">2</a>.</td>
+<td><a href="team-list.html#Juergen.Pfundt">Juergen.Pfundt</a></td>
+</tr>
+<tr class="a"><td><img src="images/add.gif" alt="add" /></td>
+<td>Replaced parser literals by lexer tokens as preparation for AST generation Fixes <a href="http://code.google.com/p/sparkle-g/issues/detail?id=3" class="externalLink">3</a>.</td>
+<td><a href="team-list.html#Juergen.Pfundt">Juergen.Pfundt</a></td>
+</tr>
+<tr class="b"><td><img src="images/add.gif" alt="add" /></td>
+<td>Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation Fixes <a href="http://code.google.com/p/sparkle-g/issues/detail?id=3" class="externalLink">3</a>.</td>
+<td><a href="team-list.html#simone.tripodi">simone.tripodi</a></td>
+</tr>
+<tr class="a"><td><img src="images/add.gif" alt="add" /></td>
+<td>The A token is case insensitive now as requested by the w3.org rdf-sparql-query document Fixes <a href="http://code.google.com/p/sparkle-g/issues/detail?id=1" class="externalLink">1</a>.</td>
+<td><a href="team-list.html#Juergen.Pfundt">Juergen.Pfundt</a></td>
+</tr>
+<tr class="b"><td><img src="images/add.gif" alt="add" /></td>
+<td>Added DAWG Testcases Fixes <a href="http://code.google.com/p/sparkle-g/issues/detail?id=2" class="externalLink">2</a>.</td>
+<td><a href="team-list.html#Juergen.Pfundt">Juergen.Pfundt</a></td>
+</tr>
+</table>
+</div>
+<div class="section"><h3><a name="a1.0"></a>Release 1.0 - 2007-10-30</h3>
+<table class="bodyTable"><tr class="a"><th>Type</th>
+<th>Changes</th>
+<th>By</th>
+</tr>
+<tr class="b"><td><img src="images/update.gif" alt="update" /></td>
+<td>First version of the cross platform SPARQL Grammar.</td>
+<td><a href="team-list.html#michele.mostarda, simone.tripodi">michele.mostarda, simone.tripodi</a></td>
+</tr>
+</table>
+</div>
+</div>
+
+          </div>
+        </div>
+        <div class="clear">
+          <hr/>
+        </div>
+        <div id="footer">
+          <div class="xright">Copyright &#169;         
+   
+          2007-2009.
+    
+      All Rights Reserved.    
+  
+
+  
+    
+    
+  
+    
+  </div>
+          <div class="clear">
+            <hr/>
+          </div>
+        </div>
+    </div>
+  </body>
+</html>
