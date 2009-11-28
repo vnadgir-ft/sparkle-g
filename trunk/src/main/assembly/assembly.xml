@@ -20,7 +20,7 @@
     version: $Id$
 -->
 <assembly xml:xmlns="http://maven.apache.org/xsd/assembly-1.0.0.xsd">
-    <id>dist</id>
+
     <formats>
         <format>tar.gz</format>
         <format>zip</format>
@@ -36,9 +36,9 @@
 
         <fileSet>
             <directory>src/main/antlr3</directory>
-            <outputDirectory></outputDirectory>
+            <outputDirectory>src</outputDirectory>
             <includes>
-                <include>*.g</include>
+                <include>**/*.g</include>
             </includes>
         </fileSet>
 
