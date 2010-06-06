@@ -22,7 +22,7 @@
 gunit Sparql;
 
 @header {
-    package com.sparkleg;
+    package com.googlecode.sparkleg;
 }
 
 query:
