@@ -289,14 +289,14 @@
                         <configuration>
                             <classpathScope>test</classpathScope>
                             <executable>java</executable>
-                            <workingDirectory>${basedir}/target/generated-test-sources/com/sparkleg</workingDirectory>
+                            <workingDirectory>${basedir}/target/generated-test-sources/com/googlecode/sparkleg</workingDirectory>
                             <testSourceRoot>${basedir}/target/generated-test-sources</testSourceRoot>
                             <arguments>
                                 <argument>-classpath</argument>
                                 <classpath/>
                                 <argument>org.antlr.gunit.Interp</argument>
                                 <argument>-o</argument>
-                                <argument>${basedir}/src/test/gunit/com/sparkleg/Sparql.gunit</argument>
+                                <argument>${basedir}/src/test/gunit/com/googlecode/sparkleg/Sparql.gunit</argument>
                             </arguments>
                         </configuration>
                     </execution>
