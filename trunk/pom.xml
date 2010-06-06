@@ -25,14 +25,14 @@
             http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.sparkle-g</groupId>
+    <groupId>com.googlecode.sparkle-g</groupId>
     <artifactId>sparkle-g</artifactId>
     <packaging>jar</packaging>
     <version>2.1-SNAPSHOT</version>
     <name>sparkle-g</name>
     <description>The SPARQL (pron: sparkle) query language Grammar for ANTLR3</description>
     <inceptionYear>2007</inceptionYear>
-    <url>http://code.google.com/p/sparkle-g/</url>
+    <url>http://www.99soft.org/projects/sparkle-g/${project.version}</url>
 
     <licenses>
         <license>
@@ -60,31 +60,23 @@
             <url>svn:https://sparkle-g.googlecode.com/svn/repo</url>
             <layout>default</layout>
         </repository>
+
         <site>
-            <id>googlecode</id>
-            <url>svn:https://sparkle-g.googlecode.com/svn/site/${pom.version}</url>
+            <id>99soft.org</id>
+            <url>ftp://ftp.99soft.org/htdocs/projects/sparkle-g/${project.version}</url>
         </site>
     </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>fluido-skin-repository</id>
-            <name>fluido-skin Repository for Maven</name>
-            <url>http://fluido-skin.googlecode.com/svn/repo</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
 
     <developers>
         <developer>
             <id>simone.tripodi</id>
             <name>Simone Tripodi</name>
             <email>simone dot tripodi at gmail dot com</email>
-            <organization>Asemantics S.r.l.</organization>
-            <organizationUrl>http://www.asemantics.com/</organizationUrl>
+            <organization>Sourcesense S.r.l.</organization>
+            <organizationUrl>http://www.sourcesense.com/</organizationUrl>
             <roles>
-                <role>Maintainer</role>
-                <role>Developer</role>
+                <role>Owner</role>
+                <role>Committer</role>
             </roles>
             <timezone>+1</timezone>
         </developer>
@@ -94,7 +86,7 @@
             <name>Juergen Pfundt</name>
             <email>Juergen dot Pfundt at web dot de</email>
             <roles>
-                <role>Developer</role>
+                <role>Committer</role>
                 <role>ANTLR Expert</role>
             </roles>
             <timezone>+1</timezone>
@@ -107,7 +99,7 @@
             <organization>Caravela Technologies</organization>
             <organizationUrl>http://www.caravelatech.com/</organizationUrl>
             <roles>
-                <role>Developer</role>
+                <role>Committer</role>
                 <role>ANTLR Expert</role>
             </roles>
             <timezone>-3</timezone>
@@ -116,11 +108,11 @@
         <developer>
             <id>michele.mostarda</id>
             <name>Michele Mostarda</name>
-            <email>michele at asemantics dot com</email>
-            <organization>Asemantics S.r.l.</organization>
-            <organizationUrl>http://www.asemantics.com/</organizationUrl>
+            <email>michele dot mostarda at gmail dot com</email>
+            <organization>Fondazione Bruno Kessler</organization>
+            <organizationUrl>http://www.fbk.eu/</organizationUrl>
             <roles>
-                <role>Developer</role>
+                <role>Committer</role>
             </roles>
             <timezone>+1</timezone>
         </developer>
@@ -154,11 +146,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.5</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-changes-plugin</artifactId>
+                <version>2.3</version>
                 <configuration>
                     <issueLinkTemplate>%URL%/detail?id=%ISSUE%</issueLinkTemplate>
                 </configuration>
@@ -179,6 +173,74 @@
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.4.1</version>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.5</version>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.3</version>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.3</version>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.1</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.0-beta-1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-java</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[1.5,)</version>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[2.2.0,)</version>
+                                </requireMavenVersion>
+                                <requirePluginVersions>
+                                    <message>Best Practice is to always define plugin versions!</message>
+                                    <banLatest>true</banLatest>
+                                    <banRelease>true</banRelease>
+                                    <banSnapshots>true</banSnapshots>
+                                    <phases>clean,deploy,site</phases>
+                                </requirePluginVersions>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.0.2</version>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr3-maven-plugin</artifactId>
@@ -248,24 +310,75 @@
             </plugin>
 
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>2.0-beta-7</version>
                 <configuration>
-                    <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pdf-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>pdf</id>
+                        <phase>site</phase>
+                        <goals>
+                            <goal>pdf</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includeReports>false</includeReports>
+                    <indentSize>1</indentSize>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.0</version>
+                <configuration>
+                    <preparationGoals></preparationGoals>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
 
         <extensions>
             <extension>
-                <groupId>org.jvnet.wagon-svn</groupId>
-                <artifactId>wagon-svn</artifactId>
-                <version>1.8</version>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ftp</artifactId>
+                <version>1.0-beta-6</version>
             </extension>
         </extensions>
 
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+            </resource>
+
+            <resource>
+                <directory>src/main/antlr3</directory>
+                <targetPath>META-INF</targetPath>
             </resource>
 
             <resource>
