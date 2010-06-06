@@ -23,11 +23,11 @@
 grammar Sparql;
 
 @header {
-    package com.sparkleg;
+    package com.googlecode.sparkleg;
 }
 
 @lexer::header {
-    package com.sparkleg;
+    package com.googlecode.sparkleg;
 }
 
 // $<Parser
