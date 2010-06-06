@@ -26,7 +26,16 @@
     </properties>
 
     <body>
-        <release version="2.0" date="TBD" description="upgrade release">
+        <release version="3.0" date="TBD" description="upgrade release">
+            <action dev="simone.tripodi" type="add">
+                Improved Maven2 build
+            </action>
+            <action dev="simone.tripodi" type="add">
+                Switched to 99soft.org infra
+            </action>
+        </release>
+
+        <release version="2.0" date="2009-11-28" description="upgrade release">
             <action dev="simone.tripodi" type="fix">
                 Switched to commercial friendly Apache 2.0 License
             </action>
