@@ -53,28 +53,16 @@
     </issueManagement>
 
     <distributionManagement>
-        <repository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>googlecode</id>
-            <name>Google Code Repository</name>
-            <url>svn:https://sparkle-g.googlecode.com/svn/repo</url>
-            <layout>default</layout>
-        </repository>
-
         <site>
             <id>99soft.org</id>
             <url>ftp://ftp.99soft.org/htdocs/projects/sparkle-g/${project.version}</url>
         </site>
     </distributionManagement>
 
-    <repositories>
-        <repository>
-            <id>maven2-repository.dev.java.net</id>
-            <name>Java.net Repository for Maven</name>
-            <url>http://download.java.net/maven/2/</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
 
     <developers>
         <developer>
@@ -86,17 +74,6 @@
             <roles>
                 <role>Owner</role>
                 <role>Committer</role>
-            </roles>
-            <timezone>+1</timezone>
-        </developer>
-
-        <developer>
-            <id>Juergen.Pfundt</id>
-            <name>Juergen Pfundt</name>
-            <email>Juergen dot Pfundt at web dot de</email>
-            <roles>
-                <role>Committer</role>
-                <role>ANTLR Expert</role>
             </roles>
             <timezone>+1</timezone>
         </developer>
@@ -160,6 +137,12 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>2.1</version>
             </plugin>
@@ -199,10 +182,6 @@
             </plugin>
         </plugins>
     </reporting>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
     <build>
         <plugins>
@@ -375,7 +354,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>2.0-beta-7</version>
+                <version>2.1.1</version>
                 <configuration>
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
@@ -404,10 +383,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.0</version>
-                <configuration>
-                    <preparationGoals></preparationGoals>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                </configuration>
             </plugin>
 
             <plugin>
@@ -431,12 +406,6 @@
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ftp</artifactId>
                 <version>1.0-beta-6</version>
-            </extension>
-
-            <extension>
-                <groupId>org.jvnet.wagon-svn</groupId>
-                <artifactId>wagon-svn</artifactId>
-                <version>1.8</version>
             </extension>
         </extensions>
 
