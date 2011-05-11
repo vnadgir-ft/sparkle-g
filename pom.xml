@@ -102,6 +102,18 @@
             </roles>
             <timezone>+1</timezone>
         </developer>
+        
+        <developer>
+            <id>juergen.pfundt</id>
+            <name>Jürgen Pfundt</name>
+            <email>juergen dot pfundt at gmail dot com</email>
+            <organization>Deutsche Telekom AG</organization>
+            <organizationUrl>http://www.telekom.com/</organizationUrl>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
     </developers>
 
     <dependencies>
