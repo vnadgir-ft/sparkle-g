@@ -67,12 +67,12 @@ CONDITIONAL_AND_EXPRESSION;
 // $<Parser
 
 query
-    : prologue ( selectQuery | constructQuery | describeQuery | askQuery ) EOF -> ^(QUERY prologue selectQuery* constructQuery* describeQuery* askQuery*)
-    | update ( SEMICOLON update)* SEMICOLON? EOF -> ^(UPDATE update+)
+    : prologue ( selectQuery | constructQuery | describeQuery | askQuery ) bindingsClause EOF -> ^(QUERY prologue selectQuery* constructQuery* describeQuery* askQuery*)
+    | update ( SEMICOLON update)* EOF -> ^(UPDATE update+)
     ;
 
 prologue
-    : baseDecl? prefixDecl* -> ^(PROLOGUE baseDecl? prefixDecl*)
+    : (baseDecl | prefixDecl)* -> ^(PROLOGUE baseDecl* prefixDecl*)
     ;
 
 baseDecl
@@ -84,7 +84,7 @@ prefixDecl
     ;
 
 selectQuery
-    : selectClause datasetClause* whereClause solutionModifier bindingsClause -> ^(SELECT selectClause datasetClause* whereClause* solutionModifier* bindingsClause*)
+    : selectClause datasetClause* whereClause solutionModifier -> ^(SELECT selectClause datasetClause* whereClause* solutionModifier*)
     ;
 
 subSelect
@@ -103,6 +103,7 @@ selectVariables
   
 constructQuery
     : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate* datasetClause* whereClause* solutionModifier*)
+    | CONSTRUCT datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier
     ;
 
 describeQuery
@@ -150,7 +151,8 @@ orderCondition
     ;
 	    
 limitOffsetClauses
-    : ( limitClause offsetClause? | offsetClause limitClause? )
+    : limitClause offsetClause? 
+    | offsetClause limitClause?
     ;
 
 limitClause
@@ -162,10 +164,10 @@ offsetClause
     ;
 
 bindingsClause
-    : ( BINDINGS (v+=var)* OPEN_CURLY_BRACE ( b+=bindingsClauseCache )* CLOSE_CURLY_BRACE )? -> ^(BINDINGS $v* $b*)?
+    : ( BINDINGS (v+=var)* OPEN_CURLY_BRACE ( b+=bindingValueList )* CLOSE_CURLY_BRACE )? -> ^(BINDINGS $v* $b*)?
     ;
     
-bindingsClauseCache
+bindingValueList
     : OPEN_BRACE (b+=bindingValue)* CLOSE_BRACE	-> ^(BINDINGVALUE $b*)
     ;
     	
@@ -174,7 +176,7 @@ bindingValue
     ;
     
 update
-    : prologue (load | clear | drop | create | insert | delete | modify) -> ^(UPDATE load* clear* drop* create* insert* delete* modify*)
+    : prologue (load | clear | drop | add | move | copy | create | insert | delete | modify) -> ^(UPDATE load* clear* drop* add* move* copy* create* insert* delete* modify*)
     ;   
     
 load 	  
@@ -188,33 +190,37 @@ clear
 drop
     : DROP SILENT? graphRefAll -> ^(DROP SILENT* graphRefAll)
     ; 
- 
+
 create
     : CREATE SILENT? graphRef -> ^(CREATE SILENT* graphRef)
     ;
-
-insert
-    : INSERT DATA quadPattern -> ^(INSERT DATA quadPattern) //( insertData | insertTemplate )
-    ;
-/*    
-insertData
-    : DATA quadPattern //( INTO? iriRef )* constructTemplate
+    
+add
+    : ADD SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(ADD SILENT* $from* $to*)
     ;
     
-insertTemplate
-    : ( INTO? iriRef )* constructTemplate whereClause?
+move
+    : MOVE SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(MOVE SILENT* $from* $to*)
     ;
-*/    
+    
+copy
+    : COPY SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(COPY SILENT* $from* $to*)
+    ;
+
+insert
+    : INSERT DATA quadPattern -> ^(INSERT DATA quadPattern)
+    ;
+   
 delete 	  
     : DELETE ( deleteData | deleteWhere )
     ;
 
 deleteData
-    : DATA quadPattern -> ^(DELETE DATA quadPattern)//( FROM? iriRef )* constructTemplate
+    : DATA quadPattern -> ^(DELETE DATA quadPattern)
     ;
 
 deleteWhere
-    : WHERE quadPattern -> ^(DELETE WHERE quadPattern) //( FROM? iriRef )* constructTemplate whereClause?
+    : WHERE quadPattern -> ^(DELETE WHERE quadPattern)
     ;
     
 modify
@@ -226,11 +232,16 @@ deleteClause
     ;
       
 insertClause
-    : INSERT quadPattern
+    : INSERT quadPattern -> INSERT quadPattern
     ;
 
 usingClause
     : USING NAMED? iriRef -> ^(USING NAMED? iriRef)
+    ;
+
+graphOrDefault	  
+    : DEFAULT 
+    | GRAPH? iriRef
     ;
     	    	
 graphRef
@@ -250,11 +261,11 @@ quads
     ;
     
 quadsNotTriples
-    : GRAPH varOrIRIref OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE -> varOrIRIref triplesTemplate? // -> ^(GRAPH varOrIRIref triplesTemplate?)
+    : GRAPH varOrIRIref OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE -> varOrIRIref triplesTemplate?
     ;
     
 triplesTemplate
-    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> ^(TRIPLESTEMPLATE triplesSameSubject+)
+    : triplesSameSubject ( DOT triplesSameSubject )* -> ^(TRIPLESTEMPLATE triplesSameSubject+)
     ;
     	
 groupGraphPattern
@@ -262,7 +273,7 @@ groupGraphPattern
     ;
     
 groupGraphPatternSub
-    : triplesBlock? ( groupGraphPatternSubCache )* -> triplesBlock* groupGraphPatternSubCache* //^(GRAPHPATTERNNOTTRIPLES
+    : triplesBlock? ( groupGraphPatternSubCache )* -> triplesBlock* groupGraphPatternSubCache*
     ;
 
 groupGraphPatternSubCache
@@ -270,11 +281,11 @@ groupGraphPatternSubCache
     ; 	
 
 triplesBlock
-    : triplesSameSubjectPath ( DOT triplesSameSubjectPath)* DOT? -> ^(TRIPLESBLOCK triplesSameSubjectPath+)
+    : triplesSameSubjectPath ( DOT triplesSameSubjectPath?)* -> ^(TRIPLESBLOCK triplesSameSubjectPath+)
     ;
 
 graphPatternNotTriples
-    : groupOrUnionGraphPattern | optionalGraphPattern | minusGraphPattern | graphGraphPattern | serviceGraphPattern | filter
+    : groupOrUnionGraphPattern | optionalGraphPattern | minusGraphPattern | graphGraphPattern | serviceGraphPattern | filter | bind
     ;
 
 optionalGraphPattern
@@ -286,15 +297,19 @@ graphGraphPattern
     ;
 
 serviceGraphPattern
-    : SERVICE varOrIRIref groupGraphPattern -> ^(SERVICE varOrIRIref groupGraphPattern)
+    : SERVICE SILENT? varOrIRIref groupGraphPattern -> ^(SERVICE varOrIRIref groupGraphPattern)
     ;
     
+bind
+    : BIND OPEN_BRACE e=expression AS v=var CLOSE_BRACE -> ^(BIND $e $v)	
+    ;
+    	
 minusGraphPattern
     : MINUS_KEYWORD groupGraphPattern -> ^(MINUS_KEYWORD groupGraphPattern)
     ;
 
 groupOrUnionGraphPattern
-    : groupGraphPattern ( UNION groupGraphPattern )* -> groupGraphPattern ^(UNION groupGraphPattern*)?
+    : groupGraphPattern (UNION groupGraphPattern)* -> groupGraphPattern ^(UNION groupGraphPattern*)?
     ;
 
 filter
@@ -348,7 +363,7 @@ triplesSameSubjectPath
     ;
   
 propertyListNotEmptyPath
-    : ( verbPath | verbSimple ) objectList ( SEMICOLON ( ( verbPath | verbSimple ) objectList )? )* //-> verbPath* verbSimple* objectList verbPath* 
+    : ( verbPath | verbSimple ) objectList ( SEMICOLON ( ( verbPath | verbSimple ) objectList )? )*
     ;
     
 propertyListPath
@@ -485,6 +500,34 @@ builtInCall
     | IRI OPEN_BRACE expression CLOSE_BRACE -> ^(IRI expression)
     | URI OPEN_BRACE expression CLOSE_BRACE -> ^(URI expression)
     | BNODE (OPEN_BRACE expression CLOSE_BRACE| nil) -> BNODE expression
+    | RAND nil -> ^(RAND)
+    | ABS OPEN_BRACE expression CLOSE_BRACE -> ^(ABS expression)
+    | CEIL OPEN_BRACE expression CLOSE_BRACE -> ^(CEIL expression)
+    | FLOOR OPEN_BRACE expression CLOSE_BRACE -> ^(FLOOR expression)
+    | ROUND OPEN_BRACE expression CLOSE_BRACE -> ^(ROUND expression)
+    | CONCAT OPEN_BRACE expressionList CLOSE_BRACE -> ^(CONCAT expressionList)
+    | STRLEN OPEN_BRACE expression CLOSE_BRACE -> ^(STRLEN expression)
+    | UCASE OPEN_BRACE expression CLOSE_BRACE -> ^(UCASE expression)
+    | LCASE OPEN_BRACE expression CLOSE_BRACE -> ^(LCASE expression)
+    | ENCODE_FOR_URI OPEN_BRACE expression CLOSE_BRACE -> ^(ENCODE_FOR_URI expression)
+    | CONTAINS OPEN_BRACE expression CLOSE_BRACE -> ^(CONTAINS expression)
+    | STRSTARTS OPEN_BRACE expression CLOSE_BRACE -> ^(STRSTARTS expression)
+    | STRENDS OPEN_BRACE expression CLOSE_BRACE -> ^(STRENDS expression)
+    | YEAR OPEN_BRACE expression CLOSE_BRACE -> ^(YEAR expression)
+    | MONTH OPEN_BRACE expression CLOSE_BRACE -> ^(MONTH expression)
+    | DAY OPEN_BRACE expression CLOSE_BRACE -> ^(DAY expression)
+    | HOURS OPEN_BRACE expression CLOSE_BRACE -> ^(HOURS expression)
+    | MINUTES OPEN_BRACE expression CLOSE_BRACE -> ^(MINUTES expression)
+    | SECONDS OPEN_BRACE expression CLOSE_BRACE -> ^(SECONDS expression)
+    | TIMEZONE OPEN_BRACE expression CLOSE_BRACE -> ^(TIMEZONE expression)
+    | TZ OPEN_BRACE expression CLOSE_BRACE -> ^(TZ expression)
+    | NOW nil -> ^(NOW)
+    | MD5 OPEN_BRACE expression CLOSE_BRACE -> ^(MD5 expression)
+    | SHA1 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA1 expression)
+    | SHA224 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA224 expression)
+    | SHA256 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA256 expression)
+    | SHA384 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA384 expression)
+    | SHA512 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA512 expression)
     | COALESCE expressionList -> ^(COALESCE expressionList)
     | IF OPEN_BRACE e1=expression COMMA e2=expression COMMA e3=expression CLOSE_BRACE -> ^(IF $e1 $e2 $e3)
     | STRLANG OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRLANG expression expression)
@@ -501,7 +544,11 @@ builtInCall
     ;
 
 regexExpression
-    : REGEX OPEN_BRACE expression COMMA expression ( COMMA expression )? CLOSE_BRACE -> ^(REGEX expression+)
+    : REGEX OPEN_BRACE expression COMMA expression ( COMMA expression )? CLOSE_BRACE -> ^(REGEX expression*)
+    ;
+    
+subStringExpression
+    : SUBSTR OPEN_BRACE expression COMMA expression ( COMMA expression )? CLOSE_BRACE -> ^(SUBSTR expression*)
     ;
     
 existsFunction
@@ -588,17 +635,7 @@ anon
 
 // $<Lexer
 
-WS
-    : (' '| '\t'| EOL)+ { $channel=HIDDEN; }
-    ;
-
-PNAME_NS
-    : p=PN_PREFIX? ':'
-    ;
-
-PNAME_LN
-    : PNAME_NS PN_LOCAL
-    ;
+WS : (' '| '\t'| EOL)+ { $channel=HIDDEN; };
 
 BASE : ('B'|'b')('A'|'a')('S'|'s')('E'|'e');
 
@@ -666,6 +703,8 @@ ISLITERAL : ('I'|'i')('S'|'s')('L'|'l')('I'|'i')('T'|'t')('E'|'e')('R'|'r')('A'|
 
 REGEX : ('R'|'r')('E'|'e')('G'|'g')('E'|'e')('X'|'x');
 
+SUBSTR : ('S'|'s')('U'|'u')('B'|'b')('S'|'s')('T'|'t')('R'|'r');
+
 TRUE : ('T'|'t')('R'|'r')('U'|'u')('E'|'e');
 
 FALSE : ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e');
@@ -675,6 +714,12 @@ LOAD : ('L'|'l')('O'|'o')('A'|'a')('D'|'d');
 CLEAR : ('C'|'c')('L'|'l')('E'|'e')('A'|'a')('R'|'r');
     
 DROP : ('D'|'d')('R'|'r')('O'|'o')('P'|'p');
+
+ADD : ('A'|'a')('D'|'d')('D'|'d');
+
+MOVE : ('M'|'m')('O'|'o')('V'|'v')('E'|'e');
+
+COPY : ('C'|'c')('O'|'o')('P'|'p')('Y'|'y');	
     
 CREATE 	: ('C'|'c')('R'|'r')('E'|'e')('A'|'a')('T'|'t')('E'|'e');
     
@@ -696,7 +741,9 @@ DATA : ('D'|'d')('A'|'a')('T'|'t')('A'|'a');
     
 WITH : ('W'|'w')('I'|'i')('T'|'t')('H'|'h');
     
-INTO : ('I'|'i')('N'|'n')('T'|'t')('O'|'o');  
+INTO : ('I'|'i')('N'|'n')('T'|'t')('O'|'o'); 
+
+TO : ('T'|'t')('O'|'o'); 	 
 
 AS : ('A'|'a')('S'|'s');
 
@@ -710,6 +757,8 @@ BINDINGS : ('B'|'b')('I'|'i')('N'|'n')('D'|'d')('I'|'i')('N'|'n')('G'|'g')('S'|'
 
 SERVICE : ('S'|'s')('E'|'e')('R'|'r')('V'|'v')('I'|'i')('C'|'c')('E'|'e');
 
+BIND : ('B'|'b')('I'|'i')('N'|'n')('D'|'d');
+
 MINUS_KEYWORD : ('M'|'m')('I'|'i')('N'|'n')('U'|'u')('S'|'s');
 
 IRI : ('I'|'i')('R'|'r')('I'|'i');
@@ -717,6 +766,62 @@ IRI : ('I'|'i')('R'|'r')('I'|'i');
 URI : ('U'|'u')('R'|'r')('I'|'i');
     		
 BNODE : ('B'|'b')('N'|'n')('O'|'o')('D'|'d')('E'|'e');
+
+RAND : ('R'|'r')('A'|'a')('N'|'n')('D'|'d');
+
+ABS: ('A'|'a')('B'|'b')('S'|'s');
+
+CEIL : ('C'|'c')('E'|'e')('I'|'i')('L'|'l');
+
+FLOOR : ('F'|'f')('L'|'l')('O'|'o')('O'|'o')('R'|'r');
+
+ROUND : ('R'|'r')('O'|'o')('U'|'u')('N'|'n')('D'|'d');
+
+CONCAT 	: ('C'|'c')('O'|'o')('N'|'n')('C'|'c')('A'|'a')('T'|'t');
+
+STRLEN : ('S'|'s')('T'|'t')('R'|'r')('L'|'l')('E'|'e')('N'|'n');
+
+UCASE : ('U'|'u')('C'|'c')('A'|'a')('S'|'s')('E'|'e');
+
+LCASE : ('L'|'l')('C'|'c')('A'|'a')('S'|'s')('E'|'e');	
+
+ENCODE_FOR_URI : ('E'|'e')('N'|'n')('C'|'c')('O'|'o')('D'|'d')('E'|'e')'_'('F'|'f')('O'|'o')('R'|'r')'_'('U'|'u')('R'|'r')('I'|'i');
+
+CONTAINS : ('C'|'c')('O'|'o')('N'|'n')('T'|'t')('A'|'a')('I'|'i')('N'|'n')('S'|'s');
+
+STRSTARTS : ('S'|'s')('T'|'t')('R'|'r')('S'|'s')('T'|'t')('A'|'a')('R'|'r')('T'|'t')('S'|'s');
+
+STRENDS : ('S'|'s')('T'|'t')('R'|'r')('E'|'e')('N'|'n')('D'|'d')('S'|'s');
+
+YEAR : ('Y'|'y')('E'|'e')('A'|'a')('R'|'r');
+
+MONTH : ('M'|'m')('O'|'o')('N'|'n')('T'|'t')('H'|'h');
+
+DAY : ('D'|'d')('A'|'a')('Y'|'y');
+
+HOURS : ('H'|'h')('O'|'o')('U'|'u')('R'|'r')('S'|'s');
+
+MINUTES : ('M'|'m')('I'|'i')('N'|'n')('U'|'u')('T'|'t')('E'|'e')('S'|'s');
+
+SECONDS : ('S'|'s')('E'|'e')('C'|'c')('O'|'o')('N'|'n')('M'|'m')('S'|'s');	
+
+TIMEZONE :  ('T'|'t')('I'|'i')('M'|'m')('E'|'e')('Z'|'z')('O'|'o')('N'|'n')('E'|'e');
+
+TZ : ('T'|'t')('Z'|'z');
+
+NOW : ('N'|'n')('O'|'o')('W'|'w');
+
+MD5 : ('M'|'m')('M'|'m')'5';
+
+SHA1 : ('S'|'s')('H'|'h')('A'|'a')'1';
+
+SHA224 : ('S'|'s')('H'|'h')('A'|'a')'224';
+
+SHA256 : ('S'|'s')('H'|'h')('A'|'a')'256';	
+
+SHA384 : ('S'|'s')('H'|'h')('A'|'a')'384'; 
+
+SHA512 : ('S'|'s')('H'|'h')('A'|'a')'512';
     		 
 COALESCE : ('C'|'c')('O'|'o')('A'|'a')('L'|'l')('E'|'e')('S'|'s')('C'|'c')('E'|'e');
     	 
@@ -750,25 +855,19 @@ EXISTS : ('E'|'e')('X'|'x')('I'|'i')('S'|'s')('T'|'t')('S'|'s');
     
 SEPARATOR : ('S'|'s')('E'|'e')('P'|'p')('A'|'a')('R'|'r')('A'|'a')('T'|'t')('O'|'o')('R'|'r');
 
-BLANK_NODE_LABEL
-    : '_:' t=PN_LOCAL { setText($t.text); }
-    ;
+PNAME_NS : p=PN_PREFIX? ':';
 
-VAR1
-    : QUESTION_MARK v=VARNAME { setText($v.text); }
-    ;
+PNAME_LN : PNAME_NS PN_LOCAL;
+    
+BLANK_NODE_LABEL : '_:' t=PN_LOCAL { setText($t.text); };
 
-VAR2
-    : '$' v=VARNAME { setText($v.text); }
-    ;
+VAR1 : QUESTION_MARK v=VARNAME { setText($v.text); };
 
-LANGTAG
-    : '@' ('A'..'Z'|'a'..'z')+ (MINUS ('A'..'Z'|'a'..'z'|DIGIT)+)*
-    ;
+VAR2 : '$' v=VARNAME { setText($v.text); };
 
-INTEGER
-    : DIGIT+
-    ;
+LANGTAG : '@' ('A'..'Z'|'a'..'z')+ (MINUS ('A'..'Z'|'a'..'z'|DIGIT)+)*;
+
+INTEGER : DIGIT+;
 
 DECIMAL
     : DIGIT+ DOT DIGIT*
@@ -781,55 +880,31 @@ DOUBLE
     | DIGIT+ EXPONENT
     ;
 
-INTEGER_POSITIVE
-    : PLUS INTEGER
-    ;
+INTEGER_POSITIVE : PLUS INTEGER;
 
-DECIMAL_POSITIVE
-    : PLUS DECIMAL
-    ;
+DECIMAL_POSITIVE : PLUS DECIMAL;
 
-DOUBLE_POSITIVE
-    : PLUS DOUBLE
-    ;
+DOUBLE_POSITIVE : PLUS DOUBLE;
 
-INTEGER_NEGATIVE
-    : MINUS INTEGER
-    ;
+INTEGER_NEGATIVE : MINUS INTEGER;
 
-DECIMAL_NEGATIVE
-    : MINUS DECIMAL
-    ;
+DECIMAL_NEGATIVE : MINUS DECIMAL;
 
-DOUBLE_NEGATIVE
-    : MINUS DOUBLE
-    ;
+DOUBLE_NEGATIVE : MINUS DOUBLE;
     
 fragment
-EXPONENT
-    : ('e'|'E') SIGN? DIGIT+
-    ;
+EXPONENT : ('e'|'E') SIGN? DIGIT+;
 
-STRING_LITERAL1
-    : '\'' ( options {greedy=false;} : ~( '\'' | '\\' | EOL ) | ECHAR )* '\''
-    ;
+STRING_LITERAL1 : '\'' ( options {greedy=false;} : ~( '\'' | '\\' | EOL ) | ECHAR )* '\'';
 
-STRING_LITERAL2
-    : '"'  ( options {greedy=false;} : ~( '"' | '\\' | EOL ) | ECHAR )* '"'
-    ;
+STRING_LITERAL2 : '"' ( options {greedy=false;} : ~( '"' | '\\' | EOL ) | ECHAR )* '"';
 
-STRING_LITERAL_LONG1
-    :   '\'\'\'' ( options {greedy=false;} : ( '\'' | '\'\'' )? ( ~('\''|'\\') | ECHAR ) )* '\'\'\''
-    ;
+STRING_LITERAL_LONG1 : '\'\'\'' ( options {greedy=false;} : ( '\'' | '\'\'' )? ( ~('\''|'\\') | ECHAR ) )* '\'\'\'';
 
-STRING_LITERAL_LONG2
-    :   '"""' ( options {greedy=false;} : ( '"' | '""' )? ( ~('"'|'\\') | ECHAR ) )* '"""'
-    ;
+STRING_LITERAL_LONG2 : '"""' ( options {greedy=false;} : ( '"' | '""' )? ( ~('"'|'\\') | ECHAR ) )* '"""';
 
 fragment
-ECHAR
-    : '\\' ( 't' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'')
-    ;
+ECHAR : '\\' ( 't' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'');
     		
 IRI_REF
     :(LESS (options{greedy=false;}: IRI_REF_CHARACTERS)* GREATER) =>  LESS (options{greedy=false;}: IRI_REF_CHARACTERS)* GREATER { setText($text.substring(1, $text.length()-1)); }
@@ -842,14 +917,10 @@ IRI_REF_CHARACTERS
     ;
 
 fragment
-PN_CHARS_U
-    : PN_CHARS_BASE | '_'
-    ;
+PN_CHARS_U : PN_CHARS_BASE | '_';
 
 fragment
-VARNAME
-    : ( PN_CHARS_U | DIGIT ) ( PN_CHARS_U | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040' )*
-    ;
+VARNAME : ( PN_CHARS_U | DIGIT ) ( PN_CHARS_U | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040' )*;
 
 fragment
 PN_CHARS
@@ -862,16 +933,11 @@ PN_CHARS
     ;
 
 fragment
-PN_PREFIX
-    : PN_CHARS_BASE ((PN_CHARS|DOT)* PN_CHARS)?
-    ;
+PN_PREFIX : PN_CHARS_BASE ((PN_CHARS|DOT)* PN_CHARS)?;
 
 fragment
-PN_LOCAL
-    : ( PN_CHARS_U | DIGIT ) ((PN_CHARS|DOT)* PN_CHARS)?
-  //  | (( PN_CHARS_U | DIGIT ) (options{greedy=false;}: PN_LOCAL_DOT)+ PN_CHARS) => ( PN_CHARS_U | DIGIT ) (options{greedy=false;}: PN_LOCAL_DOT)+ PN_CHARS
-    ;
-    
+PN_LOCAL : (PN_CHARS_U|DIGIT) ((PN_CHARS|DOT)* PN_CHARS)?;
+
 fragment
 PN_CHARS_BASE
     : 'A'..'Z'
@@ -890,129 +956,69 @@ PN_CHARS_BASE
     ;
     	
 fragment
-DIGIT
-    : '0'..'9'
-    ;
+DIGIT : '0'..'9';
 
-COMMENT 
-    : '#' ( options{greedy=false;} : .)* EOL { $channel=HIDDEN; }
-    ;
+COMMENT : '#' ( options{greedy=false;} : .)* EOL { $channel=HIDDEN; };
 
 fragment
-EOL
-    : '\n' | '\r'
-    ;
+EOL : '\n' | '\r';
 
-REFERENCE
-    : '^^'
-    ;
+REFERENCE : '^^';
 
-LESS_EQUAL
-    : '<='
-    ;
+LESS_EQUAL : '<=';
 
-GREATER_EQUAL
-    : '>='
-    ;
+GREATER_EQUAL : '>=';
 
-NOT_EQUAL
-    : '!='
-    ;
+NOT_EQUAL : '!=';
 
-AND
-    : '&&'
-    ;
+AND : '&&';
 
-OR
-    : '||'
-    ;
+OR : '||';
     
-INVERSE
-    : '^'
-    ;
+INVERSE : '^';
 
-OPEN_BRACE
-    : '('
-    ;
+OPEN_BRACE : '(';
 
-CLOSE_BRACE
-    : ')'
-    ;
+CLOSE_BRACE : ')';
 
-OPEN_CURLY_BRACE
-    : '{'
-    ;
+OPEN_CURLY_BRACE : '{';
 
-CLOSE_CURLY_BRACE
-    : '}'
-    ;
+CLOSE_CURLY_BRACE : '}';
 
-OPEN_SQUARE_BRACKET
-    : '['
-    ;
+OPEN_SQUARE_BRACKET : '[';
 
-CLOSE_SQUARE_BRACKET
-    : ']'
-    ;
+CLOSE_SQUARE_BRACKET : ']';
 
-SEMICOLON
-    : ';'
-    ;
+SEMICOLON : ';';
 
-DOT
-    : '.'
-    ;
+DOT : '.';
 
-PLUS
-    : '+'
-    ;
+PLUS : '+';
 
-MINUS
-    : '-'
-    ;
+MINUS : '-';
 
 fragment
-SIGN
-    : (PLUS|MINUS)	
-    ;
+SIGN : (PLUS|MINUS);
 	
-ASTERISK
-    : '*'
-    ;
+ASTERISK : '*';
 
-QUESTION_MARK
-    : '?'
-    ;
+QUESTION_MARK : '?';
     	
-COMMA
-    : ','
-    ;
+COMMA : ',';
 
-NEGATION
-    : '!'
-    ;
+NEGATION : '!';
 
-DIVIDE
-    : '/'
-    ;
+DIVIDE : '/';
 
-EQUAL
-    : '='
-    ;
+EQUAL : '=';
+
 fragment
-LESS
-    : '<'
-    ;
+LESS : '<';
 
-GREATER
-    : '>'
-    ;
+GREATER : '>';
 
-PIPE
-    : '|'
-    ;
+PIPE : '|';
     	
-ANY : .
-    ;
+ANY : .;
 
 // $>
