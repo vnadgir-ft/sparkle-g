@@ -30,6 +30,9 @@
     <body>
         <release version="4.0" date="TBD" description="upgrade release">
             <action dev="Juergen.Pfundt" type="add">
+                Corrected modify rule and its AST generation.
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
                 Update of grammar to current definition of Sparql 1.1 at http://www.w3.org/TR/sparql11-query, 
                 which includes Sparql Update. This refers to the version of 1th of May 2011.
                 
