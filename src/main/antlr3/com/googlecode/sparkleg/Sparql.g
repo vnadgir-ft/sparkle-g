@@ -30,6 +30,7 @@ tokens{
 QUERY;
 UPDATE;
 PROLOGUE;
+MODIFY;
 SUBSELECT;
 SELECTCLAUSE;
 WHERE_CLAUSE;
@@ -119,7 +120,7 @@ datasetClause
     ;
 
 whereClause
-    : WHERE? groupGraphPattern -> ^(WHERE_CLAUSE groupGraphPattern) // ^(WHERE groupGraphPattern) 
+    : WHERE? groupGraphPattern -> ^(WHERE_CLAUSE groupGraphPattern)
     ;
 
 solutionModifier
@@ -164,7 +165,7 @@ offsetClause
     ;
 
 bindingsClause
-    : ( BINDINGS (v+=var)* OPEN_CURLY_BRACE ( b+=bindingValueList )* CLOSE_CURLY_BRACE )? -> ^(BINDINGS $v* $b*)?
+    : (BINDINGS (v+=var)* OPEN_CURLY_BRACE ( b+=bindingValueList )* CLOSE_CURLY_BRACE)? -> ^(BINDINGS $v* $b*)?
     ;
     
 bindingValueList
@@ -176,7 +177,7 @@ bindingValue
     ;
     
 update
-    : prologue (load | clear | drop | add | move | copy | create | insert | delete | modify) -> ^(UPDATE load* clear* drop* add* move* copy* create* insert* delete* modify*)
+    : prologue (load | clear | drop | add | move | copy | create | insert | delete | modify) -> prologue load* clear* drop* add* move* copy* create* insert* delete* modify*
     ;   
     
 load 	  
@@ -224,7 +225,7 @@ deleteWhere
     ;
     
 modify
-    : ( WITH iriRef )? ( deleteClause insertClause? | insertClause ) usingClause* WHERE groupGraphPattern
+    : ( WITH i=iriRef )? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH $i)* deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
     ;
   
 deleteClause
@@ -265,7 +266,7 @@ quadsNotTriples
     ;
     
 triplesTemplate
-    : triplesSameSubject ( DOT triplesSameSubject )* -> ^(TRIPLESTEMPLATE triplesSameSubject+)
+    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> ^(TRIPLESTEMPLATE triplesSameSubject+)
     ;
     	
 groupGraphPattern
@@ -281,7 +282,7 @@ groupGraphPatternSubCache
     ; 	
 
 triplesBlock
-    : triplesSameSubjectPath ( DOT triplesSameSubjectPath?)* -> ^(TRIPLESBLOCK triplesSameSubjectPath+)
+    : triplesSameSubjectPath ( DOT triplesSameSubjectPath)* DOT? -> ^(TRIPLESBLOCK triplesSameSubjectPath+)
     ;
 
 graphPatternNotTriples
@@ -722,8 +723,6 @@ MOVE : ('M'|'m')('O'|'o')('V'|'v')('E'|'e');
 COPY : ('C'|'c')('O'|'o')('P'|'p')('Y'|'y');	
     
 CREATE 	: ('C'|'c')('R'|'r')('E'|'e')('A'|'a')('T'|'t')('E'|'e');
-    
-MODIFY : ('M'|'m')('O'|'o')('D'|'d')('I'|'i')('F'|'f')('Y'|'y');
     
 DELETE : ('D'|'d')('E'|'e')('L'|'l')('E'|'e')('T'|'t')('E'|'e');
     	
