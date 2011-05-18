@@ -52,6 +52,7 @@ PROPERTYLIST;
 COLLECTION;
 BLANKNODEPROPERTYLIST;
 OBJECTLIST;
+TRIPLE;
 NOTEXISTS;
 CONDITIONAL_OR_EXPRESSION;
 CONDITIONAL_AND_EXPRESSION;
@@ -266,7 +267,7 @@ quadsNotTriples
     ;
     
 triplesTemplate
-    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> ^(TRIPLESTEMPLATE triplesSameSubject+)
+    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> triplesSameSubject ^(TRIPLESTEMPLATE triplesSameSubject*)?
     ;
     	
 groupGraphPattern
@@ -282,7 +283,7 @@ groupGraphPatternSubCache
     ; 	
 
 triplesBlock
-    : triplesSameSubjectPath ( DOT triplesSameSubjectPath)* DOT? -> ^(TRIPLESBLOCK triplesSameSubjectPath+)
+    : triplesSameSubjectPath ( DOT triplesSameSubjectPath)* DOT? -> triplesSameSubjectPath+
     ;
 
 graphPatternNotTriples
@@ -310,7 +311,7 @@ minusGraphPattern
     ;
 
 groupOrUnionGraphPattern
-    : groupGraphPattern (UNION groupGraphPattern)* -> groupGraphPattern ^(UNION groupGraphPattern*)?
+    : groupGraphPattern (UNION ^groupGraphPattern)*
     ;
 
 filter
@@ -359,8 +360,8 @@ verb
     ;
 
 triplesSameSubjectPath
-    : varOrTerm propertyListNotEmptyPath 
-    | triplesNode propertyListPath
+    : varOrTerm propertyListNotEmptyPath -> ^(TRIPLE varOrTerm* propertyListNotEmptyPath*)
+    | triplesNode propertyListPath -> ^(TRIPLE triplesNode* propertyListPath*)
     ;
   
 propertyListNotEmptyPath
