@@ -42,9 +42,6 @@ ORDERCONDITION;
 BINDINGVALUE;
 TRIPLESTEMPLATE;
 GROUPGRAPHPATTERN;
-GROUPGRAPHPATTERNSUB;
-GRAPHPATTERNNOTTRIPLES;
-TRIPLESBLOCK;
 ARGLIST;
 EXPRESSIONLIST;
 CONSTRUCTTRIPLES;
@@ -54,8 +51,6 @@ BLANKNODEPROPERTYLIST;
 OBJECTLIST;
 TRIPLE;
 NOTEXISTS;
-CONDITIONAL_OR_EXPRESSION;
-CONDITIONAL_AND_EXPRESSION;
 }
 
 @header {
@@ -367,7 +362,7 @@ triplesSameSubjectPath
 propertyListNotEmptyPath
     : ( verbPath | verbSimple ) objectList ( SEMICOLON ( ( verbPath | verbSimple ) objectList )? )*
     ;
-    
+
 propertyListPath
     : propertyListNotEmpty?
     ;
