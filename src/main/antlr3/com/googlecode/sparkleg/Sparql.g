@@ -340,7 +340,8 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty | triplesNode propertyListNotEmpty?
+    : varOrTerm propertyListNotEmpty 
+    | triplesNode propertyListNotEmpty?
     ;
 
 propertyListNotEmpty
@@ -357,12 +358,12 @@ verb
     ;
 
 triplesSameSubjectPath
-    : varOrTerm propertyListNotEmptyPath -> ^(TRIPLE ^(SUBJECT varOrTerm*) propertyListNotEmptyPath*)
+    : varOrTerm propertyListNotEmptyPath[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE /*^(SUBJECT varOrTerm)*/ propertyListNotEmptyPath)
     | triplesNode propertyListPath -> ^(TRIPLE triplesNode* propertyListPath*)
     ;
   
-propertyListNotEmptyPath
-    : ( verbPath | verbSimple ) objectList ( SEMICOLON ( ( verbPath | verbSimple ) objectList )? )* -> (^(PREDICATE verbPath? verbSimple?) objectList)+
+propertyListNotEmptyPath[CommonTree subject]
+    : ( verbPath | verbSimple ) objectList ( SEMICOLON ( ( verbPath | verbSimple ) objectList )? )* -> (^(SUBJECT {$subject}) ^(PREDICATE verbPath? verbSimple?) objectList)+
     ;
 
 propertyListPath
