@@ -47,9 +47,11 @@ EXPRESSIONLIST;
 CONSTRUCTTRIPLES;
 PROPERTYLIST;
 COLLECTION;
-BLANKNODEPROPERTYLIST;
-OBJECTLIST;
+BLANKNODE;
 TRIPLE;
+SUBJECT;
+PREDICATE;
+OBJECT;
 NOTEXISTS;
 }
 
@@ -346,7 +348,7 @@ propertyListNotEmpty
     ;
 
 objectList
-    : graphNode ( COMMA graphNode )* -> ^(OBJECTLIST graphNode+)
+    : graphNode ( COMMA graphNode )* -> ^(OBJECT graphNode+)
     ;
 
 verb
@@ -355,12 +357,12 @@ verb
     ;
 
 triplesSameSubjectPath
-    : varOrTerm propertyListNotEmptyPath -> ^(TRIPLE varOrTerm* propertyListNotEmptyPath*)
+    : varOrTerm propertyListNotEmptyPath -> ^(TRIPLE ^(SUBJECT varOrTerm*) propertyListNotEmptyPath*)
     | triplesNode propertyListPath -> ^(TRIPLE triplesNode* propertyListPath*)
     ;
   
 propertyListNotEmptyPath
-    : ( verbPath | verbSimple ) objectList ( SEMICOLON ( ( verbPath | verbSimple ) objectList )? )*
+    : ( verbPath | verbSimple ) objectList ( SEMICOLON ( ( verbPath | verbSimple ) objectList )? )* -> (^(PREDICATE verbPath? verbSimple?) objectList)+
     ;
 
 propertyListPath
@@ -409,7 +411,7 @@ pathOneInPropertySet
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET -> ^(BLANKNODEPROPERTYLIST propertyListNotEmpty)
+    | OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET -> BLANKNODE propertyListNotEmpty
     ;
 
 graphNode
