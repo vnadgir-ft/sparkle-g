@@ -47,7 +47,6 @@ EXPRESSIONLIST;
 CONSTRUCTTRIPLES;
 PROPERTYLIST;
 COLLECTION;
-BLANKNODE;
 TRIPLE;
 SUBJECT;
 PREDICATE;
@@ -328,7 +327,7 @@ argList
     ;
 
 expressionList
-    : ( nil | OPEN_CURLY_BRACE expression ( COMMA expression )* CLOSE_CURLY_BRACE ) -> ^(EXPRESSIONLIST nil* expression*)
+    : ( nil | OPEN_BRACE expression ( COMMA expression )* CLOSE_BRACE ) -> ^(EXPRESSIONLIST nil* expression*)
     ;	
 
 constructTemplate
@@ -501,7 +500,8 @@ builtInCall
     | CEIL OPEN_BRACE expression CLOSE_BRACE -> ^(CEIL expression)
     | FLOOR OPEN_BRACE expression CLOSE_BRACE -> ^(FLOOR expression)
     | ROUND OPEN_BRACE expression CLOSE_BRACE -> ^(ROUND expression)
-    | CONCAT OPEN_BRACE expressionList CLOSE_BRACE -> ^(CONCAT expressionList)
+    | CONCAT expressionList -> ^(CONCAT expressionList)
+    | subStringExpression -> subStringExpression
     | STRLEN OPEN_BRACE expression CLOSE_BRACE -> ^(STRLEN expression)
     | UCASE OPEN_BRACE expression CLOSE_BRACE -> ^(UCASE expression)
     | LCASE OPEN_BRACE expression CLOSE_BRACE -> ^(LCASE expression)
