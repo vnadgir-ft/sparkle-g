@@ -4749,7 +4749,7 @@ SELECT ?given ?family
 WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
   ?annot  dc:creator   ?c .
   OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .
-  FILTER isBlank(?c) }
+  FILTER isBlank(?c)
 }>> OK
 
 <<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
