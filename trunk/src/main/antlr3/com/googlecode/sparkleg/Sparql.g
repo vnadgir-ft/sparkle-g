@@ -52,6 +52,7 @@ SUBJECT;
 PREDICATE;
 OBJECT;
 NOTEXISTS;
+FUNCTION;
 }
 
 @header {
@@ -319,11 +320,11 @@ constraint
     ;
 
 functionCall
-    : iriRef argList
+    : iriRef argList -> ^(FUNCTION iriRef ^(ARGLIST argList))
     ;
 
 argList
-    : ( nil | OPEN_BRACE DISTINCT? expression ( COMMA expression )* CLOSE_BRACE ) -> ^(ARGLIST DISTINCT? nil* expression*)
+    : ( nil | OPEN_BRACE DISTINCT? expression ( COMMA expression )* CLOSE_BRACE ) -> DISTINCT? nil* expression*
     ;
 
 expressionList
@@ -331,11 +332,11 @@ expressionList
     ;	
 
 constructTemplate
-    : OPEN_CURLY_BRACE constructTriples? CLOSE_CURLY_BRACE -> constructTriples?
+    : OPEN_CURLY_BRACE constructTriples? CLOSE_CURLY_BRACE -> ^(CONSTRUCTTRIPLES constructTriples?)
     ;
 
 constructTriples
-    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> ^(CONSTRUCTTRIPLES triplesSameSubject+)
+    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> triplesSameSubject+
     ;
 
 triplesSameSubject
@@ -344,7 +345,7 @@ triplesSameSubject
     ;
 
 propertyListNotEmpty[CommonTree subject]
-    : v1=verb objectList[$subject, (CommonTree) $v1.tree] (SEMICOLON (v=verb objectList[$subject, (CommonTree) $v.tree])?)* -> objectList+
+    : v=verb objectList[$subject, (CommonTree) $v.tree] (SEMICOLON (v=verb objectList[$subject, (CommonTree) $v.tree])?)* -> objectList+
     ;
 
 objectList[CommonTree subject, CommonTree predicate]
@@ -566,7 +567,7 @@ aggregate
     ;
     
 iriRefOrFunction
-    : iriRef argList?
+    : iriRef argList? -> ^(FUNCTION iriRef ^(ARGLIST argList)?)
     ;
 
 rdfLiteral
