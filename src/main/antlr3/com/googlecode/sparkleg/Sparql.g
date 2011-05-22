@@ -340,16 +340,16 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty 
-    | triplesNode propertyListNotEmpty?
+    : varOrTerm propertyListNotEmpty[(CommonTree) $varOrTerm.tree] 
+    | triplesNode propertyListNotEmpty[(CommonTree) $triplesNode.tree]?
     ;
 
-propertyListNotEmpty
-    : verb objectList ( SEMICOLON ( verb objectList )? )* -> ^(PROPERTYLIST (verb objectList)+)
+propertyListNotEmpty[CommonTree subject]
+    : v1=verb objectList[$subject, (CommonTree) $v1.tree] (SEMICOLON (v=verb objectList[$subject, (CommonTree) $v.tree])?)* -> objectList+
     ;
 
-objectList
-    : graphNode ( COMMA graphNode )* -> ^(OBJECT graphNode+)
+objectList[CommonTree subject, CommonTree predicate]
+    : graphNode ( COMMA graphNode )* -> (^(SUBJECT {$subject}) ^(PREDICATE {$predicate}) ^(OBJECT graphNode))+
     ;
 
 verb
@@ -358,16 +358,12 @@ verb
     ;
 
 triplesSameSubjectPath
-    : varOrTerm propertyListNotEmptyPath[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE /*^(SUBJECT varOrTerm)*/ propertyListNotEmptyPath)
-    | triplesNode propertyListPath -> ^(TRIPLE triplesNode* propertyListPath*)
+    : varOrTerm propertyListNotEmptyPath[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE propertyListNotEmptyPath)
+    | triplesNode propertyListNotEmpty[(CommonTree) $triplesNode.tree]? -> ^(TRIPLE triplesNode* propertyListNotEmpty*)
     ;
   
 propertyListNotEmptyPath[CommonTree subject]
-    : ( verbPath | verbSimple ) objectList ( SEMICOLON ( ( verbPath | verbSimple ) objectList )? )* -> (^(SUBJECT {$subject}) ^(PREDICATE verbPath? verbSimple?) objectList)+
-    ;
-
-propertyListPath
-    : propertyListNotEmpty?
+    : (p=verbPath  objectList[$subject, (CommonTree) $p.tree]| v=verbSimple objectList[$subject, (CommonTree) $v.tree]) (SEMICOLON (p=verbPath objectList[$subject, (CommonTree) $p.tree]  | v=verbSimple  objectList[$subject, (CommonTree) $v.tree] )?)* -> objectList+
     ;
     
 verbPath
@@ -412,7 +408,7 @@ pathOneInPropertySet
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET -> BLANKNODE propertyListNotEmpty
+    | v=OPEN_SQUARE_BRACKET propertyListNotEmpty[(CommonTree) $v.tree] CLOSE_SQUARE_BRACKET -> propertyListNotEmpty
     ;
 
 graphNode
