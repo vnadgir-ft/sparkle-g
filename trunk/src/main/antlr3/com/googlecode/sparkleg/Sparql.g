@@ -66,7 +66,7 @@ FUNCTION;
 // $<Parser
 
 query
-    : prologue ( selectQuery | constructQuery | describeQuery | askQuery ) bindingsClause EOF -> ^(QUERY prologue selectQuery* constructQuery* describeQuery* askQuery*)
+    : prologue ( selectQuery | constructQuery | describeQuery | askQuery ) bindingsClause EOF -> ^(QUERY prologue selectQuery* constructQuery* describeQuery* askQuery*) bindingsClause*
     | update ( SEMICOLON update)* EOF -> ^(UPDATE update+)
     ;
 
@@ -163,11 +163,11 @@ offsetClause
     ;
 
 bindingsClause
-    : (BINDINGS (v+=var)* OPEN_CURLY_BRACE ( b+=bindingValueList )* CLOSE_CURLY_BRACE)? -> ^(BINDINGS $v* $b*)?
+    : (BINDINGS var* OPEN_CURLY_BRACE bindingValueList* CLOSE_CURLY_BRACE)? -> ^(BINDINGS var* bindingValueList*)?
     ;
     
 bindingValueList
-    : OPEN_BRACE (b+=bindingValue)* CLOSE_BRACE	-> ^(BINDINGVALUE $b*)
+    : OPEN_BRACE bindingValue* CLOSE_BRACE -> ^(BINDINGVALUE bindingValue*)
     ;
     	
 bindingValue
@@ -340,7 +340,7 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty[(CommonTree) $varOrTerm.tree] 
+    : varOrTerm! propertyListNotEmpty[(CommonTree) $varOrTerm.tree]
     | triplesNode propertyListNotEmpty[(CommonTree) $triplesNode.tree]?
     ;
 
