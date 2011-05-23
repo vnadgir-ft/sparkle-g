@@ -300,7 +300,7 @@ serviceGraphPattern
     ;
     
 bind
-    : BIND OPEN_BRACE e=expression AS v=var CLOSE_BRACE -> ^(BIND $e $v)	
+    : BIND OPEN_BRACE expression AS var CLOSE_BRACE -> ^(BIND expression ^(AS var))	
     ;
     	
 minusGraphPattern
