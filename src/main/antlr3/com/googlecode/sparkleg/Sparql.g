@@ -35,7 +35,6 @@ SUBSELECT;
 SELECTCLAUSE;
 WHERE_CLAUSE;
 VAR;
-ALIAS;
 GROUPBY;
 ORDERBY;
 ORDERCONDITION;
@@ -97,12 +96,12 @@ selectClause
 
 selectVariables
     : v=var -> ^(VAR $v) 
-    | OPEN_BRACE e=expression AS v=var CLOSE_BRACE -> ^(ALIAS $e $v)
+    | OPEN_BRACE e=expression AS v=var CLOSE_BRACE -> ^(AS $e $v)
     ;
   
 constructQuery
     : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate* datasetClause* whereClause* solutionModifier*)
-    | CONSTRUCT datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier
+    | CONSTRUCT datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE triplesTemplate*) solutionModifier*)
     ;
 
 describeQuery
