@@ -471,8 +471,14 @@ numericExpression
     ;
 
 additiveExpression
-    : multiplicativeExpression ( (PLUS|MINUS) ^multiplicativeExpression |  (numericLiteralPositive | numericLiteralNegative ) ( ( ASTERISK ^unaryExpression ) | ( DIVIDE ^unaryExpression ) )? )*
+    : (m1=multiplicativeExpression -> $m1) ( (additiveOperator m2=multiplicativeExpression -> ^(additiveOperator $additiveExpression $m2))  
+                                           | (numericLiteralPositive | numericLiteralNegative ) ( ( (ASTERISK u2=unaryExpression -> ^(ASTERISK $additiveExpression $u2)) ) 
+                                                                                                | ( (DIVIDE u2=unaryExpression -> ^(DIVIDE $additiveExpression $u2))) )? )*
     ; 
+    
+additiveOperator
+    : PLUS|MINUS
+    ;
     
 multiplicativeExpression
     : (u1=unaryExpression -> $u1) (multiplicativeOperator u2=unaryExpression -> ^(multiplicativeOperator $multiplicativeExpression $u2))*
