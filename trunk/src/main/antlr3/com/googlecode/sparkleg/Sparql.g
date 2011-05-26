@@ -222,7 +222,7 @@ deleteWhere
     ;
     
 modify
-    : ( WITH i=iriRef )? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH $i)* deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
+    : ( WITH i=iriRef )? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH $i)? deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
     ;
   
 deleteClause
@@ -511,8 +511,8 @@ builtInCall
     | BOUND OPEN_BRACE var CLOSE_BRACE -> ^(BOUND var)
     | IRI OPEN_BRACE expression CLOSE_BRACE -> ^(IRI expression)
     | URI OPEN_BRACE expression CLOSE_BRACE -> ^(URI expression)
-    | BNODE (OPEN_BRACE expression CLOSE_BRACE| nil) -> BNODE expression
-    | RAND nil -> ^(RAND)
+    | BNODE (OPEN_BRACE expression CLOSE_BRACE| nil) -> ^(BNODE expression)
+    | RAND nil -> RAND
     | ABS OPEN_BRACE expression CLOSE_BRACE -> ^(ABS expression)
     | CEIL OPEN_BRACE expression CLOSE_BRACE -> ^(CEIL expression)
     | FLOOR OPEN_BRACE expression CLOSE_BRACE -> ^(FLOOR expression)
@@ -534,7 +534,7 @@ builtInCall
     | SECONDS OPEN_BRACE expression CLOSE_BRACE -> ^(SECONDS expression)
     | TIMEZONE OPEN_BRACE expression CLOSE_BRACE -> ^(TIMEZONE expression)
     | TZ OPEN_BRACE expression CLOSE_BRACE -> ^(TZ expression)
-    | NOW nil -> ^(NOW)
+    | NOW nil -> NOW
     | MD5 OPEN_BRACE expression CLOSE_BRACE -> ^(MD5 expression)
     | SHA1 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA1 expression)
     | SHA224 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA224 expression)
