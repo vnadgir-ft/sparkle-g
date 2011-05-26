@@ -307,7 +307,7 @@ minusGraphPattern
     ;
 
 groupOrUnionGraphPattern
-    : groupGraphPattern (UNION ^groupGraphPattern)*
+    : (g1=groupGraphPattern->$g1) ((UNION g2=groupGraphPattern) -> ^(UNION $groupOrUnionGraphPattern $g2))*
     ;
 
 filter
@@ -444,11 +444,11 @@ expression
     ;
 
 conditionalOrExpression
-    : conditionalAndExpression ( OR ^conditionalAndExpression )*
+    : (c1=conditionalAndExpression -> $c1) (OR c2=conditionalAndExpression -> ^(OR $conditionalOrExpression $c2))*
     ;
 
 conditionalAndExpression
-    : valueLogical ( AND ^valueLogical )*
+    : (v1=valueLogical -> $v1) (AND v2=valueLogical -> ^(AND $conditionalAndExpression $v2))*
     ;
 
 valueLogical
@@ -468,7 +468,11 @@ additiveExpression
     ; 
     
 multiplicativeExpression
-    : unaryExpression ( (ASTERISK | DIVIDE) ^unaryExpression )*
+    : (u1=unaryExpression -> $u1) (multiplicativeOperator u2=unaryExpression -> ^(multiplicativeOperator $multiplicativeExpression $u2))*
+    ;
+    
+multiplicativeOperator
+    : ASTERISK | DIVIDE
     ;
 
 unaryExpression
