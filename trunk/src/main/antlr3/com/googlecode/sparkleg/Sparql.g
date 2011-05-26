@@ -456,7 +456,14 @@ valueLogical
     ;
 
 relationalExpression
-    : numericExpression ( EQUAL ^numericExpression | NOT_EQUAL ^numericExpression | LESS ^numericExpression | GREATER ^numericExpression | LESS_EQUAL ^numericExpression | GREATER_EQUAL ^numericExpression | IN ^expressionList | NOT IN ^expressionList)?
+    : (n1=numericExpression -> $n1) ( (EQUAL n2=numericExpression -> ^(EQUAL $relationalExpression $n2))   
+                                    | (NOT_EQUAL n3=numericExpression -> ^(NOT_EQUAL $relationalExpression $n3)) 
+                                    | (LESS n4=numericExpression -> ^(LESS $relationalExpression $n4)) 
+                                    | (GREATER n5=numericExpression -> ^(GREATER $relationalExpression $n5))
+                                    | (LESS_EQUAL n6=numericExpression -> ^(LESS_EQUAL $relationalExpression $n6))
+                                    | (GREATER_EQUAL n7=numericExpression -> ^(GREATER_EQUAL $relationalExpression $n7))  
+                                    | (IN l2=expressionList -> ^(IN $relationalExpression $l2))
+                                    | (NOT IN l3=expressionList -> ^(NOT IN $relationalExpression $l3)) )?
     ;
 
 numericExpression
