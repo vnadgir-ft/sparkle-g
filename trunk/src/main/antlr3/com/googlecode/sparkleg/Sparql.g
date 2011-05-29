@@ -82,11 +82,11 @@ prefixDecl
     ;
 
 selectQuery
-    : selectClause datasetClause* whereClause solutionModifier -> ^(SELECT selectClause datasetClause* whereClause* solutionModifier*)
+    : selectClause datasetClause* whereClause solutionModifier -> ^(SELECT selectClause datasetClause* whereClause* solutionModifier?)
     ;
 
 subSelect
-    : selectClause whereClause solutionModifier	-> ^(SUBSELECT whereClause* solutionModifier)
+    : selectClause whereClause solutionModifier	-> ^(SUBSELECT whereClause? solutionModifier?)
     ;
     	
 selectClause
@@ -100,12 +100,12 @@ selectVariables
     ;
   
 constructQuery
-    : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate* datasetClause* whereClause* solutionModifier*)
-    | CONSTRUCT datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE triplesTemplate*) solutionModifier*)
+    : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate datasetClause* whereClause* solutionModifier?)
+    | CONSTRUCT datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE triplesTemplate*) solutionModifier?)
     ;
 
 describeQuery
-    : DESCRIBE ( (v+=varOrIRIref)+ | ASTERISK ) datasetClause* whereClause? solutionModifier -> ^(DESCRIBE $v* ASTERISK* datasetClause* whereClause? solutionModifier*)
+    : DESCRIBE ( (v+=varOrIRIref)+ | ASTERISK ) datasetClause* whereClause? solutionModifier -> ^(DESCRIBE $v* ASTERISK* datasetClause* whereClause? solutionModifier?)
     ;
 
 askQuery
@@ -125,7 +125,7 @@ solutionModifier
     ;
 
 groupClause
-    : GROUP BY (g+=groupCondition)+ -> ^(GROUPBY $g+)
+    : GROUP BY groupCondition+ -> ^(GROUPBY groupCondition+)
     ;
     		 
 groupCondition
@@ -136,16 +136,18 @@ groupCondition
     ;
     
 havingClause
-    : HAVING (c=constraint)+ -> ^(HAVING $c+)	
+    : HAVING constraint+ -> ^(HAVING constraint+)	
     ;
     
 orderClause
-    : ORDER BY (o+=orderCondition)+ -> ^(ORDERBY $o+)
+    : ORDER BY orderCondition+ -> ^(ORDERBY orderCondition+)
     ;
 
 orderCondition
-    : ( ( ASC | DESC ) brackettedExpression ) -> ^(ORDERCONDITION ASC* DESC* brackettedExpression)
-    | ( constraint | var ) -> ^(ORDERCONDITION constraint* var*)
+    : ASC brackettedExpression -> ^(ORDERCONDITION ASC brackettedExpression)
+    | DESC brackettedExpression -> ^(ORDERCONDITION DESC brackettedExpression)
+    | constraint -> ^(ORDERCONDITION constraint)
+    | var -> ^(ORDERCONDITION var)
     ;
 	    
 limitOffsetClauses
@@ -162,7 +164,8 @@ offsetClause
     ;
 
 bindingsClause
-    : (BINDINGS var* OPEN_CURLY_BRACE bindingValueList* CLOSE_CURLY_BRACE)? -> ^(BINDINGS var* bindingValueList*)?
+    : BINDINGS var* OPEN_CURLY_BRACE bindingValueList* CLOSE_CURLY_BRACE -> ^(BINDINGS var* bindingValueList*)
+    | -> BINDINGS
     ;
     
 bindingValueList
@@ -178,31 +181,31 @@ update
     ;   
     
 load 	  
-    : LOAD SILENT? iriRef ( INTO graphRef )? -> ^(LOAD SILENT* iriRef graphRef*)
+    : LOAD SILENT? iriRef ( INTO graphRef )? -> ^(LOAD SILENT? iriRef graphRef?)
     ;
     
 clear
-    : CLEAR  SILENT? graphRefAll -> ^(CLEAR SILENT* graphRefAll)
+    : CLEAR  SILENT? graphRefAll -> ^(CLEAR SILENT? graphRefAll)
     ;
     
 drop
-    : DROP SILENT? graphRefAll -> ^(DROP SILENT* graphRefAll)
+    : DROP SILENT? graphRefAll -> ^(DROP SILENT? graphRefAll)
     ; 
 
 create
-    : CREATE SILENT? graphRef -> ^(CREATE SILENT* graphRef)
+    : CREATE SILENT? graphRef -> ^(CREATE SILENT? graphRef)
     ;
     
 add
-    : ADD SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(ADD SILENT* $from* $to*)
+    : ADD SILENT? graphOrDefault TO graphOrDefault -> ^(ADD SILENT? graphOrDefault graphOrDefault)
     ;
     
 move
-    : MOVE SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(MOVE SILENT* $from* $to*)
+    : MOVE SILENT? graphOrDefault TO graphOrDefault -> ^(MOVE SILENT? graphOrDefault graphOrDefault)
     ;
     
 copy
-    : COPY SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(COPY SILENT* $from* $to*)
+    : COPY SILENT? graphOrDefault TO graphOrDefault -> ^(COPY SILENT? graphOrDefault graphOrDefault)
     ;
 
 insert
@@ -255,15 +258,15 @@ quadPattern
     ;
     
 quads
-    : triplesTemplate? ( quadsNotTriples DOT? triplesTemplate? )*
+    : triplesTemplate? ( quadsNotTriples DOT? triplesTemplate? )* -> triplesTemplate? ( quadsNotTriples triplesTemplate? )*
     ;
     
 quadsNotTriples
-    : GRAPH varOrIRIref OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE -> varOrIRIref triplesTemplate?
+    : GRAPH varOrIRIref OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE -> ^(GRAPH varOrIRIref triplesTemplate?)
     ;
     
 triplesTemplate
-    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> triplesSameSubject ^(TRIPLESTEMPLATE triplesSameSubject*)?
+    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> ^(TRIPLESTEMPLATE triplesSameSubject+)
     ;
     	
 groupGraphPattern
@@ -271,11 +274,7 @@ groupGraphPattern
     ;
     
 groupGraphPatternSub
-    : triplesBlock? ( groupGraphPatternSubCache )* -> triplesBlock* groupGraphPatternSubCache*
-    ;
-
-groupGraphPatternSubCache
-    :  graphPatternNotTriples DOT? triplesBlock? -> graphPatternNotTriples triplesBlock?
+    : triplesBlock? (graphPatternNotTriples DOT? triplesBlock?)* -> triplesBlock? (graphPatternNotTriples triplesBlock?)*
     ; 	
 
 triplesBlock
@@ -295,7 +294,7 @@ graphGraphPattern
     ;
 
 serviceGraphPattern
-    : SERVICE SILENT? varOrIRIref groupGraphPattern -> ^(SERVICE varOrIRIref groupGraphPattern)
+    : SERVICE SILENT? varOrIRIref groupGraphPattern -> ^(SERVICE SILENT? varOrIRIref groupGraphPattern)
     ;
     
 bind
@@ -327,7 +326,8 @@ argList
     ;
 
 expressionList
-    : ( nil | OPEN_BRACE expression ( COMMA expression )* CLOSE_BRACE ) -> ^(EXPRESSIONLIST nil* expression*)
+    : OPEN_BRACE expression ( COMMA expression )* CLOSE_BRACE -> ^(EXPRESSIONLIST expression+)
+    | nil -> ^(EXPRESSIONLIST nil)
     ;	
 
 constructTemplate
@@ -339,8 +339,8 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm! propertyListNotEmpty[(CommonTree) $varOrTerm.tree]
-    | triplesNode propertyListNotEmpty[(CommonTree) $triplesNode.tree]?
+    : varOrTerm propertyListNotEmpty[(CommonTree) $varOrTerm.tree] -> propertyListNotEmpty
+    | triplesNode propertyListNotEmpty[(CommonTree) $triplesNode.tree]? -> triplesNode propertyListNotEmpty?
     ;
 
 propertyListNotEmpty[CommonTree subject]
@@ -358,7 +358,7 @@ verb
 
 triplesSameSubjectPath
     : varOrTerm propertyListNotEmptyPath[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE propertyListNotEmptyPath)
-    | triplesNode propertyListNotEmpty[(CommonTree) $triplesNode.tree]? -> ^(TRIPLE triplesNode* propertyListNotEmpty*)
+    | triplesNode propertyListNotEmpty[(CommonTree) $triplesNode.tree]? -> ^(TRIPLE triplesNode propertyListNotEmpty?)
     ;
   
 propertyListNotEmptyPath[CommonTree subject]
@@ -390,11 +390,17 @@ pathEltOrInverse
     ;
     
 pathMod
-    : ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER CLOSE_CURLY_BRACE ) )
+    : ASTERISK 
+    | QUESTION_MARK 
+    | PLUS 
+    | OPEN_CURLY_BRACE ( INTEGER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER CLOSE_CURLY_BRACE ) 
     ;
 
 pathPrimary
-    : ( iriRef | A | NEGATION pathNegatedPropertySet | OPEN_BRACE path CLOSE_BRACE )
+    : iriRef 
+    | A 
+    | NEGATION pathNegatedPropertySet 
+    | OPEN_BRACE! path CLOSE_BRACE!
     ;
 
 pathNegatedPropertySet
@@ -557,11 +563,11 @@ builtInCall
     ;
 
 regexExpression
-    : REGEX OPEN_BRACE expression COMMA expression ( COMMA expression )? CLOSE_BRACE -> ^(REGEX expression*)
+    : REGEX OPEN_BRACE expression COMMA expression ( COMMA expression )? CLOSE_BRACE -> ^(REGEX expression+)
     ;
     
 subStringExpression
-    : SUBSTR OPEN_BRACE expression COMMA expression ( COMMA expression )? CLOSE_BRACE -> ^(SUBSTR expression*)
+    : SUBSTR OPEN_BRACE expression COMMA expression ( COMMA expression )? CLOSE_BRACE -> ^(SUBSTR expression+)
     ;
     
 existsFunction
@@ -579,7 +585,7 @@ aggregate
     | MAX OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(MAX DISTINCT* expression)
     | AVG OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(AVG DISTINCT* expression)
     | SAMPLE OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(SAMPLE DISTINCT? expression)
-    | GROUP_CONCAT OPEN_BRACE DISTINCT? expression ( SEMICOLON SEPARATOR '=' string )? CLOSE_BRACE -> ^(GROUP_CONCAT DISTINCT* expression string*)
+    | GROUP_CONCAT OPEN_BRACE DISTINCT? expression ( SEMICOLON SEPARATOR '=' string )? CLOSE_BRACE -> ^(GROUP_CONCAT DISTINCT* expression string?)
     ;
     
 iriRefOrFunction
