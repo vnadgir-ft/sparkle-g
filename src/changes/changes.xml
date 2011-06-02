@@ -33,10 +33,14 @@
                 Corrected modify rule and its AST generation.
             </action>
             <action dev="Juergen.Pfundt" type="add">
+                What has been done:
+                
                 Update of grammar to current definition of Sparql 1.1 at http://www.w3.org/TR/sparql11-query, 
                 which includes Sparql Update. This refers to the version of 1th of May 2011.
                 
-                Some questions regarding various rules still remain open and have an effect on the test cases.
+                AST generation added. 
+                
+                Some remarks regarding various rules and test cases:
                 
                 1)  The Sparql.g lexer rule for PN_LOCAL must be refined, as it does not cope with trailing '.'.
                     Syntactic predicates and/or greedy=false did not solve the problem of recognizing properly
@@ -44,54 +48,18 @@
                 
                        PN_LOCAL : (PN_CHARS_U|DIGIT) ((PN_CHARS|DOT)* PN_CHARS)?;
                        
-                2)  The w3.org rule
-                
-                       TriplesBlock	  ::=  	TriplesSameSubjectPath ( '.' TriplesBlock? )?
+                    Example:
+                       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                       PREFIX person: <http://localhost/persons/>
+                       PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+                       ASK {person:John_Q_Public rdf:type foaf:Person.}
                        
-                    should correctly be written as follows
-                    
-                       TriplesBlock	  ::=  	TriplesSameSubjectPath ( '.' TriplesBlock? )*
-                       
-                3)  The w3.org rule for Update commands allows a prologue without any update command to follow.
-                    
-                       Update	  ::=  	Prologue ( Update1 ( ';' Update )? )?
-	
-                    The Sparql.g grammar expects at least one update command.
-
-	 	                   query  = update ( SEMICOLON update)*
-	 	                   update = prologue (load | clear | drop | create | insert | delete | modify)
-	
-                    What is the effect of an update command consisting of a prologue only ?
-                    
-                4)  The w3.org rule for PropertyListNotEmpty rule allows a list of ';' between any
-                    (Verb ObjectList) pattern or at the end of the rule.
-
-	 	                   PropertyListNotEmpty ::= Verb ObjectList ( ';' ( Verb ObjectList )? )*
-	 
-	                  The Sparql.g grammar follows this behaviour:
-	 
-	 	                   propertyListNotEmpty : verb objectList ( SEMICOLON ( verb objectList )? )* 
-	 
-	                  It does not hurt to have a sequence, e.g.
-	 
-	                     verb objectList ;;;; verb objectList;;;; 
-	 
-	                  instead of
-	 
-	 	                  verb objectList; verb objectList
-	 
-	                  which can be achieved by
-	 
-	 	                  propertyListNotEmpty : verb objectList (SEMICOLON verb objectList)* 
-
-                    but it would be more consistent.
-                    
-                5)  The PropertyListNotEmptyPath of the w3.org rule has also embedded a way to generate a sequence of ';'.
-                    The Sparql.g grammar follows this behaviour. 
-                    
-                6)  The triplesBlock now allows sequences of '.' (DOTS).
+                2)  I18n test cases have been successfully evaluated with AntlrWorks. GUnit seems to have
+                    a problem with these test cases and evalutes them as failed.
                 
-                
+                3)  A preprocessor for Unicode escape sequences has been successfully tested
+                    with the Unicode test cases. GUnit will evaluate these test cases as failed.
             </action>
             <action dev="Juergen.Pfundt" type="add">
                 Added AST creation.
