@@ -162,7 +162,8 @@ offsetClause
     ;
 
 bindingsClause
-    : (BINDINGS var* OPEN_CURLY_BRACE bindingValueList* CLOSE_CURLY_BRACE)? -> ^(BINDINGS var* bindingValueList*)?
+    : BINDINGS var* OPEN_CURLY_BRACE bindingValueList* CLOSE_CURLY_BRACE -> ^(BINDINGS var* bindingValueList*)
+    | -> BINDINGS
     ;
     
 bindingValueList
@@ -394,7 +395,7 @@ pathMod
     ;
 
 pathPrimary
-    : ( iriRef | A | NEGATION pathNegatedPropertySet | OPEN_BRACE path CLOSE_BRACE )
+    : ( iriRef | A | NEGATION pathNegatedPropertySet | OPEN_BRACE! path CLOSE_BRACE! )
     ;
 
 pathNegatedPropertySet
