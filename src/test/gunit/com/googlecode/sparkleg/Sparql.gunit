@@ -1277,19 +1277,19 @@ SELECT *
 <<# $Id$
 # test kanji QNames
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-PREFIX é£Ÿ: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/kanji.ttl#>
+PREFIX 食: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/kanji.ttl#>
 SELECT ?name ?food WHERE {
   [ foaf:name ?name ;
-    é£Ÿ:é£Ÿã?¹ã‚‹ ?food ] . }
+    食:食べる ?food ] . }
 >> OK
 
 <<# $Id$
 # test wide spaces
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-PREFIX é£Ÿ: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/kanji.ttl#>
+PREFIX 食: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/kanji.ttl#>
 SELECT ?name WHERE {
   [ foaf:name ?name ;
-    é£Ÿ:é£Ÿã?¹ã‚‹ é£Ÿ:æµ·è€? ] . }
+    食:食べる 食:海老 ] . }
 >> OK
 
 <<# Figure out what happens with normalization form C.
@@ -1297,7 +1297,7 @@ PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX HR: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/normalization.ttl#>
 SELECT ?name
  WHERE { [ foaf:name ?name; 
-           HR:resumeÌ? ?resume ] . }
+           HR:resumé ?resume ] . }
 >> OK
 
 <<# Example 1 from
@@ -4326,7 +4326,7 @@ WHERE {
    ?s ?p ?o 
    MINUS 
      { ?x ?y ?z }
-}> OK
+}>> OK
 
 <<PREFIX : <http://example/>
 SELECT * 
@@ -4800,3 +4800,4 @@ WHERE { ?x foaf:name  ?name ;
            func:empId   ?id .
         FILTER (func:even(?id)) } >> OK
         
+
