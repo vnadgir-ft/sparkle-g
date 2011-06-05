@@ -32,25 +32,25 @@ UPDATE;
 PROLOGUE;
 MODIFY;
 SUBSELECT;
-SELECTCLAUSE;
+SELECT_CLAUSE;
 WHERE_CLAUSE;
 VAR;
-GROUPBY;
-ORDERBY;
-ORDERCONDITION;
-BINDINGVALUE;
-TRIPLESTEMPLATE;
-GROUPGRAPHPATTERN;
-ARGLIST;
-EXPRESSIONLIST;
-CONSTRUCTTRIPLES;
-PROPERTYLIST;
+GROUP_BY;
+ORDER_BY;
+ORDER_CONDITION;
+BINDING_VALUE;
+TRIPLES_TEMPLATE;
+GROUP_GRAPH_PATTERN;
+ARG_LIST;
+EXPRESSION_LIST;
+CONSTRUCT_TRIPLES;
+PROPERTY_LIST;
 COLLECTION;
 TRIPLE;
 SUBJECT;
 PREDICATE;
 OBJECT;
-NOTEXISTS;
+NOT_EXISTS;
 FUNCTION;
 PATH_NEGATED;
 }
@@ -91,8 +91,8 @@ subSelect
     ;
     	
 selectClause
-    : SELECT ( DISTINCT | REDUCED )? ASTERISK -> ^(SELECTCLAUSE DISTINCT* REDUCED* ASTERISK)
-    | SELECT ( DISTINCT | REDUCED )? (v+=selectVariables)+ -> ^(SELECTCLAUSE DISTINCT* REDUCED* $v*)
+    : SELECT ( DISTINCT | REDUCED )? ASTERISK -> ^(SELECT_CLAUSE DISTINCT* REDUCED* ASTERISK)
+    | SELECT ( DISTINCT | REDUCED )? (v+=selectVariables)+ -> ^(SELECT_CLAUSE DISTINCT* REDUCED* $v*)
     ;
 
 selectVariables
@@ -126,7 +126,7 @@ solutionModifier
     ;
 
 groupClause
-    : GROUP BY groupCondition+ -> ^(GROUPBY groupCondition+)
+    : GROUP BY groupCondition+ -> ^(GROUP_BY groupCondition+)
     ;
     		 
 groupCondition
@@ -141,12 +141,12 @@ havingClause
     ;
     
 orderClause
-    : ORDER BY orderCondition+ -> ^(ORDERBY orderCondition+)
+    : ORDER BY orderCondition+ -> ^(ORDER_BY orderCondition+)
     ;
 
 orderCondition
-    : ( ( ASC | DESC ) brackettedExpression ) -> ^(ORDERCONDITION ASC* DESC* brackettedExpression)
-    | ( constraint | var ) -> ^(ORDERCONDITION constraint* var*)
+    : ( ( ASC | DESC ) brackettedExpression ) -> ^(ORDER_CONDITION ASC* DESC* brackettedExpression)
+    | ( constraint | var ) -> ^(ORDER_CONDITION constraint* var*)
     ;
 	    
 limitOffsetClauses
@@ -168,7 +168,7 @@ bindingsClause
     ;
     
 bindingValueList
-    : OPEN_BRACE bindingValue* CLOSE_BRACE -> ^(BINDINGVALUE bindingValue*)
+    : OPEN_BRACE bindingValue* CLOSE_BRACE -> ^(BINDING_VALUE bindingValue*)
     ;
     	
 bindingValue
@@ -265,11 +265,11 @@ quadsNotTriples
     ;
     
 triplesTemplate
-    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> triplesSameSubject ^(TRIPLESTEMPLATE triplesSameSubject*)?
+    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> triplesSameSubject ^(TRIPLES_TEMPLATE triplesSameSubject*)?
     ;
     	
 groupGraphPattern
-    : OPEN_CURLY_BRACE ( subSelect | groupGraphPatternSub ) CLOSE_CURLY_BRACE -> ^(GROUPGRAPHPATTERN subSelect* groupGraphPatternSub*)
+    : OPEN_CURLY_BRACE ( subSelect | groupGraphPatternSub ) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect* groupGraphPatternSub*)
     ;
     
 groupGraphPatternSub
@@ -321,7 +321,7 @@ constraint
     ;
 
 functionCall
-    : iriRef argList -> ^(FUNCTION iriRef ^(ARGLIST argList))
+    : iriRef argList -> ^(FUNCTION iriRef ^(ARG_LIST argList))
     ;
 
 argList
@@ -329,11 +329,11 @@ argList
     ;
 
 expressionList
-    : ( nil | OPEN_BRACE expression ( COMMA expression )* CLOSE_BRACE ) -> ^(EXPRESSIONLIST nil* expression*)
+    : ( nil | OPEN_BRACE expression ( COMMA expression )* CLOSE_BRACE ) -> ^(EXPRESSION_LIST nil* expression*)
     ;	
 
 constructTemplate
-    : OPEN_CURLY_BRACE constructTriples? CLOSE_CURLY_BRACE -> ^(CONSTRUCTTRIPLES constructTriples?)
+    : OPEN_CURLY_BRACE constructTriples? CLOSE_CURLY_BRACE -> ^(CONSTRUCT_TRIPLES constructTriples?)
     ;
 
 constructTriples
@@ -341,8 +341,8 @@ constructTriples
     ;
 
 triplesSameSubject
-    : v=varOrTerm propertyListNotEmpty[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE /*$v*/ propertyListNotEmpty)
-    | (t=triplesNode -> $t) (p=propertyListNotEmpty[(CommonTree) $triplesNode.tree]? -> ^(TRIPLE $triplesSameSubject $p?))
+    : v=varOrTerm propertyListNotEmpty[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE propertyListNotEmpty)
+    | (t=triplesNode -> $t) (p=propertyListNotEmpty[(CommonTree) $t.tree]? -> ^(TRIPLE $triplesSameSubject $p?))
     ;
 
 propertyListNotEmpty[CommonTree subject]
@@ -360,7 +360,7 @@ verb
 
 triplesSameSubjectPath
     : varOrTerm propertyListNotEmptyPath[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE propertyListNotEmptyPath)
-    | (t=triplesNode -> $t) (p=propertyListNotEmpty[(CommonTree) $triplesNode.tree]? -> ^(TRIPLE $triplesSameSubjectPath $p?))
+    | (t=triplesNode -> $t) (p=propertyListNotEmpty[(CommonTree) $t.tree]? -> ^(TRIPLE $triplesSameSubjectPath $p?))
     ;
   
 propertyListNotEmptyPath[CommonTree subject]
@@ -571,7 +571,7 @@ existsFunction
     ;
 
 notExistsFunction
-    : NOT EXISTS groupGraphPattern -> ^(NOTEXISTS groupGraphPattern)
+    : NOT EXISTS groupGraphPattern -> ^(NOT_EXISTS groupGraphPattern)
     ;
 
 aggregate
@@ -585,7 +585,7 @@ aggregate
     ;
     
 iriRefOrFunction
-    : iriRef argList? -> ^(FUNCTION iriRef ^(ARGLIST argList)?)
+    : iriRef argList? -> ^(FUNCTION iriRef ^(ARG_LIST argList)?)
     ;
 
 rdfLiteral
