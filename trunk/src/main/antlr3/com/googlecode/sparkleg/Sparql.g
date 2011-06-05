@@ -52,6 +52,7 @@ PREDICATE;
 OBJECT;
 NOTEXISTS;
 FUNCTION;
+PATH_NEGATED;
 }
 
 @header {
@@ -340,8 +341,8 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty[(CommonTree) $varOrTerm.tree] -> propertyListNotEmpty
-    | triplesNode propertyListNotEmpty[(CommonTree) $triplesNode.tree]?
+    : v=varOrTerm propertyListNotEmpty[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE /*$v*/ propertyListNotEmpty)
+    | (t=triplesNode -> $t) (p=propertyListNotEmpty[(CommonTree) $triplesNode.tree]? -> ^(TRIPLE $triplesSameSubject $p?))
     ;
 
 propertyListNotEmpty[CommonTree subject]
@@ -359,7 +360,7 @@ verb
 
 triplesSameSubjectPath
     : varOrTerm propertyListNotEmptyPath[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE propertyListNotEmptyPath)
-    | triplesNode propertyListNotEmpty[(CommonTree) $triplesNode.tree]? -> ^(TRIPLE triplesNode* propertyListNotEmpty*)
+    | (t=triplesNode -> $t) (p=propertyListNotEmpty[(CommonTree) $triplesNode.tree]? -> ^(TRIPLE $triplesSameSubjectPath $p?))
     ;
   
 propertyListNotEmptyPath[CommonTree subject]
@@ -399,7 +400,7 @@ pathPrimary
     ;
 
 pathNegatedPropertySet
-    : ( pathOneInPropertySet | OPEN_BRACE ( pathOneInPropertySet ( PIPE pathOneInPropertySet )* )? CLOSE_BRACE )
+    : (pathOneInPropertySet | OPEN_BRACE ( pathOneInPropertySet ( PIPE pathOneInPropertySet )* )? CLOSE_BRACE) -> ^(PATH_NEGATED pathOneInPropertySet+)
     ;  	
 
 pathOneInPropertySet
@@ -408,7 +409,7 @@ pathOneInPropertySet
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | v=OPEN_SQUARE_BRACKET propertyListNotEmpty[(CommonTree) $v.tree] CLOSE_SQUARE_BRACKET -> propertyListNotEmpty
+    | OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(VAR,"[ ]"))] CLOSE_SQUARE_BRACKET -> ^(VAR["[ ]"] propertyListNotEmpty)
     ;
 
 graphNode
