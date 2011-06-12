@@ -1,5 +1,5 @@
 /*
- *    Copyright 2007-2010 The sparkle-g Team
+ *    Copyright 2007-2011 The sparkle-g Team
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -948,9 +948,9 @@ fragment
 PN_PREFIX : PN_CHARS_BASE ((PN_CHARS|DOT)* PN_CHARS)?;
 
 fragment
-PN_LOCAL : (PN_CHARS_U|DIGIT)  ((PN_CHARS|{    int LA1 = input.LA(1);
-                    	                       int LA2 = input.LA(2);
-                    	                       if ( LA1=='.' ) {
+PN_LOCAL : (PN_CHARS_U|DIGIT)  ((PN_CHARS|{    
+                    	                       if ( input.LA(1)=='.' ) {
+                    	                          int LA2 = input.LA(2);
                     	       	                  if ( !((LA2>='-' && LA2<='.')||(LA2>='0' && LA2<='9')||(LA2>='A' && LA2<='Z')||LA2=='_'||(LA2>='a' && LA2<='z')||LA2=='\u00B7'||(LA2>='\u00C0' && LA2<='\u00D6')||(LA2>='\u00D8' && LA2<='\u00F6')||(LA2>='\u00F8' && LA2<='\u037D')||(LA2>='\u037F' && LA2<='\u1FFF')||(LA2>='\u200C' && LA2<='\u200D')||(LA2>='\u203F' && LA2<='\u2040')||(LA2>='\u2070' && LA2<='\u218F')||(LA2>='\u2C00' && LA2<='\u2FEF')||(LA2>='\u3001' && LA2<='\uD7FF')||(LA2>='\uF900' && LA2<='\uFDCF')||(LA2>='\uFDF0' && LA2<='\uFFFD')) ) {
                     	       	                     return;
                     	       	                  }
