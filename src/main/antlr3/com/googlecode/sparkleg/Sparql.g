@@ -40,6 +40,7 @@ ORDER_BY;
 ORDER_CONDITION;
 BINDING_VALUE;
 TRIPLES_TEMPLATE;
+TRIPLES_BLOCK;
 GROUP_GRAPH_PATTERN;
 ARG_LIST;
 EXPRESSION_LIST;
@@ -52,6 +53,8 @@ PREDICATE;
 OBJECT;
 NOT_EXISTS;
 FUNCTION;
+PATH;
+PATH_PRIMARY;
 PATH_NEGATED;
 }
 
@@ -195,15 +198,15 @@ create
     ;
     
 add
-    : ADD SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(ADD SILENT* $from* $to*)
+    : ADD SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(ADD SILENT* $from $to)
     ;
     
 move
-    : MOVE SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(MOVE SILENT* $from* $to*)
+    : MOVE SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(MOVE SILENT* $from $to)
     ;
     
 copy
-    : COPY SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(COPY SILENT* $from* $to*)
+    : COPY SILENT? from=graphOrDefault TO to=graphOrDefault -> ^(COPY SILENT* $from $to)
     ;
 
 insert
@@ -280,7 +283,7 @@ groupGraphPatternSubCache
     ; 	
 
 triplesBlock
-    : triplesSameSubjectPath ( DOT triplesSameSubjectPath)* DOT? -> triplesSameSubjectPath+
+    : triplesSameSubjectPath ( DOT triplesSameSubjectPath)* DOT? -> ^(TRIPLES_BLOCK triplesSameSubjectPath+)
     ;
 
 graphPatternNotTriples
@@ -375,7 +378,7 @@ verbSimple
     ;
     	
 path
-    : pathSequence ( PIPE pathSequence )*
+    : pathSequence ( PIPE pathSequence )* -> PATH pathSequence ( PIPE pathSequence )*
     ; 
 
 pathSequence
@@ -395,7 +398,10 @@ pathMod
     ;
 
 pathPrimary
-    : ( iriRef | A | NEGATION pathNegatedPropertySet | OPEN_BRACE! path CLOSE_BRACE! )
+    : iriRef -> ^(PATH_PRIMARY iriRef)
+    | A -> ^(PATH_PRIMARY A)
+    | NEGATION pathNegatedPropertySet -> ^(PATH_PRIMARY NEGATION pathNegatedPropertySet)
+    | OPEN_BRACE path CLOSE_BRACE -> ^(PATH_PRIMARY path)
     ;
 
 pathNegatedPropertySet
@@ -408,7 +414,7 @@ pathOneInPropertySet
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(VAR,"[ ]"))] CLOSE_SQUARE_BRACKET -> ^(VAR["[ ]"] propertyListNotEmpty)
+    | lsb=OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(VAR,"[ ]"))] CLOSE_SQUARE_BRACKET -> ^(VAR[$lsb,"[ ]"] propertyListNotEmpty)
     ;
 
 graphNode
@@ -473,8 +479,9 @@ numericExpression
 
 additiveExpression
     : (m1=multiplicativeExpression -> $m1) ( (additiveOperator m2=multiplicativeExpression -> ^(additiveOperator $additiveExpression $m2))  
-                                           | (numericLiteralPositive | numericLiteralNegative ) ( ( (ASTERISK u2=unaryExpression -> ^(ASTERISK $additiveExpression $u2)) ) 
-                                                                                                | ( (DIVIDE u2=unaryExpression -> ^(DIVIDE $additiveExpression $u2))) )? )*
+                                             | (n1=numericLiteralPositive -> ^(PLUS $additiveExpression $n1) | n2=numericLiteralNegative -> ^(PLUS $additiveExpression $n2) ) 
+                                             ( ( (ASTERISK u2=unaryExpression -> ^(ASTERISK $additiveExpression $u2)) ) 
+                                             | ( (DIVIDE u2=unaryExpression -> ^(DIVIDE $additiveExpression $u2))) )? )*
     ; 
     
 additiveOperator
