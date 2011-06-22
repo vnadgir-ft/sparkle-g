@@ -56,6 +56,10 @@ FUNCTION;
 PATH;
 PATH_PRIMARY;
 PATH_NEGATED;
+UNARY_NOT;
+UNARY_PLUS;
+UNARY_MINUS;
+UNARY;
 }
 
 @header {
@@ -319,7 +323,9 @@ filter
     ;
 
 constraint
-    : brackettedExpression | builtInCall | functionCall
+    : brackettedExpression
+    | builtInCall
+    | functionCall
     ;
 
 functionCall
@@ -327,7 +333,8 @@ functionCall
     ;
 
 argList
-    : ( nil | OPEN_BRACE DISTINCT? expression ( COMMA expression )* CLOSE_BRACE ) -> DISTINCT? nil* expression*
+    : nil -> nil
+    | OPEN_BRACE DISTINCT? expression ( COMMA expression )* CLOSE_BRACE -> DISTINCT? expression*
     ;
 
 expressionList
@@ -414,7 +421,7 @@ pathOneInPropertySet
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | lsb=OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(VAR,"[ ]"))] CLOSE_SQUARE_BRACKET -> ^(VAR[$lsb,"[ ]"] propertyListNotEmpty)
+    | lsb=OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(VAR,"[]"))] CLOSE_SQUARE_BRACKET -> ^(VAR[$lsb,"[]"] propertyListNotEmpty)
     ;
 
 graphNode
@@ -497,10 +504,10 @@ multiplicativeOperator
     ;
 
 unaryExpression
-    : NEGATION primaryExpression -> ^(NEGATION primaryExpression)
-    | PLUS primaryExpression -> ^(PLUS primaryExpression)
-    | MINUS primaryExpression -> ^(MINUS primaryExpression)
-    | primaryExpression -> primaryExpression
+    : op=NEGATION primaryExpression -> ^(UNARY_NOT[$op] /*NEGATION*/ primaryExpression)
+    | op=PLUS primaryExpression -> ^(UNARY_PLUS[$op] /*PLUS*/ primaryExpression)
+    | op=MINUS primaryExpression -> ^(UNARY_MINUS[$op] /*MINUS*/ primaryExpression)
+    | primaryExpression -> ^(UNARY primaryExpression)
     ;
 
 primaryExpression
@@ -587,11 +594,12 @@ aggregate
     | MAX OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(MAX DISTINCT* expression)
     | AVG OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(AVG DISTINCT* expression)
     | SAMPLE OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(SAMPLE DISTINCT? expression)
-    | GROUP_CONCAT OPEN_BRACE DISTINCT? expression ( SEMICOLON SEPARATOR '=' string )? CLOSE_BRACE -> ^(GROUP_CONCAT DISTINCT* expression string*)
+    | GROUP_CONCAT OPEN_BRACE DISTINCT? expression ( SEMICOLON SEPARATOR EQUAL string )? CLOSE_BRACE -> ^(GROUP_CONCAT DISTINCT* expression string*)
     ;
     
 iriRefOrFunction
-    : iriRef argList? -> ^(FUNCTION iriRef ^(ARG_LIST argList)?)
+    : iriRef 
+    | iriRef argList -> ^(FUNCTION iriRef ^(ARG_LIST argList))
     ;
 
 rdfLiteral
