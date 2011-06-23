@@ -129,7 +129,7 @@ whereClause
     ;
 
 solutionModifier
-    : groupClause? havingClause? orderClause? limitOffsetClauses?
+    : groupClause? havingClause? orderClause? limitOffsetClauses? -> groupClause* havingClause* orderClause* limitOffsetClauses*
     ;
 
 groupClause
@@ -152,13 +152,15 @@ orderClause
     ;
 
 orderCondition
-    : ( ( ASC | DESC ) brackettedExpression ) -> ^(ORDER_CONDITION ASC* DESC* brackettedExpression)
-    | ( constraint | var ) -> ^(ORDER_CONDITION constraint* var*)
+    : ASC brackettedExpression -> ^(ORDER_CONDITION ASC brackettedExpression)
+    | DESC brackettedExpression -> ^(ORDER_CONDITION DESC brackettedExpression)
+    | constraint -> ^(ORDER_CONDITION constraint)
+    | var -> ^(ORDER_CONDITION var)
     ;
 	    
 limitOffsetClauses
-    : limitClause offsetClause? 
-    | offsetClause limitClause?
+    : limitClause offsetClause? -> limitClause offsetClause*
+    | offsetClause limitClause? -> offsetClause limitClause*
     ;
 
 limitClause
