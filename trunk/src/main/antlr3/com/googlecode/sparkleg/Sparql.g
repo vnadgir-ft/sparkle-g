@@ -357,11 +357,11 @@ triplesSameSubject
     ;
 
 propertyListNotEmpty[CommonTree subject]
-    : v=verb objectList[$subject, (CommonTree) $v.tree] (SEMICOLON (v=verb objectList[$subject, (CommonTree) $v.tree])?)* -> objectList+
+    : v=verb objectList[subject, (CommonTree) $v.tree] (SEMICOLON (v=verb objectList[$subject, (CommonTree) $v.tree])?)* -> objectList+
     ;
 
 objectList[CommonTree subject, CommonTree predicate]
-    : graphNode ( COMMA graphNode )* -> (^(SUBJECT {$subject}) ^(PREDICATE {$predicate}) ^(OBJECT graphNode))+
+    : graphNode ( COMMA graphNode )* -> (^(SUBJECT {subject}) ^(PREDICATE {$predicate}) ^(OBJECT graphNode))+
     ;
 
 verb
@@ -375,7 +375,7 @@ triplesSameSubjectPath
     ;
   
 propertyListNotEmptyPath[CommonTree subject]
-    : (p=verbPath  objectList[$subject, (CommonTree) $p.tree]| v=verbSimple objectList[$subject, (CommonTree) $v.tree]) (SEMICOLON (p=verbPath objectList[$subject, (CommonTree) $p.tree]  | v=verbSimple  objectList[$subject, (CommonTree) $v.tree] )?)* -> objectList+
+    : (p=verbPath  objectList[subject, (CommonTree) $p.tree]| v=verbSimple objectList[$subject, (CommonTree) $v.tree]) (SEMICOLON (p=verbPath objectList[$subject, (CommonTree) $p.tree]  | v=verbSimple  objectList[$subject, (CommonTree) $v.tree] )?)* -> objectList+
     ;
     
 verbPath
@@ -423,7 +423,7 @@ pathOneInPropertySet
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | lsb=OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(VAR,"[]"))] CLOSE_SQUARE_BRACKET -> ^(VAR[$lsb,"[]"] propertyListNotEmpty)
+    | lsb=OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(VAR,"[]"))] CLOSE_SQUARE_BRACKET -> ^(TRIPLE propertyListNotEmpty)
     ;
 
 graphNode
