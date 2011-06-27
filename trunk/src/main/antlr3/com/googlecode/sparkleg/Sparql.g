@@ -281,7 +281,7 @@ groupGraphPattern
     ;
     
 groupGraphPatternSub
-    : triplesBlock? ( groupGraphPatternSubCache )* -> triplesBlock* groupGraphPatternSubCache*
+    : triplesBlock? ( groupGraphPatternSubCache )* -> triplesBlock? groupGraphPatternSubCache*
     ;
 
 groupGraphPatternSubCache
@@ -357,11 +357,11 @@ triplesSameSubject
     ;
 
 propertyListNotEmpty[CommonTree subject]
-    : v=verb objectList[subject, (CommonTree) $v.tree] (SEMICOLON (v=verb objectList[$subject, (CommonTree) $v.tree])?)* -> objectList+
+    : v=verb objectList[subject, (CommonTree) $v.tree] (SEMICOLON (v=verb objectList[subject, (CommonTree) $v.tree])?)* -> objectList+
     ;
 
 objectList[CommonTree subject, CommonTree predicate]
-    : graphNode ( COMMA graphNode )* -> (^(SUBJECT {subject}) ^(PREDICATE {$predicate}) ^(OBJECT graphNode))+
+    : graphNode ( COMMA graphNode )* -> (^(SUBJECT {subject}) ^(PREDICATE {predicate}) ^(OBJECT graphNode))+
     ;
 
 verb
@@ -375,7 +375,7 @@ triplesSameSubjectPath
     ;
   
 propertyListNotEmptyPath[CommonTree subject]
-    : (p=verbPath  objectList[subject, (CommonTree) $p.tree]| v=verbSimple objectList[$subject, (CommonTree) $v.tree]) (SEMICOLON (p=verbPath objectList[$subject, (CommonTree) $p.tree]  | v=verbSimple  objectList[$subject, (CommonTree) $v.tree] )?)* -> objectList+
+    : (p=verbPath  objectList[subject, (CommonTree) $p.tree]| v=verbSimple objectList[subject, (CommonTree) $v.tree]) (SEMICOLON (p=verbPath objectList[subject, (CommonTree) $p.tree]  | v=verbSimple  objectList[subject, (CommonTree) $v.tree] )?)* -> objectList+
     ;
     
 verbPath
@@ -506,9 +506,9 @@ multiplicativeOperator
     ;
 
 unaryExpression
-    : op=NEGATION primaryExpression -> ^(UNARY_NOT[$op] /*NEGATION*/ primaryExpression)
-    | op=PLUS primaryExpression -> ^(UNARY_PLUS[$op] /*PLUS*/ primaryExpression)
-    | op=MINUS primaryExpression -> ^(UNARY_MINUS[$op] /*MINUS*/ primaryExpression)
+    : op=NEGATION primaryExpression -> ^(UNARY_NOT[$op] primaryExpression)
+    | op=PLUS primaryExpression -> ^(UNARY_PLUS[$op] primaryExpression)
+    | op=MINUS primaryExpression -> ^(UNARY_MINUS[$op] primaryExpression)
     | primaryExpression -> ^(UNARY primaryExpression)
     ;
 
