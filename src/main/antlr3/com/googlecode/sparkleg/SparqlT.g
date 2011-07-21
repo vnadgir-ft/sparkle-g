@@ -25,7 +25,7 @@ tree grammar SparqlT;
 options {
 tokenVocab=Sparql; // reuse token types
 ASTLabelType=CommonTree; // $label will have type CommonTree
-//output=template;
+output=AST; //template;
 }
 
 @header {
@@ -225,7 +225,7 @@ quadPattern
     ;
     
 quads
-    : triplesTemplate? ( quadsNotTriples triplesTemplate? )*
+    : triplesTemplate? (quadsNotTriples triplesTemplate?)*
     ;
     
 quadsNotTriples
@@ -315,12 +315,16 @@ constructTriples
     ;
 
 triplesSameSubject
-    : ^(TRIPLE objectList)
-    | ^(TRIPLE triplesSameSubject triplesSameSubject?)
+    : ^(TRIPLE propertyListNotEmpty)
+    | ^(TRIPLE triplesNode (propertyListNotEmpty)?)
+    ;
+    
+propertyListNotEmpty
+    : (^(SUBJECT varOrTerm) ^(PREDICATE verb) objectList)+
     ;
 
 objectList
-    : (^(SUBJECT varOrTerm?) ^(PREDICATE verb) ^(OBJECT graphNode))+
+    : (^(OBJECT graphNode))+
     ;
 
 verb
@@ -330,24 +334,24 @@ verb
     ;
 
 triplesSameSubjectPath
-    : ^(TRIPLE objectList)
-    | ^(TRIPLE triplesSameSubjectPath)
+    : ^(TRIPLE propertyListNotEmpty)
+    | ^(TRIPLE triplesNode (propertyListNotEmpty)?)
     ;
-      
+    
 path
-    : PATH pathSequence ( PIPE pathSequence )*
+    : ^(PATH pathSequence+)
     ; 
 
 pathSequence
-    : pathEltOrInverse ( DIVIDE pathEltOrInverse )*
+    : ^(PATH_SEQUENCE pathEltOrInverse+)
+    ;
+    
+pathEltOrInverse
+    : INVERSE? pathElt
     ;
     	  	
 pathElt
     : pathPrimary pathMod?
-    ;
-    
-pathEltOrInverse
-    : pathElt | INVERSE pathElt
     ;
     
 pathMod
@@ -371,7 +375,7 @@ pathOneInPropertySet
 	
 triplesNode
     : ^(COLLECTION graphNode+)
-    | ^(TRIPLE objectList)
+    | ^(PROPERTY_LIST propertyListNotEmpty)
     ;
 
 graphNode
@@ -379,7 +383,7 @@ graphNode
     ;
 
 varOrTerm
-    : var | graphTerm | VAR
+    : var | graphTerm | BLANK_NODE
     ;
 
 varOrIRIref
