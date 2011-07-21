@@ -54,12 +54,14 @@ OBJECT;
 NOT_EXISTS;
 FUNCTION;
 PATH;
+PATH_SEQUENCE;
 PATH_PRIMARY;
 PATH_NEGATED;
 UNARY_NOT;
 UNARY_PLUS;
 UNARY_MINUS;
 UNARY;
+BLANK_NODE;
 }
 
 @header {
@@ -103,8 +105,8 @@ selectClause
     ;
 
 selectVariables
-    : v=var -> ^(VAR $v) 
-    | OPEN_BRACE e=expression AS v=var CLOSE_BRACE -> ^(AS $e $v)
+    : var -> ^(VAR var) 
+    | OPEN_BRACE expression AS var CLOSE_BRACE -> ^(AS expression var)
     ;
   
 constructQuery
@@ -232,7 +234,7 @@ deleteWhere
     ;
     
 modify
-    : ( WITH i=iriRef )? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH $i)? deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
+    : ( WITH iriRef )? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
     ;
   
 deleteClause
@@ -352,16 +354,16 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE propertyListNotEmpty)
-    | (t=triplesNode -> $t) (p=propertyListNotEmpty[(CommonTree) $t.tree]? -> ^(TRIPLE $triplesSameSubject $p?))
+    : varOrTerm propertyListNotEmpty[(CommonTree)$varOrTerm.tree] -> ^(TRIPLE propertyListNotEmpty)
+    | triplesNode propertyListNotEmpty[new CommonTree(new CommonToken(BLANK_NODE,"[]"))]? -> ^(TRIPLE triplesNode (/*^(SUBJECT BLANK_NODE)*/ propertyListNotEmpty)?) 
     ;
 
 propertyListNotEmpty[CommonTree subject]
-    : v=verb objectList[subject, (CommonTree) $v.tree] (SEMICOLON (v=verb objectList[subject, (CommonTree) $v.tree])?)* -> objectList+
+    : verb objectList (SEMICOLON (verb objectList)?)* -> (^(SUBJECT {new CommonTree(subject)}) ^(PREDICATE verb)  objectList)+
     ;
 
-objectList[CommonTree subject, CommonTree predicate]
-    : graphNode ( COMMA graphNode )* -> (^(SUBJECT {subject}) ^(PREDICATE {predicate}) ^(OBJECT graphNode))+
+objectList
+    : graphNode ( COMMA graphNode )* -> ^(OBJECT graphNode)+
     ;
 
 verb
@@ -370,14 +372,19 @@ verb
     ;
 
 triplesSameSubjectPath
-    : varOrTerm propertyListNotEmptyPath[(CommonTree) $varOrTerm.tree] -> ^(TRIPLE propertyListNotEmptyPath)
-    | (t=triplesNode -> $t) (p=propertyListNotEmpty[(CommonTree) $t.tree]? -> ^(TRIPLE $triplesSameSubjectPath $p?))
+    : varOrTerm propertyListNotEmptyPath[(CommonTree)$varOrTerm.tree] -> ^(TRIPLE propertyListNotEmptyPath)
+    | triplesNode propertyListNotEmpty[new CommonTree(new CommonToken(BLANK_NODE,"[]"))]? -> ^(TRIPLE  triplesNode (/*^(SUBJECT BLANK_NODE)*/ propertyListNotEmpty)?)
     ;
   
 propertyListNotEmptyPath[CommonTree subject]
-    : (p=verbPath  objectList[subject, (CommonTree) $p.tree]| v=verbSimple objectList[subject, (CommonTree) $v.tree]) (SEMICOLON (p=verbPath objectList[subject, (CommonTree) $p.tree]  | v=verbSimple  objectList[subject, (CommonTree) $v.tree] )?)* -> objectList+
+    : verbSimpleOrPath objectList (SEMICOLON (verbSimpleOrPath objectList)?)* -> (^(SUBJECT {new CommonTree(subject)}) ^(PREDICATE verbSimpleOrPath) objectList)+
     ;
-    
+  
+verbSimpleOrPath
+    : verbPath
+    | verbSimple
+    ;
+  
 verbPath
     : path
     ;
@@ -387,21 +394,21 @@ verbSimple
     ;
     	
 path
-    : pathSequence ( PIPE pathSequence )* -> PATH pathSequence ( PIPE pathSequence )*
+    : pathSequence ( PIPE pathSequence )* -> ^(PATH pathSequence+)
     ; 
 
 pathSequence
-    : pathEltOrInverse ( DIVIDE pathEltOrInverse )*
+    : pathEltOrInverse ( DIVIDE pathEltOrInverse )* -> ^(PATH_SEQUENCE pathEltOrInverse+)
     ;
-    	  	
+
+pathEltOrInverse
+    : INVERSE? pathElt
+    ;
+       	  	
 pathElt
     : pathPrimary pathMod?
     ;
-    
-pathEltOrInverse
-    : pathElt | INVERSE pathElt
-    ;
-    
+
 pathMod
     : ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER CLOSE_CURLY_BRACE ) )
     ;
@@ -423,7 +430,7 @@ pathOneInPropertySet
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | lsb=OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(VAR,"[]"))] CLOSE_SQUARE_BRACKET -> ^(TRIPLE propertyListNotEmpty)
+    | OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(BLANK_NODE,"[]"))] CLOSE_SQUARE_BRACKET -> ^(PROPERTY_LIST propertyListNotEmpty)
     ;
 
 graphNode
@@ -431,7 +438,8 @@ graphNode
     ;
 
 varOrTerm
-    : var | graphTerm
+    : var
+    | graphTerm
     ;
 
 varOrIRIref
@@ -661,7 +669,7 @@ blankNode
 
 anon
     : OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
-    ;	
+    ;
 // $>
 
 // $<Lexer
