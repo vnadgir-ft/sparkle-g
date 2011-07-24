@@ -1274,32 +1274,6 @@ SELECT *
 }
 >> OK
 
-<<# $Id$
-# test kanji QNames
-PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-PREFIX 食: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/kanji.ttl#>
-SELECT ?name ?food WHERE {
-  [ foaf:name ?name ;
-    食:食べる ?food ] . }
->> OK
-
-<<# $Id$
-# test wide spaces
-PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-PREFIX 食: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/kanji.ttl#>
-SELECT ?name WHERE {
-  [ foaf:name ?name ;
-    食:食べる 食:海老 ] . }
->> OK
-
-<<# Figure out what happens with normalization form C.
-PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-PREFIX HR: <http://www.w3.org/2001/sw/DataAccess/tests/data/i18n/normalization.ttl#>
-SELECT ?name
- WHERE { [ foaf:name ?name; 
-           HR:resumé ?resume ] . }
->> OK
-
 <<# Example 1 from
 # http://lists.w3.org/Archives/Public/public-rdf-dawg/2005JulSep/0096
 # $Id$
@@ -2431,17 +2405,6 @@ WHERE { <x> <p> "x\t" }
 WHERE { <x> <p> "\tx" }
 >> OK
 
-<<PREFIX : <http://example/> 
-SELECT *
-WHERE { <\u0078> :\u0070 ?xx\u0078 }
->> OK
-
-<<PREFIX : <http://example/> 
-SELECT *
-# Comments can contain \ u
-# <\u0078> :\u0070 ?xx\u0078
-WHERE { <\u0078> :\u0070 ?xx\u0078 }
->> OK
 
 <<ASK {}
 >> OK
