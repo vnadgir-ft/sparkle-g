@@ -179,7 +179,7 @@ insert
     ;
    
 delete 	  
-    : DELETE ( deleteData | deleteWhere )
+    : DELETE (deleteData | deleteWhere)
     ;
 
 deleteData
@@ -250,7 +250,7 @@ groupGraphPatternSubCache
     ;
 
 triplesBlock
-    : ^(TRIPLES_BLOCK triplesSameSubjectPath+)
+    : triplesSameSubjectPath+
     ;
 
 graphPatternNotTriples
@@ -315,12 +315,12 @@ constructTriples
     ;
 
 triplesSameSubject
-    : ^(TRIPLE propertyListNotEmpty)
-    | ^(TRIPLE triplesNode (propertyListNotEmpty)?)
+    : ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty)
+    | ^(TRIPLES_SAME_SUBJECT triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?)
     ;
     
 propertyListNotEmpty
-    : (^(SUBJECT varOrTerm) ^(PREDICATE verb) objectList)+
+    : (^(PREDICATE verb)  objectList)+
     ;
 
 objectList
@@ -334,8 +334,8 @@ verb
     ;
 
 triplesSameSubjectPath
-    : ^(TRIPLE propertyListNotEmpty)
-    | ^(TRIPLE triplesNode (propertyListNotEmpty)?)
+    : ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty)
+    | ^(TRIPLES_SAME_SUBJECT  triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?)
     ;
     
 path
@@ -355,7 +355,7 @@ pathElt
     ;
     
 pathMod
-    : ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER CLOSE_CURLY_BRACE ) )
+    : (ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE (INTEGER (COMMA (CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | COMMA INTEGER CLOSE_CURLY_BRACE))
     ;
 
 pathPrimary
@@ -370,12 +370,12 @@ pathNegatedPropertySet
     ;  	
 
 pathOneInPropertySet
-    : INVERSE? ( iriRef | A )
+    : INVERSE? (iriRef | A)
     ;
 	
 triplesNode
     : ^(COLLECTION graphNode+)
-    | ^(PROPERTY_LIST propertyListNotEmpty)
+    | ^(TRIPLES_NODE ^(SUBJECT BLANK_NODE) propertyListNotEmpty)
     ;
 
 graphNode
@@ -521,7 +521,7 @@ iriRefOrFunction
     ;
 
 rdfLiteral
-    : string ( LANGTAG | ( REFERENCE iriRef ) )?
+    : string (LANGTAG | (REFERENCE iriRef))?
     ;
 
 numericLiteral
