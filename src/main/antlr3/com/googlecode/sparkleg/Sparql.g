@@ -45,9 +45,9 @@ GROUP_GRAPH_PATTERN;
 ARG_LIST;
 EXPRESSION_LIST;
 CONSTRUCT_TRIPLES;
-PROPERTY_LIST;
+TRIPLES_NODE;
 COLLECTION;
-TRIPLE;
+TRIPLES_SAME_SUBJECT;
 SUBJECT;
 PREDICATE;
 OBJECT;
@@ -75,8 +75,8 @@ BLANK_NODE;
 // $<Parser
 
 query
-    : prologue ( selectQuery | constructQuery | describeQuery | askQuery ) bindingsClause EOF -> ^(QUERY prologue selectQuery* constructQuery* describeQuery* askQuery*) bindingsClause*
-    | update ( SEMICOLON update)* EOF -> ^(UPDATE update+)
+    : prologue (selectQuery | constructQuery | describeQuery | askQuery) bindingsClause EOF -> ^(QUERY prologue selectQuery* constructQuery* describeQuery* askQuery*) bindingsClause*
+    | update (SEMICOLON update)* EOF -> ^(UPDATE update+)
     ;
 
 prologue
@@ -100,8 +100,8 @@ subSelect
     ;
     	
 selectClause
-    : SELECT ( DISTINCT | REDUCED )? ASTERISK -> ^(SELECT_CLAUSE DISTINCT* REDUCED* ASTERISK)
-    | SELECT ( DISTINCT | REDUCED )? (v+=selectVariables)+ -> ^(SELECT_CLAUSE DISTINCT* REDUCED* $v*)
+    : SELECT (DISTINCT | REDUCED)? ASTERISK -> ^(SELECT_CLAUSE DISTINCT* REDUCED* ASTERISK)
+    | SELECT (DISTINCT | REDUCED)? (v+=selectVariables)+ -> ^(SELECT_CLAUSE DISTINCT* REDUCED* $v*)
     ;
 
 selectVariables
@@ -115,7 +115,7 @@ constructQuery
     ;
 
 describeQuery
-    : DESCRIBE ( (v+=varOrIRIref)+ | ASTERISK ) datasetClause* whereClause? solutionModifier -> ^(DESCRIBE $v* ASTERISK* datasetClause* whereClause? solutionModifier*)
+    : DESCRIBE ((v+=varOrIRIref)+ | ASTERISK) datasetClause* whereClause? solutionModifier -> ^(DESCRIBE $v* ASTERISK* datasetClause* whereClause? solutionModifier*)
     ;
 
 askQuery
@@ -190,7 +190,7 @@ update
     ;   
     
 load 	  
-    : LOAD SILENT? iriRef ( INTO graphRef )? -> ^(LOAD SILENT* iriRef graphRef*)
+    : LOAD SILENT? iriRef (INTO graphRef)? -> ^(LOAD SILENT* iriRef graphRef*)
     ;
     
 clear
@@ -222,7 +222,7 @@ insert
     ;
    
 delete 	  
-    : DELETE ( deleteData | deleteWhere )
+    : DELETE (deleteData | deleteWhere)
     ;
 
 deleteData
@@ -234,7 +234,7 @@ deleteWhere
     ;
     
 modify
-    : ( WITH iriRef )? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
+    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
     ;
   
 deleteClause
@@ -267,7 +267,7 @@ quadPattern
     ;
     
 quads
-    : triplesTemplate? ( quadsNotTriples DOT? triplesTemplate? )* ->  triplesTemplate? ( quadsNotTriples triplesTemplate? )* 
+    : triplesTemplate? (quadsNotTriples DOT? triplesTemplate?)* ->  triplesTemplate? (quadsNotTriples triplesTemplate?)* 
     ;
     
 quadsNotTriples
@@ -275,15 +275,15 @@ quadsNotTriples
     ;
     
 triplesTemplate
-    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> ^(TRIPLES_TEMPLATE triplesSameSubject*)
+    : triplesSameSubject (DOT triplesSameSubject)* DOT? -> ^(TRIPLES_TEMPLATE triplesSameSubject*)
     ;
     	
 groupGraphPattern
-    : OPEN_CURLY_BRACE ( subSelect | groupGraphPatternSub ) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect* groupGraphPatternSub*)
+    : OPEN_CURLY_BRACE (subSelect | groupGraphPatternSub) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect* groupGraphPatternSub*)
     ;
     
 groupGraphPatternSub
-    : triplesBlock? ( groupGraphPatternSubCache )* -> triplesBlock? groupGraphPatternSubCache*
+    : triplesBlock? (groupGraphPatternSubCache)* -> triplesBlock? groupGraphPatternSubCache*
     ;
 
 groupGraphPatternSubCache
@@ -291,7 +291,7 @@ groupGraphPatternSubCache
     ; 	
 
 triplesBlock
-    : triplesSameSubjectPath ( DOT triplesSameSubjectPath)* DOT? -> ^(TRIPLES_BLOCK triplesSameSubjectPath+)
+    : triplesSameSubjectPath (DOT triplesSameSubjectPath)* DOT? -> triplesSameSubjectPath+
     ;
 
 graphPatternNotTriples
@@ -338,11 +338,11 @@ functionCall
 
 argList
     : nil -> nil
-    | OPEN_BRACE DISTINCT? expression ( COMMA expression )* CLOSE_BRACE -> DISTINCT? expression*
+    | OPEN_BRACE DISTINCT? expression (COMMA expression)* CLOSE_BRACE -> DISTINCT? expression*
     ;
 
 expressionList
-    : ( nil | OPEN_BRACE expression ( COMMA expression )* CLOSE_BRACE ) -> ^(EXPRESSION_LIST nil* expression*)
+    : (nil | OPEN_BRACE expression (COMMA expression)* CLOSE_BRACE) -> ^(EXPRESSION_LIST nil* expression*)
     ;	
 
 constructTemplate
@@ -350,20 +350,20 @@ constructTemplate
     ;
 
 constructTriples
-    : triplesSameSubject ( DOT triplesSameSubject )* DOT? -> triplesSameSubject+
+    : triplesSameSubject (DOT triplesSameSubject)* DOT? -> triplesSameSubject+
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty[(CommonTree)$varOrTerm.tree] -> ^(TRIPLE propertyListNotEmpty)
-    | triplesNode propertyListNotEmpty[new CommonTree(new CommonToken(BLANK_NODE,"[]"))]? -> ^(TRIPLE triplesNode (/*^(SUBJECT BLANK_NODE)*/ propertyListNotEmpty)?) 
+    : varOrTerm propertyListNotEmpty -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty)
+    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?) 
     ;
 
-propertyListNotEmpty[CommonTree subject]
-    : verb objectList (SEMICOLON (verb objectList)?)* -> (^(SUBJECT {new CommonTree(subject)}) ^(PREDICATE verb)  objectList)+
+propertyListNotEmpty
+    : verb objectList (SEMICOLON (verb objectList)?)* -> (^(PREDICATE verb)  objectList)+
     ;
 
 objectList
-    : graphNode ( COMMA graphNode )* -> ^(OBJECT graphNode)+
+    : graphNode (COMMA graphNode)* -> ^(OBJECT graphNode)+
     ;
 
 verb
@@ -372,12 +372,12 @@ verb
     ;
 
 triplesSameSubjectPath
-    : varOrTerm propertyListNotEmptyPath[(CommonTree)$varOrTerm.tree] -> ^(TRIPLE propertyListNotEmptyPath)
-    | triplesNode propertyListNotEmpty[new CommonTree(new CommonToken(BLANK_NODE,"[]"))]? -> ^(TRIPLE  triplesNode (/*^(SUBJECT BLANK_NODE)*/ propertyListNotEmpty)?)
+    : varOrTerm propertyListNotEmptyPath -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmptyPath)
+    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT  triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?)
     ;
   
-propertyListNotEmptyPath[CommonTree subject]
-    : verbSimpleOrPath objectList (SEMICOLON (verbSimpleOrPath objectList)?)* -> (^(SUBJECT {new CommonTree(subject)}) ^(PREDICATE verbSimpleOrPath) objectList)+
+propertyListNotEmptyPath
+    : verbSimpleOrPath objectList (SEMICOLON (verbSimpleOrPath objectList)?)* -> (^(PREDICATE verbSimpleOrPath) objectList)+
     ;
   
 verbSimpleOrPath
@@ -394,11 +394,11 @@ verbSimple
     ;
     	
 path
-    : pathSequence ( PIPE pathSequence )* -> ^(PATH pathSequence+)
+    : pathSequence (PIPE pathSequence)* -> ^(PATH pathSequence+)
     ; 
 
 pathSequence
-    : pathEltOrInverse ( DIVIDE pathEltOrInverse )* -> ^(PATH_SEQUENCE pathEltOrInverse+)
+    : pathEltOrInverse (DIVIDE pathEltOrInverse)* -> ^(PATH_SEQUENCE pathEltOrInverse+)
     ;
 
 pathEltOrInverse
@@ -410,7 +410,7 @@ pathElt
     ;
 
 pathMod
-    : ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER CLOSE_CURLY_BRACE ) )
+    : (ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE (INTEGER (COMMA (CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | COMMA INTEGER CLOSE_CURLY_BRACE))
     ;
 
 pathPrimary
@@ -421,16 +421,16 @@ pathPrimary
     ;
 
 pathNegatedPropertySet
-    : (pathOneInPropertySet | OPEN_BRACE ( pathOneInPropertySet ( PIPE pathOneInPropertySet )* )? CLOSE_BRACE) -> ^(PATH_NEGATED pathOneInPropertySet+)
+    : (pathOneInPropertySet | OPEN_BRACE (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? CLOSE_BRACE) -> ^(PATH_NEGATED pathOneInPropertySet+)
     ;  	
 
 pathOneInPropertySet
-    : INVERSE? ( iriRef | A )
+    : INVERSE? (iriRef | A)
     ;
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | OPEN_SQUARE_BRACKET propertyListNotEmpty[new CommonTree(new CommonToken(BLANK_NODE,"[]"))] CLOSE_SQUARE_BRACKET -> ^(PROPERTY_LIST propertyListNotEmpty)
+    | OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET -> ^(TRIPLES_NODE ^(SUBJECT BLANK_NODE) propertyListNotEmpty)
     ;
 
 graphNode
@@ -480,14 +480,14 @@ valueLogical
     ;
 
 relationalExpression
-    : (n1=numericExpression -> $n1) ( (EQUAL n2=numericExpression -> ^(EQUAL $relationalExpression $n2))   
+    : (n1=numericExpression -> $n1) ((EQUAL n2=numericExpression -> ^(EQUAL $relationalExpression $n2))   
                                     | (NOT_EQUAL n3=numericExpression -> ^(NOT_EQUAL $relationalExpression $n3)) 
                                     | (LESS n4=numericExpression -> ^(LESS $relationalExpression $n4)) 
                                     | (GREATER n5=numericExpression -> ^(GREATER $relationalExpression $n5))
                                     | (LESS_EQUAL n6=numericExpression -> ^(LESS_EQUAL $relationalExpression $n6))
                                     | (GREATER_EQUAL n7=numericExpression -> ^(GREATER_EQUAL $relationalExpression $n7))  
                                     | (IN l2=expressionList -> ^(IN $relationalExpression $l2))
-                                    | (NOT IN l3=expressionList -> ^(NOT IN $relationalExpression $l3)) )?
+                                    | (NOT IN l3=expressionList -> ^(NOT IN $relationalExpression $l3)))?
     ;
 
 numericExpression
@@ -495,10 +495,10 @@ numericExpression
     ;
 
 additiveExpression
-    : (m1=multiplicativeExpression -> $m1) ( (additiveOperator m2=multiplicativeExpression -> ^(additiveOperator $additiveExpression $m2))  
-                                             | (n1=numericLiteralPositive -> ^(PLUS $additiveExpression $n1) | n2=numericLiteralNegative -> ^(PLUS $additiveExpression $n2) ) 
-                                             ( ( (ASTERISK u2=unaryExpression -> ^(ASTERISK $additiveExpression $u2)) ) 
-                                             | ( (DIVIDE u2=unaryExpression -> ^(DIVIDE $additiveExpression $u2))) )? )*
+    : (m1=multiplicativeExpression -> $m1) ((additiveOperator m2=multiplicativeExpression -> ^(additiveOperator $additiveExpression $m2))  
+                                             | (n1=numericLiteralPositive -> ^(PLUS $additiveExpression $n1) | n2=numericLiteralNegative -> ^(PLUS $additiveExpression $n2)) 
+                                             (((ASTERISK u2=unaryExpression -> ^(ASTERISK $additiveExpression $u2))) 
+                                             | ((DIVIDE u2=unaryExpression -> ^(DIVIDE $additiveExpression $u2))))?)*
     ; 
     
 additiveOperator
@@ -582,11 +582,11 @@ builtInCall
     ;
 
 regexExpression
-    : REGEX OPEN_BRACE expression COMMA expression ( COMMA expression )? CLOSE_BRACE -> ^(REGEX expression*)
+    : REGEX OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE -> ^(REGEX expression*)
     ;
     
 subStringExpression
-    : SUBSTR OPEN_BRACE expression COMMA expression ( COMMA expression )? CLOSE_BRACE -> ^(SUBSTR expression*)
+    : SUBSTR OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE -> ^(SUBSTR expression*)
     ;
     
 existsFunction
@@ -598,13 +598,13 @@ notExistsFunction
     ;
 
 aggregate
-    : COUNT OPEN_BRACE DISTINCT? ( ASTERISK | expression ) CLOSE_BRACE -> ^(COUNT DISTINCT* ASTERISK* expression*)
+    : COUNT OPEN_BRACE DISTINCT? (ASTERISK | expression) CLOSE_BRACE -> ^(COUNT DISTINCT* ASTERISK* expression*)
     | SUM OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(SUM DISTINCT* expression)
     | MIN OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(MIN DISTINCT* expression)
     | MAX OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(MAX DISTINCT* expression)
     | AVG OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(AVG DISTINCT* expression)
     | SAMPLE OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(SAMPLE DISTINCT? expression)
-    | GROUP_CONCAT OPEN_BRACE DISTINCT? expression ( SEMICOLON SEPARATOR EQUAL string )? CLOSE_BRACE -> ^(GROUP_CONCAT DISTINCT* expression string*)
+    | GROUP_CONCAT OPEN_BRACE DISTINCT? expression (SEMICOLON SEPARATOR EQUAL string)? CLOSE_BRACE -> ^(GROUP_CONCAT DISTINCT* expression string*)
     ;
     
 iriRefOrFunction
@@ -613,7 +613,7 @@ iriRefOrFunction
     ;
 
 rdfLiteral
-    : string ( LANGTAG | ( REFERENCE iriRef ) )?
+    : string (LANGTAG | (REFERENCE iriRef))?
     ;
 
 numericLiteral
@@ -932,16 +932,16 @@ DOUBLE_NEGATIVE : MINUS DOUBLE;
 fragment
 EXPONENT : ('e'|'E') SIGN? DIGIT+;
 
-STRING_LITERAL1 : '\'' ( options {greedy=false;} : ~( '\'' | '\\' | EOL ) | ECHAR )* '\'';
+STRING_LITERAL1 : '\'' (options {greedy=false;} : ~('\'' | '\\' | EOL) | ECHAR)* '\'';
 
-STRING_LITERAL2 : '"' ( options {greedy=false;} : ~( '"' | '\\' | EOL ) | ECHAR )* '"';
+STRING_LITERAL2 : '"' (options {greedy=false;} : ~('"' | '\\' | EOL) | ECHAR)* '"';
 
-STRING_LITERAL_LONG1 : '\'\'\'' ( options {greedy=false;} : ( '\'' | '\'\'' )? ( ~('\''|'\\') | ECHAR ) )* '\'\'\'';
+STRING_LITERAL_LONG1 : '\'\'\'' (options {greedy=false;} : ('\'' | '\'\'')? (~('\''|'\\') | ECHAR))* '\'\'\'';
 
-STRING_LITERAL_LONG2 : '"""' ( options {greedy=false;} : ( '"' | '""' )? ( ~('"'|'\\') | ECHAR ) )* '"""';
+STRING_LITERAL_LONG2 : '"""' (options {greedy=false;} : ('"' | '""')? (~('"'|'\\') | ECHAR))* '"""';
 
 fragment
-ECHAR : '\\' ( 't' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'');
+ECHAR : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'');
     		
 IRI_REF
     :(LESS (options{greedy=false;}: IRI_REF_CHARACTERS)* GREATER) =>  LESS (options{greedy=false;}: IRI_REF_CHARACTERS)* GREATER { setText($text.substring(1, $text.length()-1)); }
@@ -950,14 +950,14 @@ IRI_REF
     
 fragment
 IRI_REF_CHARACTERS
-    : ~( LESS | GREATER | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | PIPE | INVERSE | '`' | '\\' | ('\u0000'..'\u0020'))
+    : ~(LESS | GREATER | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | PIPE | INVERSE | '`' | '\\' | ('\u0000'..'\u0020'))
     ;
 
 fragment
 PN_CHARS_U : PN_CHARS_BASE | '_';
 
 fragment
-VARNAME : ( PN_CHARS_U | DIGIT ) ( PN_CHARS_U | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040' )*;
+VARNAME : (PN_CHARS_U | DIGIT) (PN_CHARS_U | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040')*;
 
 fragment
 PN_CHARS
@@ -974,9 +974,9 @@ PN_PREFIX : PN_CHARS_BASE ((PN_CHARS|DOT)* PN_CHARS)?;
 
 fragment
 PN_LOCAL : (PN_CHARS_U|DIGIT)  ((PN_CHARS|{    
-                    	                       if ( input.LA(1)=='.' ) {
+                    	                       if (input.LA(1)=='.') {
                     	                          int LA2 = input.LA(2);
-                    	       	                  if ( !((LA2>='-' && LA2<='.')||(LA2>='0' && LA2<='9')||(LA2>='A' && LA2<='Z')||LA2=='_'||(LA2>='a' && LA2<='z')||LA2=='\u00B7'||(LA2>='\u00C0' && LA2<='\u00D6')||(LA2>='\u00D8' && LA2<='\u00F6')||(LA2>='\u00F8' && LA2<='\u037D')||(LA2>='\u037F' && LA2<='\u1FFF')||(LA2>='\u200C' && LA2<='\u200D')||(LA2>='\u203F' && LA2<='\u2040')||(LA2>='\u2070' && LA2<='\u218F')||(LA2>='\u2C00' && LA2<='\u2FEF')||(LA2>='\u3001' && LA2<='\uD7FF')||(LA2>='\uF900' && LA2<='\uFDCF')||(LA2>='\uFDF0' && LA2<='\uFFFD')) ) {
+                    	       	                  if (!((LA2>='-' && LA2<='.')||(LA2>='0' && LA2<='9')||(LA2>='A' && LA2<='Z')||LA2=='_'||(LA2>='a' && LA2<='z')||LA2=='\u00B7'||(LA2>='\u00C0' && LA2<='\u00D6')||(LA2>='\u00D8' && LA2<='\u00F6')||(LA2>='\u00F8' && LA2<='\u037D')||(LA2>='\u037F' && LA2<='\u1FFF')||(LA2>='\u200C' && LA2<='\u200D')||(LA2>='\u203F' && LA2<='\u2040')||(LA2>='\u2070' && LA2<='\u218F')||(LA2>='\u2C00' && LA2<='\u2FEF')||(LA2>='\u3001' && LA2<='\uD7FF')||(LA2>='\uF900' && LA2<='\uFDCF')||(LA2>='\uFDF0' && LA2<='\uFFFD'))) {
                     	       	                     return;
                     	       	                  }
                     	                       }
@@ -1002,7 +1002,7 @@ PN_CHARS_BASE
 fragment
 DIGIT : '0'..'9';
 
-COMMENT : '#' ( options{greedy=false;} : .)* EOL { $channel=HIDDEN; };
+COMMENT : '#' (options{greedy=false;} : .)* EOL { $channel=HIDDEN; };
 
 fragment
 EOL : '\n' | '\r';
