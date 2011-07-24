@@ -28,23 +28,23 @@
     </properties>
 
     <body>
-        <release version="4.0" date="TBD" description="upgrade release">
-            <action dev="Juergen.Pfundt" type="add">
-                Corrected modify rule and its AST generation.
-            </action>
+       
+        <release version="3.0" date="2011-06-08" description="upgrade release">
             <action dev="Juergen.Pfundt" type="add">
                 What has been done:
                 
                 Update of grammar to current definition of Sparql 1.1 at http://www.w3.org/TR/sparql11-query, 
                 which includes Sparql Update. This refers to the version of 1th of May 2011.
                 
-                AST generation added. 
+                AST generation added.
+                 
+                Tree grammar added.
                 
                 Some remarks regarding various rules and test cases:
                 
-                1)  The Sparql.g lexer rule for PN_LOCAL must be refined, as it does not cope with trailing '.'.
+                1)  The Sparql.g lexer rule for PN_LOCAL had to be refined, as it did not cope with trailing '.'.
                     Syntactic predicates and/or greedy=false did not solve the problem of recognizing properly
-                    e.g. A.b. as two tokens PN_LOCAL A.b and DOT 
+                    the input e.g.    A.b.    as two tokens PN_LOCAL A.b and DOT 
                 
                        PN_LOCAL : (PN_CHARS_U|DIGIT) ((PN_CHARS|DOT)* PN_CHARS)?;
                        
@@ -54,6 +54,20 @@
                        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 
                        ASK {person:John_Q_Public rdf:type foaf:Person.}
+                       
+                    A simple action solved the problem. It looks ahead the DOT and tests if the next input character
+                    does not belong to the follow set. if this check proves to be true, the token PN_LOCAL is declared
+                    to be complete (return). 
+                    
+                      PN_LOCAL : (PN_CHARS_U|DIGIT) ((PN_CHARS|
+                                    {    
+                    	                 if (input.LA(1)=='.') {
+                    	                    int LA2 = input.LA(2);
+                    	       	            if (!((LA2>='-' && LA2<='.')||(LA2>='0' && LA2<='9')||(LA2>='A' && LA2<='Z')||LA2=='_'||(LA2>='a' && LA2<='z')||LA2=='\u00B7'||(LA2>='\u00C0' && LA2<='\u00D6')||(LA2>='\u00D8' && LA2<='\u00F6')||(LA2>='\u00F8' && LA2<='\u037D')||(LA2>='\u037F' && LA2<='\u1FFF')||(LA2>='\u200C' && LA2<='\u200D')||(LA2>='\u203F' && LA2<='\u2040')||(LA2>='\u2070' && LA2<='\u218F')||(LA2>='\u2C00' && LA2<='\u2FEF')||(LA2>='\u3001' && LA2<='\uD7FF')||(LA2>='\uF900' && LA2<='\uFDCF')||(LA2>='\uFDF0' && LA2<='\uFFFD'))) {
+                    	       	               return;
+                    	       	            }
+                    	                 }
+                                    } DOT)* PN_CHARS
                        
                 2)  I18n test cases have been successfully evaluated with AntlrWorks. GUnit seems to have
                     a problem with these test cases and evalutes them as failed.
@@ -84,9 +98,6 @@
                 They are processed before parsing based on the grammar rules and so may be replaced
                 by codepoints with significance in the grammar, such as ":" marking a prefixed name...."
             </action>
-        </release>
-        
-        <release version="3.0" date="TBD" description="upgrade release">
             <action dev="simone.tripodi" type="add">
                 Improved Maven2 build
             </action>
