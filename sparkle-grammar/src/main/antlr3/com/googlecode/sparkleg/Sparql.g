@@ -190,7 +190,7 @@ update
     ;   
     
 load 	  
-    : LOAD SILENT? iriRef (INTO graphRef)? -> ^(LOAD SILENT* iriRef graphRef*)
+    : LOAD SILENT? iriRef (INTO graphRef)? -> ^(LOAD SILENT* iriRef graphRef?)
     ;
     
 clear
@@ -279,16 +279,15 @@ triplesTemplate
     ;
     	
 groupGraphPattern
-    : OPEN_CURLY_BRACE (subSelect | groupGraphPatternSub) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect* groupGraphPatternSub*)
+    : OPEN_CURLY_BRACE (subSelect) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect)
+    | OPEN_CURLY_BRACE (groupGraphPatternSub) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN groupGraphPatternSub)
+    | OPEN_CURLY_BRACE CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN)
     ;
     
 groupGraphPatternSub
-    : triplesBlock? (groupGraphPatternSubCache)* -> triplesBlock? groupGraphPatternSubCache*
+    : triplesBlock (graphPatternNotTriples DOT? triplesBlock?)* -> triplesBlock (graphPatternNotTriples triplesBlock?)*
+    |(graphPatternNotTriples DOT? triplesBlock?)+ -> (graphPatternNotTriples triplesBlock?)+
     ;
-
-groupGraphPatternSubCache
-    :  graphPatternNotTriples DOT? triplesBlock? -> graphPatternNotTriples triplesBlock?
-    ; 	
 
 triplesBlock
     : triplesSameSubjectPath (DOT triplesSameSubjectPath)* DOT? -> triplesSameSubjectPath+
