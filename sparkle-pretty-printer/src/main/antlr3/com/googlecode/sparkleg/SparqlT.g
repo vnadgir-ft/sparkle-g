@@ -251,7 +251,6 @@ groupGraphPattern
 groupGraphPatternSub
     : triplesBlock (graphPatternNotTriples triplesBlock?)*
     | (graphPatternNotTriples triplesBlock?)+ 
-    //(t=triplesBlock)? (g+=groupGraphPatternSubCache)* -> groupGraphPatternSub(triplesBlock={$t.st},  groupGraphPatternSubCache={$g})
     ;
     
 groupGraphPatternSubCache
