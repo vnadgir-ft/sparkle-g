@@ -12,8 +12,9 @@
   <url>http://maven.apache.org</url>
     
   <modules>
-      <module>../sparkle-grammar</module>
       <module>../AntlrUnicodePreprocessor</module>
+      <module>../sparkle-grammar</module>
+      <module>../sparkle-pretty-printer</module>
   </modules>
 
     <licenses>
