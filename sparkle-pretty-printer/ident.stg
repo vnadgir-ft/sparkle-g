@@ -1,0 +1,489 @@
+/*
+* Copyright 2011 the original author or authors.
+*
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following
+* conditions are met:
+*
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+* disclaimer.
+*
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+* disclaimer in the documentation and/or other materials provided with the distribution.
+*
+* Neither the name of the author or authors nor the names of its contributors may be used to endorse or promote
+* products derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+* CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+* EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+* PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+* NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+* @author Simone Tripodi (simone.tripodi)
+* @author Michele Mostarda (michele.mostarda)
+* @author Juergen Pfundt (Juergen.Pfundt)
+*
+* Jürgen Pfundt, 28.07.2011 First draft of ident template
+*/
+
+group ident;
+
+query(prologue, selectQuery, constructQuery, describeQuery, askQuery, bindingsClause, updateQuery) ::= <<
+<if(prologue)><prologue><endif>
+<if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif>
+>>
+
+updateQuery(update) ::= <<
+UPDATE<update; separator="\n">
+>>
+
+prologue(baseDecl, prefixDecl) ::= <<
+<baseDecl; separator="\n">
+<prefixDecl; separator="\n">
+>>
+
+baseDecl(iriRef) ::= <<
+BASE \<<iriRef>\>
+>>
+
+prefixDecl(pname, iriRef) ::= <<
+PREFIX <pname> \<<iriRef>\>
+>>
+
+selectQuery(selectClause, datasetClause, whereClause, solutionModifier) ::= <<
+<if(selectClause)><selectClause><endif><if(datasetClause)><datasetClause; separator="\n"><endif>
+<if(whereClause)><whereClause><endif><if(solutionModifier)><solutionModifier><endif>
+>>
+
+subSelect(whereClause, solutionModifier) ::= <<
+<if(whereClause)><whereClause><endif><if(solutionModifier)><solutionModifier><endif>
+>>
+
+selectClause(attribute, asterisk, selectVariables) ::= <<
+SELECT <if(attribute)><attribute> <endif><if(asterisk)><asterisk><elseif(selectVariables)><selectVariables; separator=" "><endif>
+>>
+
+selectVariables(expression, var) ::= <<
+<if(expression)>(<expression> AS <endif><var><if(expression)>)<endif>
+>>
+
+constructQuery(constructTemplate, datasetClause, triplesTemplate, whereClause, solutionModifier) ::= <<
+CONSTRUCT {
+   <if(constructTemplate)><constructTemplate> <endif><datasetClause; separator=", ">
+}
+<if(whereClause)><whereClause><elseif(triplesTemplate)><triplesTemplate; separator=", "><endif><solutionModifier>
+>>
+
+describeQuery(varOrIRIref, attribute, datasetClause, whereClause, solutionModifier) ::= <<
+DESCRIBE {
+   <varOrIRIref; separator=", "><attribute><whereClause><solutionModifier>
+}
+>>
+
+askQuery(datasetClause, whereClause) ::= <<
+ASK <datasetClause; separator=", "><whereClause>
+>>
+
+datasetClause(attribute, iriRef) ::= <<
+FROM <if(attribute)><attribute> <endif><iriRef>
+>>
+
+whereClause(groupGraphPattern) ::= <<
+WHERE {
+   <groupGraphPattern>
+}
+>>
+
+solutionModifier(groupClause, havingClause, orderClause, limitOffsetClauses) ::= <<
+<if(groupClause)><groupClause><endif>
+<if(havingClause)><havingClause><endif>
+<if(orderClause)><orderClause><endif>
+<if(limitOffsetClauses)><limitOffsetClauses><endif>
+>>
+
+groupClause(groupCondition) ::= <<
+GROUP BY <groupCondition; separator="\n">
+>>
+
+groupCondition(builtInCall, functionCall, expression, var) ::= <<
+<if(builtInCall)><builtInCall><elseif(functionCall)><functionCall><elseif(expression)>AS <expression> <var; separator=", "><elseif(var)><var><endif>
+>>
+
+havingClause(constraint) ::= <<
+HAVING <constraint; separator=", ">
+>>
+
+orderClause(orderCondition) ::= <<
+ORDER BY <orderCondition; separator=", ">
+>>
+
+orderCondition(attribute, expression, constraint, var) ::= <<
+<if(attribute)><attribute> <expression><elseif(constraint)><constraint><elseif(var)><var><endif> 
+>>
+
+limitOffsetClauses(limit, offset) ::= <<
+<if(limit)>LIMIT <limit><if(offset)> OFFSET <offset><endif><elseif(offset)>OFFSET <offset><endif>
+>>
+
+bindingsClause(var, bindingValueList) ::= <<
+BINDINGS <var; separator=", "> {
+   <bindingValueList; separator="\n">
+}
+>>
+
+bindingValueList(bindingValue) ::= <<
+(<bindingValue; separator=" ">)
+>>
+
+bindingValue(iriRef, rdfLiteral, numericLiteral, booleanLiteral, value) ::= <<
+<if(iriRef)><iriRef><elseif(rdfLiteral)><rdfLiteral><elseif(numericLiteral)><numericLiteral><elseif(booleanLiteral)><booleanLiteral><elseif(value)><value><endif>
+>>
+
+update(prologue, load, clear, drop, add, move, copy, create, insert, delete, modify) ::= <<
+<prologue>
+<if(load)><load><elseif(clear)><clear><elseif(drop)><drop><elseif(add)><add><elseif(move)><move><elseif(copy)><copy><elseif(create)><create><elseif(insert)><insert><elseif(delete)><delete><elseif(modify)><modify><endif>
+>>
+
+load(attribute, iriRef, graphRef) ::= <<
+LOAD <if(attribute)><attribute> <endif><iriRef><if(graphRef)> INTO <graphRef><endif>
+>>
+
+clear(attribute, graphRef) ::= <<
+CLEAR <if(attribute)><attribute> <endif><graphRef>
+>>
+
+drop(attribute, graphRef) ::= <<
+DROP <if(attribute)><attribute> <endif><graphRef>
+>>
+
+create(attribute, graphRef) ::= <<
+CREATE <if(attribute)><attribute> <endif><graphRef>
+>>
+
+add(attribute, graphOrDefault1, graphOrDefault2) ::= <<
+ADD <if(attribute)><attribute> <endif><graphOrDefault1> <graphOrDefault2>
+>>
+
+move(attribute, graphOrDefault1, graphOrDefault2) ::= <<
+MOVE <if(attribute)><attribute> <endif><graphOrDefault1> <graphOrDefault2>
+>>
+
+copy(attribute, graphOrDefault1, graphOrDefault2) ::= <<
+COPY <if(attribute)><attribute> <endif><graphOrDefault1> <graphOrDefault2>
+>>
+
+insert(quadPattern) ::= <<
+INSERT <quadPattern>
+>>
+
+delete(deleteData, deleteWhere) ::= <<
+<if(deleteData)><deleteData><elseif(deleteWhere)><deleteWhere><endif>
+>>
+
+deleteData(quadPattern) ::= <<
+DELETE DATA <quadPattern>
+>>
+
+deleteWhere(quadPattern) ::= <<
+DELETE WHERE <quadPattern>
+>>
+
+deleteClause(quadPattern) ::= <<
+DELETE <quadPattern>
+>>
+
+insertClause(quadPattern) ::= <<
+INSERT <quadPattern>
+>>
+
+usingClause(attribute1, attribute2, iriRef) ::= <<
+<attribute1><if(attribute2)> <attribute2><endif> <iriRef>
+>>
+
+graphOrDefault(attribute, iriRef) ::= <<
+<if(attribute)><attribute><elseif(iriRef)>   GRAPH <iriRef><endif>
+>>
+
+graphRef(iriRef) ::= <<
+<iriRef>
+>>
+
+graphRefAll(graphRef, attribute) ::= <<
+<if(graphRef)><graphRef><elseif(attribute)><attribute><endif>
+>>
+
+quadPattern() ::= <<
+>>
+
+quads(triplesTemplate1, quadsNotTriples, triplesTemplate2) ::= <<
+<triplesTemplate1><quadsNotTriples, triplesTemplate2:{q, t|<q> <t>}; separator=";\n">
+>>
+
+quadsNotTriples(varOrIRIref, triplesTemplate) ::= <<
+<varOrIRIref><triplesTemplate>
+>>
+
+triplesTemplate(triplesSameSubject) ::= <<
+<triplesSameSubject; separator="\n">
+>>
+
+groupGraphPattern(subselect, groupGraphPatternSub) ::= <<
+<if(subselect)><subselect><else><groupGraphPatternSub><endif>
+>>
+
+groupGraphPatternSub(triplesBlock, groupGraphPatternSubCache) ::= <<
+<if(triplesBlock)><triplesBlock><endif><groupGraphPatternSubCache; separator=" .\n">
+>>
+
+groupGraphPatternSubCache(graphPatternNotTriples, triplesBlock) ::= <<
+<graphPatternNotTriples><if(triplesBlock)><triplesBlock><endif>
+>>
+
+triplesBlock(triplesSameSubjectPath) ::= <<
+<triplesSameSubjectPath; separator=" .\n">
+>>
+
+graphPatternNotTriples(groupOrUnionGraphPattern, optionalGraphPattern, minusGraphPattern, graphGraphPattern, serviceGraphPattern, filter, bind) ::= <<
+<if(groupOrUnionGraphPattern)><groupOrUnionGraphPattern><elseif(optionalGraphPattern)><optionalGraphPattern><elseif(minusGraphPattern)><minusGraphPattern><elseif(graphGraphPattern)><graphGraphPattern><elseif(serviceGraphPattern)><serviceGraphPattern><elseif(filter)><filter><else><bind><endif>
+>>
+
+optionalGraphPattern(groupGraphPattern) ::= <<
+OPTIONAL {
+   <groupGraphPattern>
+}
+>>
+
+graphGraphPattern(varOrIRIref, groupGraphPattern) ::= <<
+GRAPH <varOrIRIref> {
+   <groupGraphPattern>
+}
+>>
+
+serviceGraphPattern(attribute, varOrIRIref, groupGraphPattern) ::= <<
+<attribute><varOrIRIref><groupGraphPattern>
+>>
+
+bind(expression, var)::= <<
+<expression><var>
+>>
+
+minusGraphPattern(groupGraphPattern) ::= <<
+<groupGraphPattern>
+>>
+ 
+groupOrUnionGraphPattern(groupGraphPattern1, groupGraphPattern2) ::= <<
+<if(groupGraphPattern2)>   {
+      <groupGraphPattern1>
+   }
+   UNION 
+   {
+      <groupGraphPattern2>
+   }
+<else>
+<groupGraphPattern1>
+<endif>
+>>
+
+filter(constraint) ::= <<
+FILTER <constraint>
+>>
+
+constraint(expression, builtInCall, functionCall) ::= <<
+<if(expression)><expression><elseif(builtInCall)><builtInCall><elseif(functionCall)><functionCall><endif>
+>>
+
+functionCall(iriRef, argList) ::= <<
+<iriRef>(<argList>)
+>>
+
+argList(attribute, expression, nil) ::= <<
+<if(attribute)><attribute> <endif><if(expression)><expression; separator=", "><elseif(nil)><nil><endif>
+>>
+
+expressionList(expression, nil) ::= <<
+<if(expression)><expression><else><nil><endif>
+>>
+
+constructTemplate(constructTriples) ::= <<
+<if(constructTriples)><constructTriples><endif>
+>>
+
+constructTriples(triplesSameSubject) ::= <<
+<triplesSameSubject; separator=",\n">
+>>
+
+triplesSameSubjectPath(triplesNode, subject, propertyListNotEmpty) ::= <<
+<if(triplesNode)><triplesNode>[<propertyListNotEmpty>]<else><subject> <propertyListNotEmpty><endif>
+>>
+
+path(pathSequence) ::= <<
+<pathSequence; separator="/">
+>>
+
+pathSequence(pathEltOrInverse) ::= <<
+<pathEltOrInverse; separator="---">
+>>
+
+pathEltOrInverse(inverse, pathElt) ::= <<
+<inverse><pathElt>
+>>
+
+pathElt(pathPrimary, pathMod) ::= <<
+<pathPrimary><pathMod>
+>>
+
+pathMod(value, i1, i2, i3) ::= <<
+<value>{<i1>,<i2>,<i3>}
+>>
+
+pathPrimary(iriRef, value, path, pathNegatedPropertySet) ::= <<
+<iriRef><value><path><pathNegatedPropertySet>
+>>
+
+pathNegatedPropertySet(pathOneInPropertySet) ::= <<
+<pathOneInPropertySet; separator=",\n">
+>>
+
+pathOneInPropertySet(attribute, iriRef, value) ::= <<
+<attribute><iriRef><value>
+>>
+
+triplesSameSubject(triplesNode, subject, propertyListNotEmpty) ::= <<
+<triplesNode><subject> <propertyListNotEmpty> .
+>>
+
+propertyListNotEmpty(verb, objectList) ::= <<
+   <verb, objectList:{v, o|<v> <o>}; separator=";\n   ">
+>>
+
+objectList(graphNode) ::= <<
+<graphNode; separator="yyy">
+>>
+
+verb(varOrIRIref, a, path) ::= <<
+<varOrIRIref><a><path>
+>>
+
+triplesNode(subject, propertyListNotEmpty, graphNode) ::= <<
+<if(subject)>[<propertyListNotEmpty>]<elseif(graphNode)><graphNode; separator=",\n"><endif>
+>>
+
+graphNode(varOrTerm, triplesNode) ::= <<
+<if(varOrTerm)><varOrTerm><else><triplesNode><endif>
+>>
+
+varOrTerm(var, graphTerm) ::= <<
+<if(var)><var><else><graphTerm><endif>
+>>
+
+varOrIRIref(var, iriRef) ::= <<
+<if(var)><var><else><iriRef><endif>
+>>
+
+var(v) ::= <<
+?<v>
+>>
+
+graphTerm(iriRef, rdfLiteral, numericLiteral, booleanLiteral, blankNode, value) ::= <<
+<if(iriRef)><iriRef><elseif(rdfLiteral)><rdfLiteral><elseif(numericLiteral)><numericLiteral><elseif(booleanLiteral)><booleanLiteral><elseif(blankNode)><blankNode><else><value><endif>
+>>
+
+nil() ::= <<
+[NIL!!!]
+>>
+
+expression(operator, expression1,  expression2, unaryExpression) ::= <<
+<if(operator)>(<expression1> <operator> <expression2>)<else><unaryExpression><endif>
+>>
+
+unaryExpression(operator, primaryExpression) ::= <<
+<if(operator)><operator> <endif><primaryExpression>
+>>
+
+primaryExpression(builtInCall, iriRefOrFunction, rdfLiteral, numericLiteral, booleanLiteral, var, aggregate) ::= <<
+<if(builtInCall)><builtInCall><elseif(iriRefOrFunction)><iriRefOrFunction><elseif(rdfLiteral)><rdfLiteral><elseif(numericLiteral)><numericLiteral><elseif(booleanLiteral)><booleanLiteral><elseif(var)><var><else><aggregate><endif>
+>>
+
+brackettedExpression(expression) ::= <<
+(<expression>)
+>>
+
+builtInCall(type, expression, expressions, var, expressionList, expression1, expression2, expression3, regexExpression, existsFunction, notExistsFunction) ::= <<
+<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1> <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)>REGEX<regexExpression><elseif(existsFunction)><existsFunction><elseif(notExistsFunction)><notExistsFunction><endif>
+>>
+
+regexExpression(expression) ::= <<
+(<expression; separator=", ">)
+>>
+
+subStringExpression(expression) ::= <<
+<expression; separator=", ">
+>>
+
+existsFunction(groupGraphPattern) ::= <<
+<groupGraphPattern>
+>>
+
+notExistsFunction(groupGraphPattern) ::= <<
+<groupGraphPattern>
+>>
+
+aggregate(operation, attribute, whatever, expression) ::= <<
+<operation><if(attribute)> <attribute><endif><if(whatever)> <whatever><endif>(<expression>)
+>>
+
+iriRefOrFunction(function, iriRef, argList) ::= <<
+<if(function)><iriRef>(<argList>)<else><iriRef><endif>
+>>
+
+rdfLiteral(string, langTag, iriRef) ::= <<
+<string><if(langTag)><langTag><else><iriRef><endif>
+>>
+
+numericLiteral(numericLiteralUnsigned) ::= <<
+<numericLiteralUnsigned>
+>>
+
+numericLiteralUnsigned(value) ::= <<
+<value>
+>>
+
+numericLiteralPositive(value) ::= <<
+<value>
+>>
+
+numericLiteralNegative(value) ::= <<
+<value>
+>>
+
+booleanLiteral(value) ::= <<
+<value>
+>>
+
+string(value) ::= <<
+<value>
+>>
+
+iriRef(value, prefixedName) ::= <<
+<if(value)>\<<value>\><else><prefixedName><endif>
+>>
+
+prefixedName(name) ::= <<
+<name>
+>>
+
+blankNode(value, anon) ::= <<
+<if(value)><value><else><anon><endif>
+>>
+
+anon() ::= <<
+[ ]
+>>
