@@ -235,18 +235,16 @@ quadsNotTriples
 triplesTemplate
     : ^(TRIPLES_TEMPLATE triplesSameSubject*)
     ;
-    	
+
 groupGraphPattern
-    : ^(GROUP_GRAPH_PATTERN subSelect)
-    | ^(GROUP_GRAPH_PATTERN groupGraphPatternSub)
+    : ^(GROUP_GRAPH_PATTERN g=groupGraphPatternSub)
+    | ^(GROUP_GRAPH_PATTERN s=subSelect)
+    | ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN)
     ;
-    
+
 groupGraphPatternSub
-    : triplesBlock? groupGraphPatternSubCache*
-    ;
-    
-groupGraphPatternSubCache
-    :  graphPatternNotTriples triplesBlock?
+    : triplesBlock (graphPatternNotTriples triplesBlock?)*
+    | (graphPatternNotTriples triplesBlock?)+ 
     ;
 
 triplesBlock
