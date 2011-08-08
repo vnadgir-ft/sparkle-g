@@ -209,7 +209,7 @@ usingClause(attribute1, attribute2, iriRef) ::= <<
 >>
 
 graphOrDefault(attribute, iriRef) ::= <<
-<if(attribute)><attribute><elseif(iriRef)>   GRAPH <iriRef><endif>
+<if(attribute)><attribute><elseif(iriRef)>GRAPH <iriRef><endif>
 >>
 
 graphRef(iriRef) ::= <<
@@ -239,12 +239,8 @@ groupGraphPattern(subselect, groupGraphPatternSub) ::= <<
 <if(subselect)><subselect><else><groupGraphPatternSub><endif>
 >>
 
-groupGraphPatternSub(triplesBlock, groupGraphPatternSubCache) ::= <<
-<if(triplesBlock)><triplesBlock><endif><groupGraphPatternSubCache; separator=" .\n">
->>
-
-groupGraphPatternSubCache(graphPatternNotTriples, triplesBlock) ::= <<
-<graphPatternNotTriples><if(triplesBlock)><triplesBlock><endif>
+groupGraphPatternSub(triplesBlock1, graphPatternNotTriples, triplesBlock) ::= <<
+<if(triplesBlock1)><triplesBlock1><\n><endif><graphPatternNotTriples, triplesBlock:{g, t|<g> <t>}; separator=" .\n">
 >>
 
 triplesBlock(triplesSameSubjectPath) ::= <<
@@ -280,13 +276,13 @@ minusGraphPattern(groupGraphPattern) ::= <<
 >>
  
 groupOrUnionGraphPattern(groupGraphPattern1, groupGraphPattern2) ::= <<
-<if(groupGraphPattern2)>   {
-      <groupGraphPattern1>
-   }
-   UNION 
-   {
-      <groupGraphPattern2>
-   }
+<if(groupGraphPattern2)>{
+   <groupGraphPattern1>
+}
+UNION 
+{
+   <groupGraphPattern2>
+}
 <else>
 <groupGraphPattern1>
 <endif>
@@ -361,7 +357,7 @@ triplesSameSubject(triplesNode, subject, propertyListNotEmpty) ::= <<
 >>
 
 propertyListNotEmpty(verb, objectList) ::= <<
-   <verb, objectList:{v, o|<v> <o>}; separator=";\n   ">
+<verb, objectList:{v, o|<v> <o>}; separator=";\n   ">
 >>
 
 objectList(graphNode) ::= <<
