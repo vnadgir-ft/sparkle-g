@@ -1,21 +1,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>sparkle-g</groupId>
-  <artifactId>sparkle-g</artifactId>
-  <version>3.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+    <groupId>sparkle-g</groupId>
+    <artifactId>sparkle-g</artifactId>
+    <version>3.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-  <name>sparkle-g</name>
-  <url>http://maven.apache.org</url>
+    <name>sparkle-g</name>
+    <url>http://maven.apache.org</url>
     
-  <modules>
-      <module>../AntlrUnicodePreprocessor</module>
-      <module>../sparkle-grammar</module>
-      <module>../sparkle-pretty-printer</module>
-  </modules>
+    <modules>
+        <module>../AntlrUnicodePreprocessor</module>
+        <module>../sparkle-grammar</module>
+        <module>../sparkle-pretty-printer</module>
+    </modules>
 
     <licenses>
         <license>
@@ -88,7 +88,7 @@
         
         <developer>
             <id>juergen.pfundt</id>
-            <name>Jürgen Pfundt</name>
+            <name>JÃ¼rgen Pfundt</name>
             <email>juergen dot pfundt at gmail dot com</email>
             <organization>Deutsche Telekom AG</organization>
             <organizationUrl>http://www.telekom.com/</organizationUrl>
@@ -99,17 +99,29 @@
         </developer>
     </developers>
     
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
   
-      <reporting>
+    <reporting>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.3</version>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8</version> 
+            </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
@@ -119,9 +131,33 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.2</version>
+                <version>2.3</version>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <formats>
+                        <format>xml</format>
+                        <format>html</format>
+                    </formats>
+                </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jdepend-maven-plugin</artifactId>
+                <version>2.0-beta-2</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.8.1</version>
+            </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-changes-plugin</artifactId>
@@ -140,15 +176,20 @@
         </plugins>
     </reporting>
 
-      <build>
-          <pluginManagement>
-             <plugins>
+    <build>
+        <pluginManagement>
+            <plugins>
                 <plugin>
-                   <groupId>org.antlr</groupId>
-                   <artifactId>antlr-maven-plugin</artifactId>
-                   <version>3.3</version>
-              </plugin>
-           </plugins>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr-maven-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>2.4</version>
+                </plugin>
+            </plugins>
         </pluginManagement>
         <plugins>
             <plugin>
@@ -223,6 +264,55 @@
                 <version>3.0-beta-3</version>
                 <configuration>
                     <outputEncoding>UTF-8</outputEncoding>
+                    <reportPlugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-project-info-reports-plugin</artifactId>
+                            <version>2.3.1</version>
+                            <configuration>
+                                <dependencyDetailsEnabled>true</dependencyDetailsEnabled>
+                                <dependencyLocationsEnabled>true</dependencyLocationsEnabled>
+                            </configuration>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>javancss-maven-plugin</artifactId>
+                            <version>2.0</version>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>jdepend-maven-plugin</artifactId>
+                            <version>2.0-beta-2</version>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-pmd-plugin</artifactId>
+                            <version>2.5</version>
+                            <configuration>
+                                <linkXRef>false</linkXRef>
+                                <sourceEncoding>utf-8</sourceEncoding>
+                                <minimumTokens>100</minimumTokens>
+                                <targetJdk>1.5</targetJdk>
+                                <verbose>true</verbose>
+                            </configuration>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>findbugs-maven-plugin</artifactId>
+                            <version>2.3.2</version>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-checkstyle-plugin</artifactId>
+                            <version>2.6</version>
+                        </plugin>
+
+                    </reportPlugins>
                 </configuration>
             </plugin>
 
@@ -242,6 +332,7 @@
                 <configuration>
                     <includeReports>false</includeReports>
                     <indentSize>1</indentSize>
+                    <outputDirectory>${project.reporting.outputDirectory}</outputDirectory>
                 </configuration>
             </plugin>
 
@@ -265,7 +356,13 @@
                     </execution>
                 </executions>
             </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
         </plugins>
 
-     </build>
+    </build>
 </project>
