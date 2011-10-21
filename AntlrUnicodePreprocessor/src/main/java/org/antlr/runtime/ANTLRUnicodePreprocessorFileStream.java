@@ -55,7 +55,7 @@ public class ANTLRUnicodePreprocessorFileStream extends ANTLRFileStream {
      * @throws IOException
      */
     @Override
-    public void load(String fileName, String encoding) throws IOException {
+    public void load(final String fileName, final String encoding) throws IOException {
         if (fileName == null) {
             return;
         }
@@ -77,20 +77,19 @@ public class ANTLRUnicodePreprocessorFileStream extends ANTLRFileStream {
     }
 
     /**
-     * Finite state automaton for replacing Unicode escape sequences '\\uxxxx' 
-     * with character values. Incomplete Unicode escape sequences are written
-     * back unchanged in the file stream.
-     * Optimizations to avoid write operations lead to MODIFIED_DATA_STATE 
-     * and data_buffer_modified. The rationale for deviations from pure doctrine 
+     * Finite state automaton for replacing Unicode escape sequences '\\uxxxx'
+     * with character values. Incomplete Unicode escape sequences are left as
+     * found in the file stream.
+     * Optimizations to avoid write operations lead to MODIFIED_DATA_STATE
+     * and data_buffer_modified. The rationale for deviations from pure doctrine
      * where to keep the number of status small.
-     * In the usual case of no Unicode escape sequences in the data stream 
-     * the maxime is to do (nearly) nothing, just loop in the START_STATE.
-     * Incomplete Unicode escape sequences are left as found in the file stream. 
+     * In the usual case of no Unicode escape sequences in the data stream
+     * the maxime is to do (almost) nothing, just loop in the START_STATE.
      * @param n number of characters read into data buffer
      */
     private int convertUnicodeLiteralToChar(int n) {
 
-        int map[] = new int[128];
+        int [] map = new int[128];
 
         // fill '1' to '9' with nibble values 0001 to 1001
         for (int k = 0x31; k < 0x3A; k++) {
@@ -116,8 +115,7 @@ public class ANTLRUnicodePreprocessorFileStream extends ANTLRFileStream {
 
         char u1 = 0, u2 = 0, u3 = 0, c = 0;
 
-        int i = 0;
-        int j = 0;
+        int i = 0, j = 0;
 
         while (i < n) {
             c = data[i++];
@@ -261,7 +259,8 @@ public class ANTLRUnicodePreprocessorFileStream extends ANTLRFileStream {
      *          c is in 'A'..'F'
      * @return true if c is a hexadecimal digit else false
      */
-    private boolean isHexadecimalDigit(char c) {
+    private boolean isHexadecimalDigit(final char c) {
         return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
     }
 }
+
