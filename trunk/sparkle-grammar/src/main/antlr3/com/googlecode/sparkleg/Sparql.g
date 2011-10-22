@@ -36,6 +36,7 @@ SELECT_CLAUSE;
 WHERE_CLAUSE;
 VAR;
 GROUP_BY;
+GROUP_CONDITION;
 ORDER_BY;
 ORDER_CONDITION;
 BINDING_VALUE;
@@ -76,7 +77,7 @@ BLANK_NODE;
 
 query
     : prologue (selectQuery | constructQuery | describeQuery | askQuery) bindingsClause EOF -> ^(QUERY prologue selectQuery* constructQuery* describeQuery* askQuery*) bindingsClause*
-    | update (SEMICOLON update)* EOF -> ^(UPDATE update+)
+    | update (SEMICOLON update?)* EOF -> ^(UPDATE update+)
     ;
 
 prologue
@@ -96,7 +97,7 @@ selectQuery
     ;
 
 subSelect
-    : selectClause whereClause solutionModifier	-> ^(SUBSELECT whereClause* solutionModifier)
+    : selectClause whereClause solutionModifier	-> ^(SUBSELECT whereClause* solutionModifier*)
     ;
     	
 selectClause
@@ -108,10 +109,10 @@ selectVariables
     : var -> ^(VAR var) 
     | OPEN_BRACE expression AS var CLOSE_BRACE -> ^(AS expression var)
     ;
-  
+
 constructQuery
     : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate* datasetClause* whereClause* solutionModifier*)
-    | CONSTRUCT datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE triplesTemplate*) solutionModifier*)
+    | CONSTRUCT datasetClause* WHERE groupGraphPattern solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE groupGraphPattern*) solutionModifier*)
     ;
 
 describeQuery
@@ -139,10 +140,10 @@ groupClause
     ;
     		 
 groupCondition
-    : builtInCall
-    | functionCall
-    | OPEN_BRACE expression (AS var)? CLOSE_BRACE -> ^(AS expression var*)
-    | var
+    : builtInCall -> ^(GROUP_CONDITION builtInCall)
+    | functionCall -> ^(GROUP_CONDITION functionCall)
+    | OPEN_BRACE expression (AS var)? CLOSE_BRACE -> ^(GROUP_CONDITION expression ^(AS var)? )
+    | var -> ^(GROUP_CONDITION var)
     ;
     
 havingClause
@@ -353,7 +354,7 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty)
+    : varOrTerm propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty?)
     | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?) 
     ;
 
@@ -535,7 +536,8 @@ builtInCall
     | BOUND OPEN_BRACE var CLOSE_BRACE -> ^(BOUND var)
     | IRI OPEN_BRACE expression CLOSE_BRACE -> ^(IRI expression)
     | URI OPEN_BRACE expression CLOSE_BRACE -> ^(URI expression)
-    | BNODE (OPEN_BRACE expression CLOSE_BRACE| nil) -> ^(BNODE expression)
+    | BNODE (OPEN_BRACE expression CLOSE_BRACE) -> ^(BNODE expression)
+    | BNODE nil -> BNODE
     | RAND nil -> RAND
     | ABS OPEN_BRACE expression CLOSE_BRACE -> ^(ABS expression)
     | CEIL OPEN_BRACE expression CLOSE_BRACE -> ^(CEIL expression)
@@ -547,9 +549,12 @@ builtInCall
     | UCASE OPEN_BRACE expression CLOSE_BRACE -> ^(UCASE expression)
     | LCASE OPEN_BRACE expression CLOSE_BRACE -> ^(LCASE expression)
     | ENCODE_FOR_URI OPEN_BRACE expression CLOSE_BRACE -> ^(ENCODE_FOR_URI expression)
-    | CONTAINS OPEN_BRACE expression CLOSE_BRACE -> ^(CONTAINS expression)
-    | STRSTARTS OPEN_BRACE expression CLOSE_BRACE -> ^(STRSTARTS expression)
-    | STRENDS OPEN_BRACE expression CLOSE_BRACE -> ^(STRENDS expression)
+    | CONTAINS OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(CONTAINS expression expression)
+    | STRSTARTS OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRSTARTS expression expression)
+    | STRENDS OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRENDS expression expression)
+    | STRBEFORE OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRBEFORE expression expression)
+    | STRAFTER OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRAFTER expression expression)
+    | REPLACE OPEN_BRACE expression COMMA expression COMMA expression CLOSE_BRACE -> ^(REPLACE expression expression expression)
     | YEAR OPEN_BRACE expression CLOSE_BRACE -> ^(YEAR expression)
     | MONTH OPEN_BRACE expression CLOSE_BRACE -> ^(MONTH expression)
     | DAY OPEN_BRACE expression CLOSE_BRACE -> ^(DAY expression)
@@ -829,6 +834,12 @@ STRSTARTS : ('S'|'s')('T'|'t')('R'|'r')('S'|'s')('T'|'t')('A'|'a')('R'|'r')('T'|
 
 STRENDS : ('S'|'s')('T'|'t')('R'|'r')('E'|'e')('N'|'n')('D'|'d')('S'|'s');
 
+STRBEFORE : ('S'|'s')('T'|'t')('R'|'r')('B'|'b')('E'|'e')('F'|'f')('O'|'o')('R'|'r')('E'|'e');
+
+STRAFTER : ('S'|'s')('T'|'t')('R'|'r')('A'|'a')('F'|'f')('T'|'t')('E'|'e')('R'|'r');
+
+REPLACE : ('R'|'r')('E'|'e')('P'|'p')('L'|'l')('A'|'a')('C'|'c')('E'|'e');
+
 YEAR : ('Y'|'y')('E'|'e')('A'|'a')('R'|'r');
 
 MONTH : ('M'|'m')('O'|'o')('N'|'n')('T'|'t')('H'|'h');
@@ -839,7 +850,7 @@ HOURS : ('H'|'h')('O'|'o')('U'|'u')('R'|'r')('S'|'s');
 
 MINUTES : ('M'|'m')('I'|'i')('N'|'n')('U'|'u')('T'|'t')('E'|'e')('S'|'s');
 
-SECONDS : ('S'|'s')('E'|'e')('C'|'c')('O'|'o')('N'|'n')('M'|'m')('S'|'s');	
+SECONDS : ('S'|'s')('E'|'e')('C'|'c')('O'|'o')('N'|'n')('D'|'d')('S'|'s');	
 
 TIMEZONE :  ('T'|'t')('I'|'i')('M'|'m')('E'|'e')('Z'|'z')('O'|'o')('N'|'n')('E'|'e');
 
@@ -847,7 +858,7 @@ TZ : ('T'|'t')('Z'|'z');
 
 NOW : ('N'|'n')('O'|'o')('W'|'w');
 
-MD5 : ('M'|'m')('M'|'m')'5';
+MD5 : ('M'|'m')('D'|'d')'5';
 
 SHA1 : ('S'|'s')('H'|'h')('A'|'a')'1';
 
