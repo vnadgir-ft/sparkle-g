@@ -97,7 +97,7 @@ selectQuery
     ;
 
 subSelect
-    : selectClause whereClause solutionModifier	-> ^(SUBSELECT whereClause* solutionModifier*)
+    : selectClause whereClause solutionModifier	-> ^(SUBSELECT selectClause whereClause* solutionModifier*)
     ;
     	
 selectClause
