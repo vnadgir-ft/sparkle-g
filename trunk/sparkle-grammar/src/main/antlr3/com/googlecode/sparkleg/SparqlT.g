@@ -75,7 +75,7 @@ selectVariables
   
 constructQuery
     : ^(CONSTRUCT constructTemplate* datasetClause* whereClause* solutionModifier)
-    | ^(CONSTRUCT datasetClause* ^(WHERE triplesTemplate*) solutionModifier)
+    | ^(CONSTRUCT datasetClause* ^(WHERE groupGraphPattern*) solutionModifier)
     ;
 
 describeQuery
@@ -103,10 +103,10 @@ groupClause
     ;
     		 
 groupCondition
-    : builtInCall
-    | functionCall
-    | ^(AS expression var*)
-    | var
+    : ^(GROUP_CONDITION builtInCall)
+    | ^(GROUP_CONDITION functionCall)
+    | ^(GROUP_CONDITION expression ^(AS var?) )
+    | ^(GROUP_CONDITION var)
     ;
 
 havingClause
@@ -237,8 +237,8 @@ triplesTemplate
     ;
 
 groupGraphPattern
-    : ^(GROUP_GRAPH_PATTERN g=groupGraphPatternSub)
-    | ^(GROUP_GRAPH_PATTERN s=subSelect)
+    : ^(GROUP_GRAPH_PATTERN groupGraphPatternSub)
+    | ^(GROUP_GRAPH_PATTERN subSelect)
     | ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN)
     ;
 
@@ -454,9 +454,12 @@ builtInCall
     | ^(UCASE expression)
     | ^(LCASE expression)
     | ^(ENCODE_FOR_URI expression)
-    | ^(CONTAINS expression)
-    | ^(STRSTARTS expression)
-    | ^(STRENDS expression)
+    | ^(CONTAINS expression expression)
+    | ^(STRSTARTS expression expression)
+    | ^(STRENDS expression expression)
+    | ^(STRBEFORE expression expression)
+    | ^(STRAFTER expression expression)
+    | ^(REPLACE expression expression expression)
     | ^(YEAR expression)
     | ^(MONTH expression)
     | ^(DAY expression)
