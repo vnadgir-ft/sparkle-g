@@ -63,7 +63,8 @@ selectQuery(selectClause, datasetClause, whereClause, solutionModifier) ::= <<
 <if(whereClause)><whereClause><endif><if(solutionModifier)><solutionModifier><endif>
 >>
 
-subSelect(whereClause, solutionModifier) ::= <<
+subSelect(selectClause, whereClause, solutionModifier) ::= <<
+<if(selectClause)><selectClause><endif>
 <if(whereClause)><whereClause><endif><if(solutionModifier)><solutionModifier><endif>
 >>
 
