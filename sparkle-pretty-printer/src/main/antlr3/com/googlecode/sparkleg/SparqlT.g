@@ -56,7 +56,7 @@ selectQuery
     ;
 
 subSelect
-    : ^(SUBSELECT (w+=whereClause)* s=solutionModifier) -> subSelect(whereClause={$w}, solutionModifier={$s.st})
+    : ^(SUBSELECT (w+=whereClause)* (s=solutionModifier)) -> subSelect(whereClause={$w}, solutionModifier={$s.st})
     ;
     	
 selectClause
@@ -75,7 +75,7 @@ selectVariables
   
 constructQuery
     : ^(CONSTRUCT (c=constructTemplate)? (d+=datasetClause)* (w=whereClause)? s=solutionModifier) -> constructQuery(constructTemplate={$c.st}, datasetClause={$d}, whereClause={$w.st}, solutionModifier={$s.st})
-    | ^(CONSTRUCT (d+=datasetClause)* ^(WHERE (t+=triplesTemplate)*) solutionModifier) -> constructQuery(datasetClause={$d}, triplesTemplate={$t}, solutionModifier={$s.st})
+    | ^(CONSTRUCT (d+=datasetClause)* ^(WHERE (g+=groupGraphPattern)*) solutionModifier) -> constructQuery(datasetClause={$d}, groupGraphPattern={$g}, solutionModifier={$s.st})
     ;
 
 describeQuery
@@ -103,10 +103,10 @@ groupClause
     ;
     		 
 groupCondition
-    : b=builtInCall -> groupCondition(builtInCall={$b.st})
-    | f=functionCall -> groupCondition(functionCall={$f.st})
-    | ^(AS e=expression (v+=var)*) -> groupCondition(expression={$e.st}, var={$v})
-    | var -> groupCondition(var={$var.st})
+    : ^(GROUP_CONDITION b=builtInCall) -> groupCondition(builtInCall={$b.st})
+    | ^(GROUP_CONDITION f=functionCall) -> groupCondition(functionCall={$f.st})
+    | ^(GROUP_CONDITION e=expression ^(AS (v=var)?) ) -> groupCondition(expression={$e.st}, var={$v.st})
+    | ^(GROUP_CONDITION var) -> groupCondition(var={$var.st})
     ;
 
 havingClause
@@ -469,6 +469,7 @@ builtInCall
     | ^(IRI e=expression) -> builtInCall(type={$IRI.text}, expression={$e.st})
     | ^(URI e=expression) -> builtInCall(type={$URI.text}, expression={$e.st})
     | ^(BNODE e=expression) -> builtInCall(type={$BNODE.text}, expression={$e.st})
+    | BNODE -> builtInCall(type={$BNODE.text})
     | RAND -> builtInCall(type={$RAND.text})
     | ^(ABS e=expression) -> builtInCall(type={$ABS.text}, expression={$e.st})
     | ^(CEIL e=expression) -> builtInCall(type={$CEIL.text}, expression={$e.st})
@@ -480,9 +481,12 @@ builtInCall
     | ^(UCASE e=expression) -> builtInCall(type={$UCASE.text}, expression={$e.st})
     | ^(LCASE e=expression) -> builtInCall(type={$LCASE.text}, expression={$e.st})
     | ^(ENCODE_FOR_URI e=expression) -> builtInCall(type={$ENCODE_FOR_URI.text}, expression={$e.st})
-    | ^(CONTAINS e=expression) -> builtInCall(type={$CONTAINS.text}, expression={$e.st})
-    | ^(STRSTARTS e=expression) -> builtInCall(type={$STRSTARTS.text}, expression={$e.st})
-    | ^(STRENDS e=expression) -> builtInCall(type={$STRENDS.text}, expression={$e.st})
+    | ^(CONTAINS e1=expression e2=expression) -> builtInCall(type={$CONTAINS.text}, expression={$e1.st}, expression={$e2.st})
+    | ^(STRSTARTS e1=expression e2=expression) -> builtInCall(type={$STRSTARTS.text}, expression={$e1.st}, expression={$e2.st})
+    | ^(STRENDS e1=expression e2=expression) -> builtInCall(type={$STRENDS.text}, expression={$e1.st}, expression={$e2.st})
+    | ^(STRBEFORE e1=expression e2=expression) -> builtInCall(type={$STRBEFORE.text}, expression={$e1.st}, expression={$e2.st})
+    | ^(STRAFTER e1=expression e2=expression) -> builtInCall(type={$STRAFTER.text}, expression={$e1.st}, expression={$e2.st})
+    | ^(REPLACE e1=expression e2=expression e3=expression) -> builtInCall(type={$REPLACE.text}, expression1={$e1.st}, expression2={$e2.st}, expression3={$e3.st})
     | ^(YEAR e=expression) -> builtInCall(type={$YEAR.text}, expression={$e.st})
     | ^(MONTH e=expression) -> builtInCall(type={$MONTH.text}, expression={$e.st})
     | ^(DAY e=expression) -> builtInCall(type={$DAY.text}, expression={$e.st})
