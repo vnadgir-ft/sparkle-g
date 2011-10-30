@@ -132,6 +132,7 @@ orderCondition(attribute, expression, constraint, var) ::= <<
 
 limitOffsetClauses(limit, offset) ::= <<
 <if(limit)>LIMIT <limit><if(offset)> OFFSET <offset><endif><elseif(offset)>OFFSET <offset><endif>
+
 >>
 
 bindingsClause(var, bindingValueList) ::= <<
@@ -240,8 +241,12 @@ groupGraphPattern(subselect, groupGraphPatternSub) ::= <<
 <if(subselect)><subselect><else><groupGraphPatternSub><endif>
 >>
 
-groupGraphPatternSub(triplesBlock1, graphPatternNotTriples, triplesBlock) ::= <<
-<if(triplesBlock1)><triplesBlock1><\n><endif><graphPatternNotTriples, triplesBlock:{g, t|<g> <t>}; separator=" .\n">
+groupGraphPatternSub(triplesBlock, groupGraphPatternSubDetail) ::= <<
+<if(triplesBlock)><triplesBlock><endif><groupGraphPatternSubDetail; separator=" .\n">
+>>
+
+groupGraphPatternSubDetail(graphPatternNotTriples, triplesBlock) ::= <<
+<graphPatternNotTriples><if(triplesBlock)> . <triplesBlock><endif>
 >>
 
 triplesBlock(triplesSameSubjectPath) ::= <<
@@ -253,13 +258,13 @@ graphPatternNotTriples(groupOrUnionGraphPattern, optionalGraphPattern, minusGrap
 >>
 
 optionalGraphPattern(groupGraphPattern) ::= <<
-OPTIONAL {
+<\n>OPTIONAL {
    <groupGraphPattern>
 }
 >>
 
 graphGraphPattern(varOrIRIref, groupGraphPattern) ::= <<
-GRAPH <varOrIRIref> {
+<\n>GRAPH <varOrIRIref> {
    <groupGraphPattern>
 }
 >>
@@ -285,16 +290,18 @@ UNION
    <groupGraphPattern2>
 }
 <else>
-<groupGraphPattern1>
+<\n>{
+   <groupGraphPattern1>
+}
 <endif>
 >>
 
 filter(constraint) ::= <<
-FILTER <constraint>
+<\n>FILTER <constraint>
 >>
 
 constraint(expression, builtInCall, functionCall) ::= <<
-<if(expression)><expression><elseif(builtInCall)><builtInCall><elseif(functionCall)><functionCall><endif>
+(<if(expression)><expression><elseif(builtInCall)><builtInCall><elseif(functionCall)><functionCall><endif>)
 >>
 
 functionCall(iriRef, argList) ::= <<
@@ -370,7 +377,7 @@ verb(varOrIRIref, a, path) ::= <<
 >>
 
 triplesNode(subject, propertyListNotEmpty, graphNode) ::= <<
-<if(subject)>[<propertyListNotEmpty>]<elseif(graphNode)><graphNode; separator=",\n"><endif>
+<if(subject)>[<propertyListNotEmpty>]<elseif(graphNode)>(<graphNode; separator=" ">)<endif>
 >>
 
 graphNode(varOrTerm, triplesNode) ::= <<
@@ -394,11 +401,11 @@ graphTerm(iriRef, rdfLiteral, numericLiteral, booleanLiteral, blankNode, value) 
 >>
 
 nil() ::= <<
-[NIL!!!]
+[ ]
 >>
 
 expression(operator, expression1,  expression2, unaryExpression) ::= <<
-<if(operator)>(<expression1> <operator> <expression2>)<else><unaryExpression><endif>
+<if(operator)><expression1> <operator> <expression2><else><unaryExpression><endif>
 >>
 
 unaryExpression(operator, primaryExpression) ::= <<
@@ -410,11 +417,11 @@ primaryExpression(builtInCall, iriRefOrFunction, rdfLiteral, numericLiteral, boo
 >>
 
 brackettedExpression(expression) ::= <<
-(<expression>)
+<expression>
 >>
 
 builtInCall(type, expression, expressions, var, expressionList, expression1, expression2, expression3, regexExpression, existsFunction, notExistsFunction) ::= <<
-<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1> <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)>REGEX<regexExpression><elseif(existsFunction)><existsFunction><elseif(notExistsFunction)><notExistsFunction><endif>
+<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)>REGEX<regexExpression><elseif(existsFunction)><existsFunction><elseif(notExistsFunction)><notExistsFunction><endif>
 >>
 
 regexExpression(expression) ::= <<
@@ -442,7 +449,7 @@ iriRefOrFunction(function, iriRef, argList) ::= <<
 >>
 
 rdfLiteral(string, langTag, iriRef) ::= <<
-<string><if(langTag)><langTag><else><iriRef><endif>
+<string><if(langTag)><langTag><else><if(iriRef)>^^<iriRef><endif><endif>
 >>
 
 numericLiteral(numericLiteralUnsigned) ::= <<
