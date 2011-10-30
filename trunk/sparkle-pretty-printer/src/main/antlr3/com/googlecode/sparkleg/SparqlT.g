@@ -49,14 +49,14 @@ baseDecl
 
 prefixDecl
     : ^(PREFIX PNAME_NS IRI_REF) -> prefixDecl(pname={$PNAME_NS.text}, iriRef={$IRI_REF.text})
-    ;
+    ; 
 
 selectQuery
     : ^(SELECT s=selectClause (d+=datasetClause)* (w+=whereClause)* m=solutionModifier) -> selectQuery(selectClause={$s.st}, datasetClause={$d}, whereClause={$w}, solutionModifier={$m.st} )
     ;
 
 subSelect
-    : ^(SUBSELECT (w+=whereClause)* (s=solutionModifier)) -> subSelect(whereClause={$w}, solutionModifier={$s.st})
+    : ^(SUBSELECT s=selectClause (w+=whereClause)* (m=solutionModifier)) -> subSelect(selectClause={$s.st}, whereClause={$w}, solutionModifier={$m.st})
     ;
     	
 selectClause
@@ -247,11 +247,15 @@ groupGraphPattern
     | ^(GROUP_GRAPH_PATTERN s=subSelect) -> groupGraphPattern(subselect={$s.st})
     | ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN) -> groupGraphPattern(attribute={"{ }"})
     ;
-
+  
 groupGraphPatternSub
-    : t1=triplesBlock (g+=graphPatternNotTriples (t+=triplesBlock)?)* -> groupGraphPatternSub(triplesBlock1={$t1.st}, graphPatternNotTriples={$g}, triplesBlock={$t}) 
-    | (g+=graphPatternNotTriples (t+=triplesBlock)?)+ -> groupGraphPatternSub(graphPatternNotTriples={$g}, triplesBlock={$t})
+    : t=triplesBlock (g+=groupGraphPatternSubDetail)* -> groupGraphPatternSub(triplesBlock={$t.st}, groupGraphPatternSubDetail={$g})
+    | (g+=groupGraphPatternSubDetail)+ -> groupGraphPatternSub(groupGraphPatternSubDetail={$g})
     ;
+
+groupGraphPatternSubDetail
+    : g=graphPatternNotTriples DOT? t=triplesBlock? -> groupGraphPatternSubDetail(graphPatternNotTriples={$g.st}, triplesBlock={$t.st})
+    ;    
 
 triplesBlock
     : (t+=triplesSameSubjectPath)+ -> triplesBlock(triplesSameSubjectPath={$t})
