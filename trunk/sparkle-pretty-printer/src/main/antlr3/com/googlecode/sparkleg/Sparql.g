@@ -86,7 +86,7 @@ prologue
 
 baseDecl
     : BASE IRI_REF -> ^(BASE IRI_REF)
-    ;
+    ; 
 
 prefixDecl
     : PREFIX PNAME_NS IRI_REF -> ^(PREFIX PNAME_NS IRI_REF)
@@ -97,7 +97,7 @@ selectQuery
     ;
 
 subSelect
-    : selectClause whereClause solutionModifier	-> ^(SUBSELECT whereClause* solutionModifier*)
+    : selectClause whereClause solutionModifier	-> ^(SUBSELECT selectClause whereClause* solutionModifier*)
     ;
     	
 selectClause
@@ -286,8 +286,12 @@ groupGraphPattern
     ;
     
 groupGraphPatternSub
-    : triplesBlock (graphPatternNotTriples DOT? triplesBlock?)* -> triplesBlock (graphPatternNotTriples triplesBlock?)*
-    |(graphPatternNotTriples DOT? triplesBlock?)+ -> (graphPatternNotTriples triplesBlock?)+
+    : triplesBlock groupGraphPatternSubDetail* -> triplesBlock groupGraphPatternSubDetail*
+    | groupGraphPatternSubDetail+ -> groupGraphPatternSubDetail+
+    ;
+
+groupGraphPatternSubDetail
+    : graphPatternNotTriples DOT? triplesBlock? -> graphPatternNotTriples triplesBlock?
     ;
 
 triplesBlock
