@@ -289,8 +289,8 @@ UNION
 {
    <groupGraphPattern2>
 }
-<else>
-<\n>{
+<elseif(groupGraphPattern1)>
+{
    <groupGraphPattern1>
 }
 <endif>
@@ -325,7 +325,7 @@ constructTriples(triplesSameSubject) ::= <<
 >>
 
 triplesSameSubjectPath(triplesNode, subject, propertyListNotEmpty) ::= <<
-<if(triplesNode)><triplesNode>[<propertyListNotEmpty>]<else><subject> <propertyListNotEmpty><endif>
+<if(triplesNode)><triplesNode><if(propertyListNotEmpty)>[<propertyListNotEmpty>]<endif><else><subject> <propertyListNotEmpty><endif>
 >>
 
 path(pathSequence) ::= <<
