@@ -58,6 +58,7 @@ PATH;
 PATH_SEQUENCE;
 PATH_PRIMARY;
 PATH_NEGATED;
+BRACKETTED_EXPRESSION;
 UNARY_NOT;
 UNARY_PLUS;
 UNARY_MINUS;
@@ -518,9 +519,9 @@ multiplicativeOperator
     ;
 
 unaryExpression
-    : op=NEGATION primaryExpression -> ^(UNARY_NOT[$op] primaryExpression)
-    | op=PLUS primaryExpression -> ^(UNARY_PLUS[$op] primaryExpression)
-    | op=MINUS primaryExpression -> ^(UNARY_MINUS[$op] primaryExpression)
+    : op=NEGATION primaryExpression -> ^(UNARY NEGATION primaryExpression)
+    | op=PLUS primaryExpression -> ^(UNARY PLUS primaryExpression)
+    | op=MINUS primaryExpression -> ^(UNARY MINUS primaryExpression)
     | primaryExpression -> ^(UNARY primaryExpression)
     ;
 
@@ -529,7 +530,7 @@ primaryExpression
     ;
 
 brackettedExpression
-    : OPEN_BRACE expression CLOSE_BRACE -> expression
+    : OPEN_BRACE expression CLOSE_BRACE -> ^(BRACKETTED_EXPRESSION expression)
     ;
 
 builtInCall
