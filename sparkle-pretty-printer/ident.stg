@@ -126,8 +126,8 @@ orderClause(orderCondition) ::= <<
 ORDER BY <orderCondition; separator=", ">
 >>
 
-orderCondition(attribute, expression, constraint, var) ::= <<
-<if(attribute)><attribute> <expression><elseif(constraint)><constraint><elseif(var)><var><endif> 
+orderCondition(attribute, brackettedExpression, constraint, var) ::= <<
+<if(attribute)><attribute> <brackettedExpression><elseif(constraint)><constraint><elseif(var)><var><endif> 
 >>
 
 limitOffsetClauses(limit, offset) ::= <<
@@ -300,8 +300,8 @@ filter(constraint) ::= <<
 <\n>FILTER <constraint>
 >>
 
-constraint(expression, builtInCall, functionCall) ::= <<
-(<if(expression)><expression><elseif(builtInCall)><builtInCall><elseif(functionCall)><functionCall><endif>)
+constraint(brackettedExpression, builtInCall, functionCall) ::= <<
+<if(brackettedExpression)><brackettedExpression><elseif(builtInCall)><builtInCall><elseif(functionCall)><functionCall><endif>
 >>
 
 functionCall(iriRef, argList) ::= <<
@@ -412,12 +412,12 @@ unaryExpression(operator, primaryExpression) ::= <<
 <if(operator)><operator> <endif><primaryExpression>
 >>
 
-primaryExpression(builtInCall, iriRefOrFunction, rdfLiteral, numericLiteral, booleanLiteral, var, aggregate) ::= <<
-<if(builtInCall)><builtInCall><elseif(iriRefOrFunction)><iriRefOrFunction><elseif(rdfLiteral)><rdfLiteral><elseif(numericLiteral)><numericLiteral><elseif(booleanLiteral)><booleanLiteral><elseif(var)><var><else><aggregate><endif>
+primaryExpression(brackettedExpression, builtInCall, iriRefOrFunction, rdfLiteral, numericLiteral, booleanLiteral, var, aggregate) ::= <<
+<if(brackettedExpression)><brackettedExpression><elseif(builtInCall)><builtInCall><elseif(iriRefOrFunction)><iriRefOrFunction><elseif(rdfLiteral)><rdfLiteral><elseif(numericLiteral)><numericLiteral><elseif(booleanLiteral)><booleanLiteral><elseif(var)><var><else><aggregate><endif>
 >>
 
 brackettedExpression(expression) ::= <<
-<expression>
+(<expression>)
 >>
 
 builtInCall(type, expression, expressions, var, expressionList, expression1, expression2, expression3, regexExpression, existsFunction, notExistsFunction) ::= <<
