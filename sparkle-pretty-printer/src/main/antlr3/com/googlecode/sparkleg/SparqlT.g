@@ -20,7 +20,7 @@
  * @author Juergen Pfundt   (Juergen.Pfundt)
  * @version $Id: Sparql.g 161 2011-05-23 22:14:39Z Juergen.Pfundt@web.de $
  */
-tree grammar SparqlT;
+tree grammar SparqlT; 
 
 options {
 tokenVocab=Sparql; // reuse token types
@@ -118,8 +118,8 @@ orderClause
     ;
 
 orderCondition
-    : ^(ORDER_CONDITION ASC e=expression) -> orderCondition(attribute={$ASC.text}, expression={$e.st})
-    | ^(ORDER_CONDITION DESC e=expression) -> orderCondition(attribute={$DESC.text}, expression={$e.st})
+    : ^(ORDER_CONDITION ASC b=brackettedExpression) -> orderCondition(attribute={$ASC.text}, brackettedExpression={$b.st})
+    | ^(ORDER_CONDITION DESC b=brackettedExpression) -> orderCondition(attribute={$DESC.text}, brackettedExpression={$b.st})
     | ^(ORDER_CONDITION c=constraint) -> orderCondition(constraint={$c.st})
     | ^(ORDER_CONDITION v=var) -> orderCondition(var={$v.st})
     ;
@@ -301,7 +301,7 @@ filter
     ;
 
 constraint
-    : e=expression -> constraint(expression={$e.st})
+    : e=brackettedExpression -> constraint(brackettedExpression={$e.st})
     | b=builtInCall -> constraint(expression={$b.st})
     | f=functionCall -> constraint(expression={$f.st})
     ;
@@ -395,7 +395,7 @@ triplesNode
     | ^(TRIPLES_NODE ^(SUBJECT BLANK_NODE) p=propertyListNotEmpty) -> triplesNode(subject={"[ ]"}, propertyListNotEmpty={$p.st})
     ;
 
-graphNode
+graphNode 
     : v=varOrTerm -> graphNode(varOrTerm={$v.st}) 
     | t=triplesNode -> graphNode(triplesNode={$t.st})
     ;
@@ -448,20 +448,26 @@ expression
     ;
     
 unaryExpression
-    : ^(UNARY_NOT p=primaryExpression) -> unaryExpression(operator={$UNARY_NOT.text}, primaryExpression={$p.st})
-    | ^(UNARY_PLUS p=primaryExpression) -> unaryExpression(operator={$UNARY_PLUS.text}, primaryExpression={$p.st})
-    | ^(UNARY_MINUS p=primaryExpression) -> unaryExpression(operator={$UNARY_MINUS.text}, primaryExpression={$p.st})
+    : ^(UNARY NEGATION p=primaryExpression) -> unaryExpression(operator={$NEGATION.text}, primaryExpression={$p.st})
+    | ^(UNARY PLUS p=primaryExpression) -> unaryExpression(operator={$PLUS.text}, primaryExpression={$p.st})
+    | ^(UNARY MINUS p=primaryExpression) -> unaryExpression(operator={$MINUS.text}, primaryExpression={$p.st})
     | ^(UNARY p=primaryExpression) -> unaryExpression(primaryExpression={$p.st})
     ;
 
 primaryExpression 
-    : c=builtInCall -> primaryExpression(builtInCall={$c.st}) 
+    : e=brackettedExpression -> primaryExpression(brackettedExpression={$e.st}) 
+    | c=builtInCall -> primaryExpression(builtInCall={$c.st}) 
     | i=iriRefOrFunction -> primaryExpression(iriRefOrFunction={$i.st}) 
     | r=rdfLiteral -> primaryExpression(rdfLiteral={$r.st})
     | n=numericLiteral  -> primaryExpression(numericLiteral={$n.st})
     | b=booleanLiteral -> primaryExpression(booleanLiteral={$b.st}) 
     | v=var -> primaryExpression(var={$v.st}) 
     | a=aggregate -> primaryExpression(aggregate={$a.st})
+    | u=unaryExpression -> primaryExpression(unaryExpression={$u.st})
+    ;
+
+brackettedExpression
+    : ^(BRACKETTED_EXPRESSION e=expression) -> brackettedExpression(expression={$e.st})
     ;
 
 builtInCall
