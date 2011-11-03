@@ -293,7 +293,7 @@ minusGraphPattern
 
 groupOrUnionGraphPattern
     : ^(UNION g1=groupGraphPattern g2=groupGraphPattern) -> groupOrUnionGraphPattern(groupGraphPattern1={$g1.st}, groupGraphPattern2={$g2.st})
-    | g1=groupGraphPattern -> groupOrUnionGraphPattern(groupGraphPattern1={$g1.st})
+    | g=groupGraphPattern -> groupOrUnionGraphPattern(groupGraphPattern={$g.st})
     ;
 
 filter
