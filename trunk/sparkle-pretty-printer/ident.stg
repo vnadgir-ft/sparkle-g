@@ -59,7 +59,7 @@ PREFIX <pname> \<<iriRef>\>
 >>
 
 selectQuery(selectClause, datasetClause, whereClause, solutionModifier) ::= <<
-<if(selectClause)><selectClause><endif><if(datasetClause)><datasetClause; separator="\n"><endif>
+<if(selectClause)><selectClause><endif><if(datasetClause)><\n><datasetClause; separator="\n"><endif>
 <if(whereClause)><whereClause><endif><if(solutionModifier)><solutionModifier><endif>
 >>
 
@@ -78,19 +78,21 @@ selectVariables(expression, var) ::= <<
 
 constructQuery(constructTemplate, datasetClause, triplesTemplate, whereClause, solutionModifier) ::= <<
 CONSTRUCT {
-   <if(constructTemplate)><constructTemplate> <endif><datasetClause; separator=", ">
+   <if(constructTemplate)><constructTemplate> <endif><if(datasetClause)><\n><datasetClause; separator=", "><endif>
 }
 <if(whereClause)><whereClause><elseif(triplesTemplate)><triplesTemplate; separator=", "><endif><solutionModifier>
 >>
 
 describeQuery(varOrIRIref, attribute, datasetClause, whereClause, solutionModifier) ::= <<
 DESCRIBE {
-   <varOrIRIref; separator=", "><attribute><whereClause><solutionModifier>
+   <varOrIRIref; separator=", "><if(attribute)><attribute><endif><if(datasetClause)><\n><datasetClause; separator=", "><endif>
+   <whereClause><solutionModifier>
 }
 >>
 
 askQuery(datasetClause, whereClause) ::= <<
-ASK <datasetClause; separator=", "><whereClause>
+ASK<if(datasetClause)><\n><datasetClause; separator=", "><endif>
+<whereClause>
 >>
 
 datasetClause(attribute, iriRef) ::= <<
@@ -237,16 +239,16 @@ triplesTemplate(triplesSameSubject) ::= <<
 <triplesSameSubject; separator="\n">
 >>
 
-groupGraphPattern(subselect, groupGraphPatternSub) ::= <<
-<if(subselect)><subselect><else><groupGraphPatternSub><endif>
+groupGraphPattern(subselect, groupGraphPatternSub, attribute) ::= <<
+<if(subselect)><subselect><elseif(groupGraphPatternSub)><groupGraphPatternSub><elseif(attribute)><attribute><endif>
 >>
 
 groupGraphPatternSub(triplesBlock, groupGraphPatternSubDetail) ::= <<
-<if(triplesBlock)><triplesBlock><endif><groupGraphPatternSubDetail; separator=" .\n">
+<if(triplesBlock)><triplesBlock><\n><endif><if(groupGraphPatternSubDetail)><groupGraphPatternSubDetail; separator=""><endif>
 >>
 
 groupGraphPatternSubDetail(graphPatternNotTriples, triplesBlock) ::= <<
-<graphPatternNotTriples><if(triplesBlock)> . <triplesBlock><endif>
+<if(graphPatternNotTriples)><graphPatternNotTriples><endif><if(triplesBlock)><triplesBlock><\n><endif>
 >>
 
 triplesBlock(triplesSameSubjectPath) ::= <<
@@ -258,15 +260,15 @@ graphPatternNotTriples(groupOrUnionGraphPattern, optionalGraphPattern, minusGrap
 >>
 
 optionalGraphPattern(groupGraphPattern) ::= <<
-<\n>OPTIONAL {
+OPTIONAL {
    <groupGraphPattern>
-}
+}<\n>
 >>
 
 graphGraphPattern(varOrIRIref, groupGraphPattern) ::= <<
-<\n>GRAPH <varOrIRIref> {
+GRAPH <varOrIRIref> {
    <groupGraphPattern>
-}
+}<\n>
 >>
 
 serviceGraphPattern(attribute, varOrIRIref, groupGraphPattern) ::= <<
@@ -281,23 +283,24 @@ minusGraphPattern(groupGraphPattern) ::= <<
 <groupGraphPattern>
 >>
  
-groupOrUnionGraphPattern(groupGraphPattern1, groupGraphPattern2) ::= <<
-<if(groupGraphPattern2)>{
+groupOrUnionGraphPattern(groupGraphPattern, groupGraphPattern1, groupGraphPattern2) ::= <<
+<if(groupGraphPattern1)>
+{
    <groupGraphPattern1>
 }
 UNION 
 {
    <groupGraphPattern2>
 }
-<elseif(groupGraphPattern1)>
+<elseif(groupGraphPattern)>
 {
-   <groupGraphPattern1>
-}
+   <groupGraphPattern>
+}<\n>
 <endif>
 >>
 
 filter(constraint) ::= <<
-<\n>FILTER <constraint>
+FILTER <constraint><\n>
 >>
 
 constraint(brackettedExpression, builtInCall, functionCall) ::= <<
@@ -401,7 +404,7 @@ graphTerm(iriRef, rdfLiteral, numericLiteral, booleanLiteral, blankNode, value) 
 >>
 
 nil() ::= <<
-[ ]
+()
 >>
 
 expression(operator, expression1,  expression2, unaryExpression) ::= <<
