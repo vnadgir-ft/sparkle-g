@@ -84,10 +84,7 @@ CONSTRUCT {
 >>
 
 describeQuery(varOrIRIref, attribute, datasetClause, whereClause, solutionModifier) ::= <<
-DESCRIBE {
-   <varOrIRIref; separator=", "><if(attribute)><attribute><endif><if(datasetClause)><\n><datasetClause; separator=", "><endif>
-   <whereClause><solutionModifier>
-}
+DESCRIBE <varOrIRIref; separator=" "><if(attribute)><attribute><endif><if(datasetClause)><\n><datasetClause; separator=", "><endif><if(whereClause)><\n><whereClause><endif><solutionModifier>
 >>
 
 askQuery(datasetClause, whereClause) ::= <<
@@ -324,7 +321,7 @@ constructTemplate(constructTriples) ::= <<
 >>
 
 constructTriples(triplesSameSubject) ::= <<
-<triplesSameSubject; separator=",\n">
+<triplesSameSubject; separator="\n">
 >>
 
 triplesSameSubjectPath(triplesNode, subject, propertyListNotEmpty) ::= <<
