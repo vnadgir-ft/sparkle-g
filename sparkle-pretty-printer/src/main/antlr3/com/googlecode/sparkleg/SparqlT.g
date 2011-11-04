@@ -22,7 +22,7 @@
  */
 tree grammar SparqlT; 
 
-options {
+options { 
 tokenVocab=Sparql; // reuse token types
 ASTLabelType=CommonTree; // $label will have type CommonTree
 output=template; //template;
@@ -245,7 +245,7 @@ triplesTemplate
 groupGraphPattern
     : ^(GROUP_GRAPH_PATTERN g=groupGraphPatternSub) -> groupGraphPattern(groupGraphPatternSub={$g.st})
     | ^(GROUP_GRAPH_PATTERN s=subSelect) -> groupGraphPattern(subselect={$s.st})
-    | ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN) -> groupGraphPattern(attribute={"{ }"})
+    | ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN) -> groupGraphPattern(attribute={""})
     ;
   
 groupGraphPatternSub
@@ -302,8 +302,8 @@ filter
 
 constraint
     : e=brackettedExpression -> constraint(brackettedExpression={$e.st})
-    | b=builtInCall -> constraint(expression={$b.st})
-    | f=functionCall -> constraint(expression={$f.st})
+    | b=builtInCall -> constraint(builtInCall={$b.st})
+    | f=functionCall -> constraint(functionCall={$f.st})
     ;
 
 functionCall
@@ -528,7 +528,7 @@ builtInCall
     ;
 
 regexExpression
-    : ^(REGEX (e+=expression)+) -> regexExpression(expression={$e})
+    : ^(REGEX (e+=expression)+) -> regexExpression(type={$REGEX.text}, expression={$e})
     ;
     
 subStringExpression
@@ -609,7 +609,7 @@ prefixedName
     ;
 
 blankNode
-    : BLANK_NODE_LABEL -> blankNode(value={"[ ]"})
+    : BLANK_NODE_LABEL -> blankNode(value={$BLANK_NODE_LABEL.text})
     | a=anon -> blankNode(anon={$a.st})
     ;
 
