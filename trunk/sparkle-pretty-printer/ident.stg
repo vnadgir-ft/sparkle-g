@@ -424,11 +424,11 @@ brackettedExpression(expression) ::= <<
 >>
 
 builtInCall(type, expression, expressions, var, expressionList, expression1, expression2, expression3, regexExpression, existsFunction, notExistsFunction) ::= <<
-<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)>REGEX<regexExpression><elseif(existsFunction)><existsFunction><elseif(notExistsFunction)><notExistsFunction><endif>
+<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)><regexExpression><elseif(existsFunction)><existsFunction><elseif(notExistsFunction)><notExistsFunction><endif>
 >>
 
-regexExpression(expression) ::= <<
-(<expression; separator=", ">)
+regexExpression(type, expression) ::= <<
+<type> (<expression; separator=", ">)
 >>
 
 subStringExpression(expression) ::= <<
@@ -488,7 +488,7 @@ prefixedName(name) ::= <<
 >>
 
 blankNode(value, anon) ::= <<
-<if(value)><value><else><anon><endif>
+<if(value)>_:<value><else><anon><endif>
 >>
 
 anon() ::= <<
