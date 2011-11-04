@@ -122,7 +122,7 @@ HAVING <constraint; separator=", ">
 >>
 
 orderClause(orderCondition) ::= <<
-ORDER BY <orderCondition; separator=", ">
+ORDER BY <orderCondition; separator=" ">
 >>
 
 orderCondition(attribute, brackettedExpression, constraint, var) ::= <<
