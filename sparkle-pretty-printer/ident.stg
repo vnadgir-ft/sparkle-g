@@ -37,7 +37,7 @@
 group ident;
 
 query(prologue, selectQuery, constructQuery, describeQuery, askQuery, bindingsClause, updateQuery) ::= <<
-<if(prologue)><prologue><endif>
+<if(prologue)><prologue><\n><endif>
 <if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif>
 >>
 
@@ -149,7 +149,7 @@ bindingValue(iriRef, rdfLiteral, numericLiteral, booleanLiteral, value) ::= <<
 >>
 
 update(prologue, load, clear, drop, add, move, copy, create, insert, delete, modify) ::= <<
-<prologue>
+<if(prologue)><prologue><\n><endif>
 <if(load)><load><elseif(clear)><clear><elseif(drop)><drop><elseif(add)><add><elseif(move)><move><elseif(copy)><copy><elseif(create)><create><elseif(insert)><insert><elseif(delete)><delete><elseif(modify)><modify><endif>
 >>
 
@@ -369,7 +369,7 @@ propertyListNotEmpty(verb, objectList) ::= <<
 >>
 
 objectList(graphNode) ::= <<
-<graphNode; separator="yyy">
+<graphNode; separator=", ">
 >>
 
 verb(varOrIRIref, a, path) ::= <<
@@ -409,7 +409,7 @@ expression(operator, expression1,  expression2, unaryExpression) ::= <<
 >>
 
 unaryExpression(operator, primaryExpression) ::= <<
-<if(operator)><operator> <endif><primaryExpression>
+<if(operator)><operator><endif><primaryExpression>
 >>
 
 primaryExpression(brackettedExpression, builtInCall, iriRefOrFunction, rdfLiteral, numericLiteral, booleanLiteral, var, aggregate) ::= <<
