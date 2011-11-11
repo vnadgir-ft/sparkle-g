@@ -22,7 +22,7 @@
  */
 tree grammar SparqlT; 
 
-options { 
+options {
 tokenVocab=Sparql; // reuse token types
 ASTLabelType=CommonTree; // $label will have type CommonTree
 output=template; //template;
@@ -292,8 +292,8 @@ minusGraphPattern
     ;
 
 groupOrUnionGraphPattern
-    : ^(UNION g1=groupGraphPattern g2=groupGraphPattern) -> groupOrUnionGraphPattern(groupGraphPattern1={$g1.st}, groupGraphPattern2={$g2.st})
-    | g=groupGraphPattern -> groupOrUnionGraphPattern(groupGraphPattern={$g.st})
+    : ^(UNION  g1=groupOrUnionGraphPattern g2=groupGraphPattern) -> groupOrUnionGraphPattern(unionGraphPattern={$g1.st}, groupGraphPattern2={$g2.st})
+    | g=groupGraphPattern -> groupOrUnionGraphPattern(groupGraphPattern1={$g.st})
     ;
 
 filter
@@ -432,18 +432,20 @@ nil
 expression
     : ^(OR e1=expression e2=expression) -> expression(operator={$OR.text}, expression1={$e1.st},  expression2={$e2.st})
     | ^(AND e1=expression e2=expression) -> expression(operator={$AND.text}, expression1={$e1.st},  expression2={$e2.st})
-    | ^(EQUAL e1=expression e2=expression) -> expression(operator={$EQUAL.text}, expression1={$e1.st},  expression2={$e2.st})  
-    | ^(NOT_EQUAL e1=expression e2=expression) -> expression(operator={$NOT_EQUAL.text}, expression1={$e1.st},  expression2={$e2.st})
-    | ^(LESS e1=expression e2=expression) -> expression(operator={$LESS.text}, expression1={$e1.st},  expression2={$e2.st})
-    | ^(GREATER e1=expression e2=expression) -> expression(operator={$GREATER.text}, expression1={$e1.st},  expression2={$e2.st})
-    | ^(LESS_EQUAL e1=expression e2=expression) -> expression(operator={$LESS_EQUAL.text}, expression1={$e1.st},  expression2={$e2.st})
-    | ^(GREATER_EQUAL e1=expression e2=expression) -> expression(operator={$GREATER_EQUAL.text}, expression1={$e1.st},  expression2={$e2.st})  
+    | ^(EQUAL e1=expression e2=expression) -> expression(operator={"="}, expression1={$e1.st},  expression2={$e2.st})  
+    | ^(NOT_EQUAL e1=expression e2=expression) -> expression(operator={"<>"}, expression1={$e1.st},  expression2={$e2.st})
+    | ^(LESS e1=expression e2=expression) -> expression(operator={"<"}, expression1={$e1.st},  expression2={$e2.st})
+    | ^(GREATER e1=expression e2=expression) -> expression(operator={">"}, expression1={$e1.st},  expression2={$e2.st})
+    | ^(LESS_EQUAL e1=expression e2=expression) -> expression(operator={"<="}, expression1={$e1.st},  expression2={$e2.st})
+    | ^(GREATER_EQUAL e1=expression e2=expression) -> expression(operator={">="}, expression1={$e1.st},  expression2={$e2.st})  
     | ^(IN e1=expression e2=expression) -> expression(operator={$IN.text}, expression1={$e1.st},  expression2={$e2.st})
     | ^(NOT IN e1=expression e2=expression) -> expression(operator={"NOT IN"}, expression1={$e1.st},  expression2={$e2.st})
-    | ^(PLUS e1=expression e2=expression) -> expression(operator={$PLUS.text}, expression1={$e1.st},  expression2={$e2.st})
-    | ^(MINUS e1=expression e2=expression) -> expression(operator={$MINUS.text}, expression1={$e1.st},  expression2={$e2.st}) 
-    | ^(ASTERISK e1=expression e2=expression) -> expression(operator={$ASTERISK.text}, expression1={$e1.st},  expression2={$e2.st})
-    | ^(DIVIDE e1=expression e2=expression) -> expression(operator={$DIVIDE.text}, expression1={$e1.st},  expression2={$e2.st})
+    | ^(PLUS e1=expression e2=expression) -> expression(operator={"+"}, expression1={$e1.st},  expression2={$e2.st})
+    | ^(MINUS e1=expression e2=expression) -> expression(operator={"-"}, expression1={$e1.st},  expression2={$e2.st}) 
+    | ^(ASTERISK e1=expression e2=expression) -> expression(operator={"*"}, expression1={$e1.st},  expression2={$e2.st})
+    | ^(DIVIDE e1=expression e2=expression) -> expression(operator={"/"}, expression1={$e1.st},  expression2={$e2.st})
+    | n=numericLiteralPositive -> expression(numericLiteralPositive={$n.st})
+    | m=numericLiteralNegative -> expression(numericLiteralNegative={$m.st})
     | u=unaryExpression -> expression(unaryExpression={$u.st})
     ;
     
@@ -564,8 +566,8 @@ rdfLiteral
 
 numericLiteral
     : u=numericLiteralUnsigned -> numericLiteral(numericLiteralUnsigned={$u.st})
-    | p=numericLiteralPositive -> numericLiteral(numericLiteralUnsigned={$p.st})
-    | n=numericLiteralNegative -> numericLiteral(numericLiteralUnsigned={$n.st})
+    | p=numericLiteralPositive -> numericLiteral(numericLiteralPositive={$p.st})
+    | n=numericLiteralNegative -> numericLiteral(numericLiteralNegative={$n.st})
     ;
 
 numericLiteralUnsigned
