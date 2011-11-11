@@ -280,18 +280,14 @@ minusGraphPattern(groupGraphPattern) ::= <<
 <groupGraphPattern>
 >>
  
-groupOrUnionGraphPattern(groupGraphPattern, groupGraphPattern1, groupGraphPattern2) ::= <<
-<if(groupGraphPattern1)>
-{
-   <groupGraphPattern1>
-}
-UNION 
+groupOrUnionGraphPattern(unionGraphPattern, groupGraphPattern1, groupGraphPattern2) ::= <<
+<if(unionGraphPattern)><unionGraphPattern>UNION 
 {
    <groupGraphPattern2>
 }
-<elseif(groupGraphPattern)>
+<elseif(groupGraphPattern1)>
 {
-   <groupGraphPattern>
+   <groupGraphPattern1>
 }<\n>
 <endif>
 >>
@@ -345,7 +341,7 @@ pathElt(pathPrimary, pathMod) ::= <<
 >>
 
 pathMod(value, i1, i2, i3) ::= <<
-<value>{<i1>,<i2>,<i3>}
+<if(value)><value><else>{<i1>,<i2>,<i3>}<endif>
 >>
 
 pathPrimary(iriRef, value, path, pathNegatedPropertySet) ::= <<
@@ -404,8 +400,8 @@ nil() ::= <<
 ()
 >>
 
-expression(operator, expression1,  expression2, unaryExpression) ::= <<
-<if(operator)><expression1> <operator> <expression2><else><unaryExpression><endif>
+expression(operator, expression1,  expression2, unaryExpression, numericLiteralPositive, numericLiteralNegative) ::= <<
+<if(expression1)><expression1> <operator> <expression2><elseif(unaryExpression)><unaryExpression><elseif(numericLiteralPositive)><numericLiteralPositive><elseif(numericLiteralNegative)><numericLiteralNegative><endif>
 >>
 
 unaryExpression(operator, primaryExpression) ::= <<
@@ -452,8 +448,8 @@ rdfLiteral(string, langTag, iriRef) ::= <<
 <string><if(langTag)><langTag><else><if(iriRef)>^^<iriRef><endif><endif>
 >>
 
-numericLiteral(numericLiteralUnsigned) ::= <<
-<numericLiteralUnsigned>
+numericLiteral(numericLiteralUnsigned, numericLiteralPositive, numericLiteralNegative) ::= <<
+<if(numericLiteralUnsigned)><numericLiteralUnsigned><elseif(numericLiteralPositive)><numericLiteralPositive><elseif(numericLiteralNegative)><numericLiteralNegative><endif>
 >>
 
 numericLiteralUnsigned(value) ::= <<
