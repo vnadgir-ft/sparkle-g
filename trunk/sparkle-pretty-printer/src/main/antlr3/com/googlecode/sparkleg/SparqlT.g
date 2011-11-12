@@ -433,7 +433,7 @@ expression
     : ^(OR e1=expression e2=expression) -> expression(operator={$OR.text}, expression1={$e1.st},  expression2={$e2.st})
     | ^(AND e1=expression e2=expression) -> expression(operator={$AND.text}, expression1={$e1.st},  expression2={$e2.st})
     | ^(EQUAL e1=expression e2=expression) -> expression(operator={"="}, expression1={$e1.st},  expression2={$e2.st})  
-    | ^(NOT_EQUAL e1=expression e2=expression) -> expression(operator={"<>"}, expression1={$e1.st},  expression2={$e2.st})
+    | ^(NOT_EQUAL e1=expression e2=expression) -> expression(operator={"!="}, expression1={$e1.st},  expression2={$e2.st})
     | ^(LESS e1=expression e2=expression) -> expression(operator={"<"}, expression1={$e1.st},  expression2={$e2.st})
     | ^(GREATER e1=expression e2=expression) -> expression(operator={">"}, expression1={$e1.st},  expression2={$e2.st})
     | ^(LESS_EQUAL e1=expression e2=expression) -> expression(operator={"<="}, expression1={$e1.st},  expression2={$e2.st})
