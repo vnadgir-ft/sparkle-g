@@ -321,7 +321,7 @@ constructTriples(triplesSameSubject) ::= <<
 >>
 
 triplesSameSubjectPath(triplesNode, subject, propertyListNotEmpty) ::= <<
-<if(triplesNode)><triplesNode><if(propertyListNotEmpty)>[<propertyListNotEmpty>]<endif><else><subject> <propertyListNotEmpty><endif>
+<if(triplesNode)><triplesNode><if(propertyListNotEmpty)> <propertyListNotEmpty><endif><else><subject> <propertyListNotEmpty><endif>
 >>
 
 path(pathSequence) ::= <<
@@ -357,12 +357,17 @@ pathOneInPropertySet(attribute, iriRef, value) ::= <<
 >>
 
 triplesSameSubject(triplesNode, subject, propertyListNotEmpty) ::= <<
-<triplesNode><subject> <propertyListNotEmpty> .
+<if(triplesNode)><triplesNode><if(propertyListNotEmpty)> <propertyListNotEmpty><endif><else><subject> <propertyListNotEmpty> .<endif>
 >>
 
-propertyListNotEmpty(verb, objectList) ::= <<
-<verb, objectList:{v, o|<v> <o>}; separator=";\n   ">
+propertyListNotEmpty(datails) ::= <<
+<details; separator=";\n">
 >>
+
+propertyListNotEmptyDetails(verb, objectList) ::= <<
+<verb> <objectList>
+>>
+
 
 objectList(graphNode) ::= <<
 <graphNode; separator=", ">
@@ -372,8 +377,8 @@ verb(varOrIRIref, a, path) ::= <<
 <varOrIRIref><a><path>
 >>
 
-triplesNode(subject, propertyListNotEmpty, graphNode) ::= <<
-<if(subject)>[<propertyListNotEmpty>]<elseif(graphNode)>(<graphNode; separator=" ">)<endif>
+triplesNode(propertyListNotEmpty, graphNode) ::= <<
+<if(propertyListNotEmpty)>[<propertyListNotEmpty>]<elseif(graphNode)>(<graphNode; separator=" ">)<endif>
 >>
 
 graphNode(varOrTerm, triplesNode) ::= <<
