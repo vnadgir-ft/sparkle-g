@@ -357,11 +357,11 @@ constructTriples
 
 triplesSameSubject
     : varOrTerm propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty?)
-    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?) 
+    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT triplesNode propertyListNotEmpty?) 
     ;
 
 propertyListNotEmpty
-    : verb objectList (SEMICOLON (verb objectList)?)* -> (^(PREDICATE verb)  objectList)+
+    : propertyListNotEmptyDetails (SEMICOLON propertyListNotEmptyDetails?)* -> propertyListNotEmptyDetails+ 
     ;
 
 objectList
@@ -375,11 +375,15 @@ verb
 
 triplesSameSubjectPath
     : varOrTerm propertyListNotEmptyPath -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmptyPath)
-    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT  triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?)
+    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT  triplesNode propertyListNotEmpty?)
     ;
   
 propertyListNotEmptyPath
-    : verbSimpleOrPath objectList (SEMICOLON (verbSimpleOrPath objectList)?)* -> (^(PREDICATE verbSimpleOrPath) objectList)+
+    : propertyListNotEmptyDetails (SEMICOLON propertyListNotEmptyDetails?)* -> propertyListNotEmptyDetails+
+    ;
+  
+propertyListNotEmptyDetails
+    : verbSimpleOrPath objectList -> ^(PREDICATE  verbSimpleOrPath objectList)
     ;
   
 verbSimpleOrPath
@@ -432,7 +436,7 @@ pathOneInPropertySet
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET -> ^(TRIPLES_NODE ^(SUBJECT BLANK_NODE) propertyListNotEmpty)
+    | OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET -> ^(TRIPLES_NODE propertyListNotEmpty)
     ;
 
 graphNode
