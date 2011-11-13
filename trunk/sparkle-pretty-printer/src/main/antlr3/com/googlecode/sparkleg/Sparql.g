@@ -79,6 +79,7 @@ query
     ;
 
 prologue
+    /* The tree rewriting rule, as used here, implicitely induces a sorting order */
     : (baseDecl | prefixDecl)* -> ^(PROLOGUE baseDecl* prefixDecl*)
     ;
 
@@ -109,8 +110,8 @@ selectVariables
     ;
 
 constructQuery
-    : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate* datasetClause* whereClause* solutionModifier*)
-    | CONSTRUCT datasetClause* WHERE groupGraphPattern solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE groupGraphPattern*) solutionModifier*)
+    : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate datasetClause* whereClause* solutionModifier*)
+    | CONSTRUCT datasetClause* WHERE groupGraphPattern solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE_CLAUSE groupGraphPattern*) solutionModifier*)
     ;
 
 describeQuery
@@ -233,7 +234,7 @@ deleteWhere
     ;
     
 modify
-    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
+    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE_CLAUSE groupGraphPattern))
     ;
   
 deleteClause
