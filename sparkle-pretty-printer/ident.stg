@@ -76,11 +76,11 @@ selectVariables(expression, var) ::= <<
 <if(expression)>(<expression> AS <endif><var><if(expression)>)<endif>
 >>
 
-constructQuery(constructTemplate, datasetClause, triplesTemplate, whereClause, solutionModifier) ::= <<
+constructQuery(constructTemplate, datasetClause, whereClause, solutionModifier) ::= <<
 CONSTRUCT {
    <if(constructTemplate)><constructTemplate> <endif><if(datasetClause)><\n><datasetClause; separator=", "><endif>
 }
-<if(whereClause)><whereClause><elseif(triplesTemplate)><triplesTemplate; separator=", "><endif><solutionModifier>
+<if(whereClause)><whereClause><endif><solutionModifier>
 >>
 
 describeQuery(varOrIRIref, attribute, datasetClause, whereClause, solutionModifier) ::= <<
