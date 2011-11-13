@@ -330,13 +330,17 @@ constructTriples
 
 triplesSameSubject
     : ^(TRIPLES_SAME_SUBJECT ^(SUBJECT v=varOrTerm) p=propertyListNotEmpty) -> triplesSameSubject(subject={$v.st}, propertyListNotEmpty={$p.st})
-    | ^(TRIPLES_SAME_SUBJECT t=triplesNode (^(SUBJECT BLANK_NODE) p=propertyListNotEmpty)?) -> triplesSameSubject(triplesNode={$t.st}, subject={$BLANK_NODE.text}, propertyListNotEmpty={$p.st})
+    | ^(TRIPLES_SAME_SUBJECT t=triplesNode (p=propertyListNotEmpty)?) -> triplesSameSubject(triplesNode={$t.st}, propertyListNotEmpty={$p.st})
     ;
     
 propertyListNotEmpty
-    : (^(PREDICATE v+=verb)  o+=objectList)+ -> propertyListNotEmpty(verb={$v}, objectList={$o})
+    : (p+=propertyListNotEmptyDetails)+ -> propertyListNotEmpty(details={$p})
     ;
 
+propertyListNotEmptyDetails
+    : ^(PREDICATE  v=verb o=objectList) -> propertyListNotEmptyDetails(verb={$v.st}, objectList={$o.st})
+    ;
+	
 objectList
     : (^(OBJECT g+=graphNode))+ -> objectList(graphNode={$g})
     ;
@@ -349,7 +353,7 @@ verb
 
 triplesSameSubjectPath
     : ^(TRIPLES_SAME_SUBJECT ^(SUBJECT v=varOrTerm) p=propertyListNotEmpty) -> triplesSameSubjectPath(subject={$v.st}, propertyListNotEmpty={$p.st})
-    | ^(TRIPLES_SAME_SUBJECT  t=triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?) -> triplesSameSubjectPath(triplesNode={t.st}, subject={$BLANK_NODE.text}, propertyListNotEmpty={$p.st})
+    | ^(TRIPLES_SAME_SUBJECT t=triplesNode (p=propertyListNotEmpty)?) -> triplesSameSubjectPath(triplesNode={t.st}, propertyListNotEmpty={$p.st})
     ;
     
 path
@@ -392,7 +396,7 @@ pathOneInPropertySet
 	
 triplesNode
     : ^(COLLECTION (g+=graphNode)+) -> triplesNode(graphNode={$g})
-    | ^(TRIPLES_NODE ^(SUBJECT BLANK_NODE) p=propertyListNotEmpty) -> triplesNode(subject={"[ ]"}, propertyListNotEmpty={$p.st})
+    | ^(TRIPLES_NODE p=propertyListNotEmpty) -> triplesNode(propertyListNotEmpty={$p.st})
     ;
 
 graphNode 
