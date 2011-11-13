@@ -74,8 +74,8 @@ selectVariables
     ;
   
 constructQuery
-    : ^(CONSTRUCT (c=constructTemplate)? (d+=datasetClause)* (w=whereClause)? s=solutionModifier) -> constructQuery(constructTemplate={$c.st}, datasetClause={$d}, whereClause={$w.st}, solutionModifier={$s.st})
-    | ^(CONSTRUCT (d+=datasetClause)* ^(WHERE (g+=groupGraphPattern)*) solutionModifier) -> constructQuery(datasetClause={$d}, groupGraphPattern={$g}, solutionModifier={$s.st})
+    : ^(CONSTRUCT c=constructTemplate (d+=datasetClause)* (w=whereClause)? s=solutionModifier) -> constructQuery(constructTemplate={$c.st}, datasetClause={$d}, whereClause={$w.st}, solutionModifier={$s.st})
+    | ^(CONSTRUCT (d+=datasetClause)* (w=whereClause)? s=solutionModifier) -> constructQuery(datasetClause={$d}, whereClause={$w.st}, solutionModifier={$s.st})
     ;
 
 describeQuery
@@ -194,8 +194,8 @@ deleteWhere
     ;
     
 modify
-    : ^(MODIFY ^(WITH iriRef) deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
-    | ^(MODIFY deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
+    : ^(MODIFY ^(WITH iriRef) deleteClause* insertClause* usingClause* whereClause /*^(WHERE groupGraphPattern)*/)
+    | ^(MODIFY deleteClause* insertClause* usingClause* whereClause /*^(WHERE groupGraphPattern)*/)
     ;
   
 deleteClause
