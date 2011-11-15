@@ -236,8 +236,8 @@ triplesTemplate(triplesSameSubject) ::= <<
 <triplesSameSubject; separator="\n">
 >>
 
-groupGraphPattern(subselect, groupGraphPatternSub, attribute) ::= <<
-<if(subselect)><subselect><elseif(groupGraphPatternSub)><groupGraphPatternSub><elseif(attribute)><attribute><endif>
+groupGraphPattern(subselect, groupGraphPatternSub) ::= <<
+<if(subselect)><subselect><elseif(groupGraphPatternSub)><groupGraphPatternSub><endif>
 >>
 
 groupGraphPatternSub(triplesBlock, groupGraphPatternSubDetail) ::= <<
@@ -305,7 +305,7 @@ functionCall(iriRef, argList) ::= <<
 >>
 
 argList(attribute, expression, nil) ::= <<
-<if(attribute)><attribute> <endif><if(expression)><expression; separator=", "><elseif(nil)><nil><endif>
+<if(attribute)><attribute> <endif><if(expression)><expression; separator=", "><endif>
 >>
 
 expressionList(expression, nil) ::= <<
@@ -445,8 +445,8 @@ aggregate(operation, attribute, whatever, expression) ::= <<
 <operation><if(attribute)> <attribute><endif><if(whatever)> <whatever><endif>(<expression>)
 >>
 
-iriRefOrFunction(function, iriRef, argList) ::= <<
-<if(function)><iriRef>(<argList>)<else><iriRef><endif>
+iriRefOrFunction(iriRef, argList) ::= <<
+<if(argList)><iriRef>(<argList>)<else><iriRef><endif>
 >>
 
 rdfLiteral(string, langTag, iriRef) ::= <<
