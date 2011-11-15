@@ -243,9 +243,9 @@ triplesTemplate
     ;
     	
 groupGraphPattern
-    : ^(GROUP_GRAPH_PATTERN g=groupGraphPatternSub) -> groupGraphPattern(groupGraphPatternSub={$g.st})
+    : ^(GROUP_GRAPH_PATTERN (g=groupGraphPatternSub)) -> groupGraphPattern(groupGraphPatternSub={$g.st})
     | ^(GROUP_GRAPH_PATTERN s=subSelect) -> groupGraphPattern(subselect={$s.st})
-    | ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN) -> groupGraphPattern(attribute={""})
+    | ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN) -> groupGraphPattern(groupGraphPatternSub={""})
     ;
   
 groupGraphPatternSub
@@ -560,8 +560,8 @@ aggregate
     ;
     
 iriRefOrFunction
-    : i=iriRef -> iriRefOrFunction(iriRef={$i.st})
-    | ^(FUNCTION f=iriRef ^(ARG_LIST a=argList)) -> iriRefOrFunction(function={$FUNCTION.text}, iriRef={$f.st}, argList={$a.st})
+    : ^(FUNCTION f=iriRef ^(ARG_LIST (a=argList))) -> iriRefOrFunction(iriRef={$f.st}, argList={$a.st})
+    | ^(FUNCTION f=iriRef) -> iriRefOrFunction(iriRef={$f.st}, argList={""})
     ;
 
 rdfLiteral
