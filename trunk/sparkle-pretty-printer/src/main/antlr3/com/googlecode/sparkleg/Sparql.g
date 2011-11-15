@@ -279,8 +279,8 @@ triplesTemplate
     ;
     	
 groupGraphPattern
-    : OPEN_CURLY_BRACE (subSelect) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect)
-    | OPEN_CURLY_BRACE (groupGraphPatternSub) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN groupGraphPatternSub)
+    : OPEN_CURLY_BRACE subSelect CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect)
+    | OPEN_CURLY_BRACE groupGraphPatternSub CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN groupGraphPatternSub)
     | OPEN_CURLY_BRACE CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN)
     ;
     
@@ -521,9 +521,9 @@ multiplicativeOperator
     ;
 
 unaryExpression
-    : op=NEGATION primaryExpression -> ^(UNARY NEGATION primaryExpression)
-    | op=PLUS primaryExpression -> ^(UNARY PLUS primaryExpression)
-    | op=MINUS primaryExpression -> ^(UNARY MINUS primaryExpression)
+    : NEGATION primaryExpression -> ^(UNARY NEGATION primaryExpression)
+    | PLUS primaryExpression -> ^(UNARY PLUS primaryExpression)
+    | MINUS primaryExpression -> ^(UNARY MINUS primaryExpression)
     | primaryExpression -> ^(UNARY primaryExpression)
     ;
 
@@ -619,8 +619,7 @@ aggregate
     ;
     
 iriRefOrFunction
-    : iriRef 
-    | iriRef argList -> ^(FUNCTION iriRef ^(ARG_LIST argList))
+    : iriRef argList? -> ^(FUNCTION iriRef ^(ARG_LIST argList)?)
     ;
 
 rdfLiteral
