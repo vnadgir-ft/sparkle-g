@@ -88,19 +88,8 @@ public class ANTLRUnicodePreprocessorFileStream extends ANTLRFileStream {
      * @param n number of characters read into data buffer
      */
     private int convertUnicodeLiteralToChar(int n) {
+        int[] map = null;
 
-        int [] map = new int[128];
-
-        // fill '1' to '9' with nibble values 0001 to 1001
-        for (int k = 0x31; k < 0x3A; k++) {
-            map[k] = k - 0x30;
-        }
-
-        // fill 'a' to 'f' and 'A' to 'F' with nibble values 1010 to 1111
-        for (int k = 0x41; k < 0x47; k++) {
-            map[k] = k - 0x37;
-            map[k + 0x20] = map[k];
-        }
 
         final int START_STATE = 1;
         final int MODIFIED_DATA_STATE = START_STATE + 1;
@@ -116,7 +105,6 @@ public class ANTLRUnicodePreprocessorFileStream extends ANTLRFileStream {
         char u1 = 0, u2 = 0, u3 = 0, c = 0;
 
         int i = 0, j = 0;
-
         while (i < n) {
             c = data[i++];
             switch (state) {
@@ -196,10 +184,11 @@ public class ANTLRUnicodePreprocessorFileStream extends ANTLRFileStream {
                     break;
                 case UNICODE_NIBBLE4:
                     if (isHexadecimalDigit(c)) {
-                        data[j++] = (char) ((((((map[u1] << 4) + map[u2]) << 4) + map[u3]) << 4) + map[c]);
                         if (!data_buffer_modified) {
                             data_buffer_modified = true;
+                            map = initHexMap();
                         }
+                        data[j++] = (char) ((((((map[u1] << 4) + map[u2]) << 4) + map[u3]) << 4) + map[c]);
                         state = MODIFIED_DATA_STATE;
                     } else {
                         if (data_buffer_modified) {
@@ -251,6 +240,20 @@ public class ANTLRUnicodePreprocessorFileStream extends ANTLRFileStream {
         return n;
     }
 
+    private int[] initHexMap() {
+        int[] map = new int[128];
+        // fill '1' to '9' with nibble values 0001 to 1001
+        for (int k = 0x31; k < 0x3A; k++) {
+            map[k] = k - 0x30;
+        }
+        // fill 'a' to 'f' and 'A' to 'F' with nibble values 1010 to 1111
+        for (int k = 0x41; k < 0x47; k++) {
+            map[k] = k - 0x37;
+            map[k + 0x20] = map[k];
+        }
+        return map;
+    }
+
     /**
      * Determines if a character is a legal hexadecimal digit
      * @param c c is a legal hexadecimal digit if:
@@ -263,4 +266,3 @@ public class ANTLRUnicodePreprocessorFileStream extends ANTLRFileStream {
         return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
     }
 }
-
