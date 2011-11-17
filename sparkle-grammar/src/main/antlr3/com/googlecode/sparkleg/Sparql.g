@@ -58,9 +58,7 @@ PATH;
 PATH_SEQUENCE;
 PATH_PRIMARY;
 PATH_NEGATED;
-UNARY_NOT;
-UNARY_PLUS;
-UNARY_MINUS;
+BRACKETTED_EXPRESSION;
 UNARY;
 BLANK_NODE;
 }
@@ -81,12 +79,13 @@ query
     ;
 
 prologue
+    /* The tree rewriting rule, as used here, implicitely induces a sorting order */
     : (baseDecl | prefixDecl)* -> ^(PROLOGUE baseDecl* prefixDecl*)
     ;
 
 baseDecl
     : BASE IRI_REF -> ^(BASE IRI_REF)
-    ;
+    ; 
 
 prefixDecl
     : PREFIX PNAME_NS IRI_REF -> ^(PREFIX PNAME_NS IRI_REF)
@@ -111,8 +110,8 @@ selectVariables
     ;
 
 constructQuery
-    : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate* datasetClause* whereClause* solutionModifier*)
-    | CONSTRUCT datasetClause* WHERE groupGraphPattern solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE groupGraphPattern*) solutionModifier*)
+    : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate datasetClause* whereClause* solutionModifier*)
+    | CONSTRUCT datasetClause* WHERE groupGraphPattern solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE_CLAUSE groupGraphPattern*) solutionModifier*)
     ;
 
 describeQuery
@@ -235,7 +234,7 @@ deleteWhere
     ;
     
 modify
-    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
+    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE_CLAUSE groupGraphPattern))
     ;
   
 deleteClause
@@ -280,14 +279,18 @@ triplesTemplate
     ;
     	
 groupGraphPattern
-    : OPEN_CURLY_BRACE (subSelect) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect)
-    | OPEN_CURLY_BRACE (groupGraphPatternSub) CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN groupGraphPatternSub)
+    : OPEN_CURLY_BRACE subSelect CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect)
+    | OPEN_CURLY_BRACE groupGraphPatternSub CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN groupGraphPatternSub)
     | OPEN_CURLY_BRACE CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN)
     ;
     
 groupGraphPatternSub
-    : triplesBlock (graphPatternNotTriples DOT? triplesBlock?)* -> triplesBlock (graphPatternNotTriples triplesBlock?)*
-    |(graphPatternNotTriples DOT? triplesBlock?)+ -> (graphPatternNotTriples triplesBlock?)+
+    : triplesBlock groupGraphPatternSubDetail* -> triplesBlock groupGraphPatternSubDetail*
+    | groupGraphPatternSubDetail+ -> groupGraphPatternSubDetail+
+    ;
+
+groupGraphPatternSubDetail
+    : graphPatternNotTriples DOT? triplesBlock? -> graphPatternNotTriples triplesBlock?
     ;
 
 triplesBlock
@@ -355,11 +358,11 @@ constructTriples
 
 triplesSameSubject
     : varOrTerm propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty?)
-    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?) 
+    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT triplesNode propertyListNotEmpty?) 
     ;
 
 propertyListNotEmpty
-    : verb objectList (SEMICOLON (verb objectList)?)* -> (^(PREDICATE verb)  objectList)+
+    : propertyListNotEmptyDetails (SEMICOLON propertyListNotEmptyDetails?)* -> propertyListNotEmptyDetails+ 
     ;
 
 objectList
@@ -373,11 +376,15 @@ verb
 
 triplesSameSubjectPath
     : varOrTerm propertyListNotEmptyPath -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmptyPath)
-    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT  triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?)
+    | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT  triplesNode propertyListNotEmpty?)
     ;
   
 propertyListNotEmptyPath
-    : verbSimpleOrPath objectList (SEMICOLON (verbSimpleOrPath objectList)?)* -> (^(PREDICATE verbSimpleOrPath) objectList)+
+    : propertyListNotEmptyDetails (SEMICOLON propertyListNotEmptyDetails?)* -> propertyListNotEmptyDetails+
+    ;
+  
+propertyListNotEmptyDetails
+    : verbSimpleOrPath objectList -> ^(PREDICATE  verbSimpleOrPath objectList)
     ;
   
 verbSimpleOrPath
@@ -430,7 +437,7 @@ pathOneInPropertySet
 	
 triplesNode
     : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET -> ^(TRIPLES_NODE ^(SUBJECT BLANK_NODE) propertyListNotEmpty)
+    | OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET -> ^(TRIPLES_NODE propertyListNotEmpty)
     ;
 
 graphNode
@@ -514,9 +521,9 @@ multiplicativeOperator
     ;
 
 unaryExpression
-    : op=NEGATION primaryExpression -> ^(UNARY_NOT[$op] primaryExpression)
-    | op=PLUS primaryExpression -> ^(UNARY_PLUS[$op] primaryExpression)
-    | op=MINUS primaryExpression -> ^(UNARY_MINUS[$op] primaryExpression)
+    : NEGATION primaryExpression -> ^(UNARY NEGATION primaryExpression)
+    | PLUS primaryExpression -> ^(UNARY PLUS primaryExpression)
+    | MINUS primaryExpression -> ^(UNARY MINUS primaryExpression)
     | primaryExpression -> ^(UNARY primaryExpression)
     ;
 
@@ -525,7 +532,7 @@ primaryExpression
     ;
 
 brackettedExpression
-    : OPEN_BRACE expression CLOSE_BRACE -> expression
+    : OPEN_BRACE expression CLOSE_BRACE -> ^(BRACKETTED_EXPRESSION expression)
     ;
 
 builtInCall
@@ -612,8 +619,7 @@ aggregate
     ;
     
 iriRefOrFunction
-    : iriRef 
-    | iriRef argList -> ^(FUNCTION iriRef ^(ARG_LIST argList))
+    : iriRef argList? -> ^(FUNCTION iriRef ^(ARG_LIST argList)?)
     ;
 
 rdfLiteral
