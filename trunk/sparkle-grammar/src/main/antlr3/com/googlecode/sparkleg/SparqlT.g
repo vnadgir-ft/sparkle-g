@@ -35,7 +35,7 @@ output=AST; //template;
 // $<Parser
 
 query
-    : ^(QUERY prologue selectQuery* constructQuery* describeQuery* askQuery*) bindingsClause*
+    : ^(QUERY prologue selectQuery? constructQuery? describeQuery? askQuery?) bindingsClause?
     | ^(UPDATE update+)
     ;
 
@@ -56,7 +56,7 @@ selectQuery
     ;
 
 subSelect
-    : ^(SUBSELECT whereClause* solutionModifier)
+    : ^(SUBSELECT whereClause* datasetClause* solutionModifier)
     ;
     	
 selectClause
@@ -74,8 +74,8 @@ selectVariables
     ;
   
 constructQuery
-    : ^(CONSTRUCT constructTemplate* datasetClause* whereClause* solutionModifier)
-    | ^(CONSTRUCT datasetClause* ^(WHERE groupGraphPattern*) solutionModifier)
+    : ^(CONSTRUCT constructTemplate datasetClause* whereClause? solutionModifier)
+    | ^(CONSTRUCT datasetClause* whereClause? solutionModifier)
     ;
 
 describeQuery
@@ -91,7 +91,7 @@ datasetClause
     ;
 
 whereClause
-    : ^(WHERE_CLAUSE groupGraphPattern)
+    : ^(WHERE_CLAUSE groupGraphPattern?)
     ;
     
 solutionModifier
@@ -147,7 +147,7 @@ update
     ;   
     
 load 	  
-    : ^(LOAD SILENT* iriRef graphRef*)
+    : ^(LOAD SILENT* iriRef graphRef?)
     ;
     
 clear
@@ -191,8 +191,8 @@ deleteWhere
     ;
     
 modify
-    : ^(MODIFY ^(WITH iriRef) deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
-    | ^(MODIFY deleteClause* insertClause* usingClause* ^(WHERE groupGraphPattern))
+    : ^(MODIFY ^(WITH iriRef) deleteClause* insertClause* usingClause* whereClause)
+    | ^(MODIFY deleteClause* insertClause* usingClause* whereClause)
     ;
   
 deleteClause
@@ -243,9 +243,13 @@ groupGraphPattern
     ;
 
 groupGraphPatternSub
-    : triplesBlock (graphPatternNotTriples triplesBlock?)*
-    | (graphPatternNotTriples triplesBlock?)+ 
+    : triplesBlock groupGraphPatternSubDetail*
+    | groupGraphPatternSubDetail+ 
     ;
+
+groupGraphPatternSubDetail
+    : g=graphPatternNotTriples DOT? t=triplesBlock?
+    ;    
 
 triplesBlock
     : triplesSameSubjectPath+
@@ -314,11 +318,16 @@ constructTriples
 
 triplesSameSubject
     : ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty)
-    | ^(TRIPLES_SAME_SUBJECT triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?)
+    | ^(TRIPLES_SAME_SUBJECT triplesNode propertyListNotEmpty?)
     ;
     
+        
 propertyListNotEmpty
-    : (^(PREDICATE verb)  objectList)+
+    : propertyListNotEmptyDetails+
+    ;
+
+propertyListNotEmptyDetails
+    : ^(PREDICATE  v=verb o=objectList)
     ;
 
 objectList
@@ -333,7 +342,7 @@ verb
 
 triplesSameSubjectPath
     : ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty)
-    | ^(TRIPLES_SAME_SUBJECT  triplesNode (^(SUBJECT BLANK_NODE) propertyListNotEmpty)?)
+    | ^(TRIPLES_SAME_SUBJECT  triplesNode propertyListNotEmpty?)
     ;
     
 path
@@ -373,7 +382,7 @@ pathOneInPropertySet
 	
 triplesNode
     : ^(COLLECTION graphNode+)
-    | ^(TRIPLES_NODE ^(SUBJECT BLANK_NODE) propertyListNotEmpty)
+    | ^(TRIPLES_NODE propertyListNotEmpty)
     ;
 
 graphNode
@@ -420,18 +429,24 @@ expression
     | ^(MINUS expression expression) 
     | ^(ASTERISK expression expression)
     | ^(DIVIDE expression expression)
+    | numericLiteralPositive
+    | numericLiteralNegative
     | unaryExpression 
     ;
     
 unaryExpression
-    : ^(UNARY_NOT primaryExpression)
-    | ^(UNARY_PLUS primaryExpression)
-    | ^(UNARY_MINUS primaryExpression)
+    : ^(UNARY NEGATION primaryExpression)
+    | ^(UNARY PLUS primaryExpression)
+    | ^(UNARY MINUS primaryExpression)
     | ^(UNARY primaryExpression)
     ;
 
 primaryExpression 
-    : builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var | aggregate
+    : brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var | aggregate
+    ;
+
+brackettedExpression
+    : ^(BRACKETTED_EXPRESSION e=expression)
     ;
 
 builtInCall
@@ -443,6 +458,7 @@ builtInCall
     | ^(IRI expression)
     | ^(URI expression)
     | ^(BNODE expression)
+    | BNODE
     | RAND
     | ^(ABS expression)
     | ^(CEIL expression)
@@ -517,8 +533,8 @@ aggregate
     ;
     
 iriRefOrFunction
-    : iriRef 
-    | ^(FUNCTION iriRef ^(ARG_LIST argList))
+    : ^(FUNCTION f=iriRef ^(ARG_LIST (a=argList)))
+    | ^(FUNCTION f=iriRef)
     ;
 
 rdfLiteral
