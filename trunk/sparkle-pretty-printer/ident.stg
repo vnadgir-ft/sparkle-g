@@ -37,8 +37,7 @@
 group ident;
 
 query(prologue, selectQuery, constructQuery, describeQuery, askQuery, bindingsClause, updateQuery) ::= <<
-<if(prologue)><prologue><\n><endif>
-<if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif>
+<prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif>
 >>
 
 updateQuery(update) ::= <<
@@ -46,8 +45,7 @@ UPDATE<update; separator="\n">
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
-<baseDecl; separator="\n">
-<prefixDecl; separator="\n">
+<baseDecl; separator="\n"><if(baseDecl)><\n><endif><prefixDecl; separator="\n"><if(prefixDecl)><\n><endif><if(baseDecl)><\n><elseif(prefixDecl)><\n><endif>
 >>
 
 baseDecl(iriRef) ::= <<
@@ -77,9 +75,7 @@ selectVariables(expression, var) ::= <<
 >>
 
 constructQuery(constructTemplate, datasetClause, whereClause, solutionModifier) ::= <<
-CONSTRUCT {
-   <if(constructTemplate)><constructTemplate> <endif><if(datasetClause)><\n><datasetClause; separator=", "><endif>
-}
+CONSTRUCT {<if(constructTemplate)><\n><constructTemplate><endif><if(datasetClause)><datasetClause; separator=", "><\n><endif>}
 <if(whereClause)><whereClause><endif><solutionModifier>
 >>
 
@@ -93,7 +89,7 @@ ASK<if(datasetClause)><\n><datasetClause; separator=", "><endif>
 >>
 
 datasetClause(attribute, iriRef) ::= <<
-FROM <if(attribute)><attribute> <endif><iriRef>
+FROM <if(attribute)>NAMED <endif><iriRef>
 >>
 
 whereClause(groupGraphPattern) ::= <<
@@ -103,10 +99,7 @@ WHERE {
 >>
 
 solutionModifier(groupClause, havingClause, orderClause, limitOffsetClauses) ::= <<
-<if(groupClause)><groupClause><endif>
-<if(havingClause)><havingClause><endif>
-<if(orderClause)><orderClause><endif>
-<if(limitOffsetClauses)><limitOffsetClauses><endif>
+<if(groupClause)><\n><groupClause><endif><if(havingClause)><\n><havingClause><endif><if(orderClause)><\n><orderClause><endif><if(limitOffsetClauses)><\n><limitOffsetClauses><endif>
 >>
 
 groupClause(groupCondition) ::= <<
@@ -135,7 +128,7 @@ limitOffsetClauses(limit, offset) ::= <<
 >>
 
 bindingsClause(var, bindingValueList) ::= <<
-BINDINGS <var; separator=", "> {
+<\n>BINDINGS <var; separator=" "> {
    <bindingValueList; separator="\n">
 }
 >>
@@ -313,11 +306,11 @@ expressionList(expression, nil) ::= <<
 >>
 
 constructTemplate(constructTriples) ::= <<
-<if(constructTriples)><constructTriples><endif>
+<if(constructTriples)><constructTriples><\n><endif>
 >>
 
 constructTriples(triplesSameSubject) ::= <<
-<triplesSameSubject; separator="\n">
+   <triplesSameSubject; separator="\n">
 >>
 
 triplesSameSubjectPath(triplesNode, subject, propertyListNotEmpty) ::= <<
