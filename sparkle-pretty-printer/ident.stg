@@ -124,7 +124,6 @@ orderCondition(attribute, brackettedExpression, constraint, var) ::= <<
 
 limitOffsetClauses(limit, offset) ::= <<
 <if(limit)>LIMIT <limit><if(offset)> OFFSET <offset><endif><elseif(offset)>OFFSET <offset><endif>
-
 >>
 
 bindingsClause(var, bindingValueList) ::= <<
@@ -322,7 +321,7 @@ path(pathSequence) ::= <<
 >>
 
 pathSequence(pathEltOrInverse) ::= <<
-<pathEltOrInverse; separator="---">
+<pathEltOrInverse; separator="/">
 >>
 
 pathEltOrInverse(inverse, pathElt) ::= <<
