@@ -269,7 +269,9 @@ bind(expression, var)::= <<
 >>
 
 minusGraphPattern(groupGraphPattern) ::= <<
-<groupGraphPattern>
+MINUS {
+   <groupGraphPattern>
+}<\n>
 >>
  
 groupOrUnionGraphPattern(unionGraphPattern, groupGraphPattern1, groupGraphPattern2) ::= <<
@@ -414,7 +416,7 @@ brackettedExpression(expression) ::= <<
 >>
 
 builtInCall(type, expression, expressions, var, expressionList, expression1, expression2, expression3, regexExpression, existsFunction, notExistsFunction) ::= <<
-<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)><regexExpression><elseif(existsFunction)><existsFunction><elseif(notExistsFunction)><notExistsFunction><endif>
+<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)><regexExpression><elseif(existsFunction)>EXISTS {<\n>   <existsFunction>}<elseif(notExistsFunction)>NOT EXISTS {<\n>   <notExistsFunction>}<endif>
 >>
 
 regexExpression(type, expression) ::= <<
