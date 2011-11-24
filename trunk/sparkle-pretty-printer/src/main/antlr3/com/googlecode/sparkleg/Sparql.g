@@ -428,7 +428,8 @@ pathPrimary
     ;
 
 pathNegatedPropertySet
-    : (pathOneInPropertySet | OPEN_BRACE (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? CLOSE_BRACE) -> ^(PATH_NEGATED pathOneInPropertySet+)
+    : pathOneInPropertySet -> ^(PATH_NEGATED pathOneInPropertySet)
+    | OPEN_BRACE (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? CLOSE_BRACE -> ^(PATH_NEGATED pathOneInPropertySet+)
     ;  	
 
 pathOneInPropertySet
