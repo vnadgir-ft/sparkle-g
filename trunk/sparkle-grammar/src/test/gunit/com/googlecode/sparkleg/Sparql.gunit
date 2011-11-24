@@ -29,6 +29,10 @@ package com.googlecode.sparkleg;
 
 query:
 
+/* 
+ * The following testcases are taken from the w3.org (http://www.w3.org/TR/sparql11-query/#grammar) SPARQL examples
+ */
+
 // 5.2 Group Graph Patterns
 <<
 PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
