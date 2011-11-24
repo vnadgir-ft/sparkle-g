@@ -287,7 +287,7 @@ groupOrUnionGraphPattern(unionGraphPattern, groupGraphPattern1, groupGraphPatter
 >>
 
 filter(constraint) ::= <<
-FILTER <constraint><\n>
+   FILTER <constraint><\n>
 >>
 
 constraint(brackettedExpression, builtInCall, functionCall) ::= <<
@@ -319,7 +319,7 @@ triplesSameSubjectPath(triplesNode, subject, propertyListNotEmpty) ::= <<
 >>
 
 path(pathSequence) ::= <<
-<pathSequence; separator="/">
+<pathSequence; separator="|">
 >>
 
 pathSequence(pathEltOrInverse) ::= <<
@@ -327,27 +327,27 @@ pathSequence(pathEltOrInverse) ::= <<
 >>
 
 pathEltOrInverse(inverse, pathElt) ::= <<
-<inverse><pathElt>
+<if(inverse)><inverse><endif><pathElt>
 >>
 
 pathElt(pathPrimary, pathMod) ::= <<
-<pathPrimary><pathMod>
+<pathPrimary><if(pathMod)><pathMod><endif>
 >>
 
-pathMod(value, i1, i2, i3) ::= <<
-<if(value)><value><else>{<i1>,<i2>,<i3>}<endif>
+pathMod(value, i1, comma1, i2, comma2, i3) ::= <<
+<if(value)><value><else>{<if(i1)><i1><if(comma1)>,<if(i2)> <i2><endif><endif>}<elseif(comma2)>, <i3>}<endif><endif>
 >>
 
-pathPrimary(iriRef, value, path, pathNegatedPropertySet) ::= <<
-<iriRef><value><path><pathNegatedPropertySet>
+pathPrimary(iriRef, value, pathNegatedPropertySet, path) ::= <<
+<if(iriRef)><iriRef><elseif(value)><value><endif><if(pathNegatedPropertySet)><pathNegatedPropertySet><endif><if(path)>(<path>)<endif>
 >>
 
 pathNegatedPropertySet(pathOneInPropertySet) ::= <<
-<pathOneInPropertySet; separator=",\n">
+(<pathOneInPropertySet; separator="|">)
 >>
 
 pathOneInPropertySet(attribute, iriRef, value) ::= <<
-<attribute><iriRef><value>
+<if(attribute)><attribute><endif><if(iriRef)><iriRef><else><value><endif>
 >>
 
 triplesSameSubject(triplesNode, subject, propertyListNotEmpty) ::= <<
@@ -420,7 +420,7 @@ builtInCall(type, expression, expressions, var, expressionList, expression1, exp
 >>
 
 regexExpression(type, expression) ::= <<
-<type> (<expression; separator=", ">)
+REGEX (<expression; separator=", ">)
 >>
 
 subStringExpression(expression) ::= <<
