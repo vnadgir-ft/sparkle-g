@@ -420,7 +420,7 @@ builtInCall(type, expression, expressions, var, expressionList, expression1, exp
 >>
 
 regexExpression(type, expression) ::= <<
-REGEX (<expression; separator=", ">)
+regex (<expression; separator=", ">)
 >>
 
 subStringExpression(expression) ::= <<
