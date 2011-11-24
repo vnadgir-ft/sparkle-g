@@ -194,8 +194,8 @@ deleteWhere
     ;
     
 modify
-    : ^(MODIFY ^(WITH iriRef) deleteClause* insertClause* usingClause* whereClause /*^(WHERE groupGraphPattern)*/)
-    | ^(MODIFY deleteClause* insertClause* usingClause* whereClause /*^(WHERE groupGraphPattern)*/)
+    : ^(MODIFY ^(WITH iriRef) deleteClause* insertClause* usingClause* whereClause)
+    | ^(MODIFY deleteClause* insertClause* usingClause* whereClause)
     ;
   
 deleteClause
@@ -357,11 +357,11 @@ triplesSameSubjectPath
     ;
     
 path
-    : ^(PATH p+=pathSequence+) -> path(pathSequence={$p})
+    : ^(PATH (p+=pathSequence)+) -> path(pathSequence={$p})
     ; 
 
 pathSequence
-    : ^(PATH_SEQUENCE p+=pathEltOrInverse+) -> pathSequence(pathEltOrInverse={$p})
+    : ^(PATH_SEQUENCE (p+=pathEltOrInverse)+) -> pathSequence(pathEltOrInverse={$p})
     ;
     
 pathEltOrInverse
@@ -376,13 +376,13 @@ pathMod
     : ASTERISK -> pathMod(value={$ASTERISK.text})
     | QUESTION_MARK -> pathMod(value={$QUESTION_MARK.text})
     | PLUS -> pathMod(value={$PLUS.text})
-    | OPEN_CURLY_BRACE (i1=INTEGER (COMMA (CLOSE_CURLY_BRACE | i2=INTEGER CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | COMMA i3=INTEGER CLOSE_CURLY_BRACE) -> pathMod(i1={$i1.text}, i2={$i2.text}, i3={$i3.text})
+    | OPEN_CURLY_BRACE (i1=INTEGER (c1=COMMA (CLOSE_CURLY_BRACE | i2=INTEGER CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | c2=COMMA i3=INTEGER CLOSE_CURLY_BRACE) -> pathMod(i1={$i1.text}, comma1={$c1.text}, i2={$i2.text}, comma2={$c2.text}, i3={$i3.text})
     ;
 
 pathPrimary
     : ^(PATH_PRIMARY i=iriRef) -> pathPrimary(iriRef={$i.st})
     | ^(PATH_PRIMARY A) -> pathPrimary(value={$A.text})
-    | ^(PATH_PRIMARY NEGATION pathNegatedPropertySet) -> pathPrimary(value={$NEGATION.text}, pathNegatedPropertySet={$p.st})
+    | ^(PATH_PRIMARY NEGATION n=pathNegatedPropertySet) -> pathPrimary(value={$NEGATION.text}, pathNegatedPropertySet={$n.st})
     | ^(PATH_PRIMARY p=path) -> pathPrimary(path={$p.st})
     ;
 
@@ -534,7 +534,7 @@ builtInCall
     ;
 
 regexExpression
-    : ^(REGEX (e+=expression)+) -> regexExpression(type={$REGEX.text}, expression={$e})
+    : ^(REGEX (e+=expression)+) -> regexExpression(expression={$e})
     ;
     
 subStringExpression
