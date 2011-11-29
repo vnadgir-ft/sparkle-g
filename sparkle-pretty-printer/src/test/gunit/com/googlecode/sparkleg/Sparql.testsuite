@@ -1,0 +1,8562 @@
+/*
+ *    Copyright 2007-2010 The sparkle-g Team
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+/**
+ * @author Juergen Pfundt (Juergen.Pfundt)
+ * @author Simone Tripodi (simone.tripodi)
+ * @version $Id: Sparql.gunit 224 2011-10-22 20:58:14Z Juergen.Pfundt@gmail.com $
+ */ 
+ 
+ 
+gunit Sparql;
+
+@header {
+package com.googlecode.sparkleg;
+}
+
+query:
+
+/* 
+ * The following testcases are taken from the w3.org (http://www.w3.org/TR/sparql11-query/#grammar) SPARQL examples
+ */
+
+// 5.2 Group Graph Patterns
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE  {
+          ?x foaf:name ?name .
+          ?x foaf:mbox ?mbox .
+       } 
+>> OK
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE  { { ?x foaf:name ?name . }
+         { ?x foaf:mbox ?mbox . }
+       }
+>> OK
+
+// 5.2.1 Empty Group Pattern
+<<
+SELECT ?x
+WHERE {}
+>> OK
+
+// 5.2.2 Scope of Filters
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ {  ?x foaf:name ?name .
+    ?x foaf:mbox ?mbox .
+    FILTER regex(?name, "Smith")
+ }
+ >> OK
+ 
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ {  FILTER regex(?name, "Smith")
+    ?x foaf:name ?name .
+    ?x foaf:mbox ?mbox .
+ }
+ >> OK
+ 
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ {  ?x foaf:name ?name .
+    FILTER regex(?name, "Smith")
+    ?x foaf:mbox ?mbox .
+ }
+ >> OK
+ 
+// 5.2.3 Group Graph Pattern Examples
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox 
+  {
+    ?x foaf:name ?name . FILTER regex(?name, "Smith")
+    ?x foaf:mbox ?mbox .
+  }
+>> OK
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox 
+  {
+    ?x foaf:name ?name .
+    {}
+    ?x foaf:mbox ?mbox .
+  }
+>> OK
+
+// 6.1 Optional Pattern Matching
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE  { ?x foaf:name  ?name .
+         OPTIONAL { ?x  foaf:mbox  ?mbox }
+       }
+>> OK
+
+// 6.2 Constraints in Optional Pattern Matching
+
+<<
+PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE   { ?x dc:title ?title .
+          OPTIONAL { ?x ns:price ?price . FILTER (?price < 30) }
+        }
+>> OK
+
+// 6.3 Multiple Optional Graph Pattern
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox ?hpage
+WHERE  { ?x foaf:name  ?name .
+         OPTIONAL { ?x foaf:mbox ?mbox } .
+         OPTIONAL { ?x foaf:homepage ?hpage }
+       }
+>> OK
+
+// 7.0 Matching Alternatives
+
+<<
+PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
+PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
+
+SELECT ?title
+WHERE  { { ?book dc10:title  ?title } UNION { ?book dc11:title  ?title } }
+>> OK
+
+<<
+PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
+PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
+
+SELECT ?x ?y
+WHERE  { { ?book dc10:title ?x } UNION { ?book dc11:title  ?y } }
+>> OK
+
+<<
+PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
+PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
+
+SELECT ?title ?author
+WHERE  { { ?book dc10:title ?title .  ?book dc10:creator ?author }
+         UNION
+         { ?book dc11:title ?title .  ?book dc11:creator ?author }
+       }
+>> OK
+
+// 8.1 Filtering Using Graph Patterns
+
+<<
+PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+
+SELECT ?person
+WHERE 
+{
+    ?person rdf:type  foaf:Person .
+    FILTER NOT EXISTS { ?person foaf:name ?name }
+}    
+>> OK
+
+// 8.1.2 Testing For the Presence of a Pattern
+
+<<
+PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+
+SELECT ?person
+WHERE 
+{
+    ?person rdf:type  foaf:Person .
+    FILTER EXISTS { ?person foaf:name ?name }
+}
+>> OK
+
+// 8.2 Removing Possible Solutions
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?s
+WHERE {
+   ?s ?p ?o .
+   MINUS {
+      ?s foaf:givenName "Bob" .
+   }
+}
+>> OK
+
+// 8.3 Relationship and differences between NOT EXISTS and MINUS
+
+<<
+PREFIX :       <http://example/>
+SELECT *
+{ 
+  ?s ?p ?o
+  FILTER NOT EXISTS { ?x ?y ?z }
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+SELECT *
+{ 
+   ?s ?p ?o 
+   MINUS 
+     { ?x ?y ?z }
+}
+>> OK
+
+// 8.3.2 Fixed Pattern
+
+<<
+PREFIX : <http://example/>
+SELECT * 
+{ 
+  ?s ?p ?o 
+  FILTER NOT EXISTS { :a :b :c }
+}
+>> OK
+
+<<
+PREFIX : <http://example/>
+SELECT * 
+{ 
+  ?s ?p ?o 
+  MINUS { :a :b :c }
+}
+>> OK
+
+// 8.3.3 Inner Filters
+
+<<
+PREFIX : <http://example.com/>
+SELECT * WHERE {
+        ?a :p ?n
+        FILTER NOT EXISTS {
+                ?a :q ?m .
+                FILTER(?n = ?m)
+        }
+}
+>> OK
+
+<<
+PREFIX : <http://example/>
+SELECT * WHERE {
+        ?x :p ?n
+        MINUS {
+                ?x :q ?m .
+                FILTER(?n = ?m)
+        }
+}
+>> OK
+
+// Property Paths
+
+<<
+PREFIX dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?title
+WHERE  { { :book1 dc:title|rdfs:label ?displayString } }
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+  ?x foaf:mbox <mailto:alice@example> .
+  ?x foaf:knows/foaf:name ?name .
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+  ?x foaf:mbox <mailto:alice@example> .
+  ?x foaf:knows/foaf:knows/foaf:name ?name .
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+  ?x foaf:mbox <mailto:alice@example> .
+  ?x foaf:knows{2}/foaf:name ?name .
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+   ?x  foaf:mbox <mailto:alice@example> .
+   ?x  foaf:knows [ foaf:knows [ foaf:name ?name ]]. 
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+  ?x  foaf:mbox <mailto:alice@example> .
+  ?x  foaf:knows ?a1 .
+  ?a1 foaf:knows ?a2 .
+  ?a2 foaf:name ?name . 
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+  ?x foaf:mbox <mailto:alice@example> .
+  ?x foaf:knows/foaf:knows ?y .
+  FILTER ( ?x != ?y )
+  ?y foaf:name ?name  
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+   ?x foaf:mbox <mailto:alice@example> 
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+  <mailto:alice@example> ^foaf:mbox ?x 
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+  ?x foaf:knows/^foaf:knows ?y .  
+  FILTER(?x != ?y)
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+  ?x foaf:mbox <mailto:alice@example> .
+  ?x foaf:knows+/foaf:name ?name .
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE {
+   ?ancestor (ex:motherOf|ex:fatherOf)+ <#me>
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT *
+WHERE {
+   <http://example/thing> rdf:type/rdfs:subClassOf* ?type
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT *
+WHERE {
+   <http://example/thing> rdf:type/rdfs:subClassOf* ?type
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT *
+WHERE {
+   ?x rdf:type/rdfs:subClassOf* ?type
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT *
+WHERE {
+   ?x ?p ?v . ?p rdfs:subPropertyOf* :property
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT *
+WHERE {
+   ?x !(rdf:type|^rdf:type) ?y
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT *
+WHERE {
+   ?x !(rdf:type|^rdf:type) ?y
+}
+>> OK
+
+<<
+PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT *
+WHERE {
+   :list rdf:rest*/rdf:first ?element
+}
+>> OK
+
+// 9.3 Cycles and Duplicates
+
+<<
+PREFIX :   <http://example/>
+SELECT * 
+{  ?s :p/:q ?o . }
+>> OK
+
+<<
+PREFIX :   <http://example/>
+SELECT * 
+{  ?s :p ?a .
+   ?a :q ?o . }
+>> OK
+
+<<
+PREFIX :   <http://example/>
+SELECT * 
+{ :x :p+ ?o }
+>> OK
+
+<<
+PREFIX :   <http://example/>
+SELECT * 
+{  
+   { :x :p{0} ?o } UNION { :x :p+ ?o } 
+}
+>> OK
+ 
+// 10.1 BIND: Assigning to Variables
+
+<<
+PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+
+SELECT  ?title ?price
+{  ?x ns:price ?p .
+   ?x ns:discount ?discount
+   BIND (?p*(1-?discount) AS ?price)
+   FILTER(?price < 20)
+   ?x dc:title ?title . 
+}
+>> OK
+
+// 10.2 Bindings
+
+<<
+PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
+PREFIX :     <http://example.org/book/> 
+PREFIX ns:   <http://example.org/ns#> 
+
+SELECT ?book ?title ?price
+{
+   ?book dc:title ?title ;
+         ns:price ?price .
+}
+BINDINGS ?book {
+ (:book1)
+}
+>> OK
+
+<<
+PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
+PREFIX :     <http://example.org/book/> 
+PREFIX ns:   <http://example.org/ns#> 
+
+SELECT ?book ?title ?price
+{
+   ?book dc:title ?title ;
+         ns:price ?price .
+}
+BINDINGS ?book ?title {
+ (UNDEF "SPARQL Tutorial")
+ (:book2 UNDEF)
+}
+>> OK
+
+// 11.1 Aggregate Example
+
+<<
+PREFIX : <http://books.example/>
+SELECT (SUM(?lprice) AS ?totalPrice)
+WHERE {
+  ?org :affiliates ?auth .
+  ?auth :writesBook ?book .
+  ?book :price ?lprice .
+}
+GROUP BY ?org
+HAVING (SUM(?lprice) > 10)
+>> OK
+
+// 11.2 GROUP BY
+
+<<
+SELECT (AVG(?y) AS ?avg)
+WHERE {
+  ?a :x ?x ;
+     :y ?y .
+}
+GROUP BY ?x
+>> OK
+
+// 11.3 Having
+
+<<
+PREFIX : <http://data.example/>
+SELECT (AVG(?size) AS ?asize)
+WHERE {
+  ?x :size ?size
+}
+GROUP BY ?x
+HAVING(AVG(?size) > 10)
+>> OK
+
+// 11.4 Aggregate Projection Restrictions
+
+<<
+PREFIX : <http://example.com/data/#>
+SELECT ?x (MIN(?y) * 2 AS ?min)
+WHERE {
+  ?x :p ?y .
+  ?x :q ?z .
+} GROUP BY ?x (STR(?z))
+>> OK
+
+// 12 Subqueries
+
+<<
+PREFIX : <http://people.example/>
+PREFIX : <http://people.example/>
+SELECT ?y ?minName
+WHERE {
+  :alice :knows ?y .
+  {
+    SELECT ?y (MIN(?name) AS ?minName)
+    WHERE {
+      ?y :name ?name .
+    } GROUP BY ?y
+  }
+}
+>> OK
+
+// 13.2.1 Specifying the Default Graph
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT  ?name
+FROM    <http://example.org/foaf/aliceFoaf>
+WHERE   { ?x foaf:name ?name }
+>> OK
+
+// 13.2.3 Combining FROM and FROM NAMED
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+SELECT ?who ?g ?mbox
+FROM <http://example.org/dft.ttl>
+FROM NAMED <http://example.org/alice>
+FROM NAMED <http://example.org/bob>
+WHERE
+{
+   ?g dc:publisher ?who .
+   GRAPH ?g { ?x foaf:mbox ?mbox }
+}
+>> OK
+
+// 13.3.1 Accessing Graph Names
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT ?src ?bobNick
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+  {
+    GRAPH ?src
+    { ?x foaf:mbox <mailto:bob@work.example> .
+      ?x foaf:nick ?bobNick
+    }
+  }
+>> OK
+
+// 13.3.2 Restricting by Graph IRI
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX data: <http://example.org/foaf/>
+
+SELECT ?nick
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+  {
+     GRAPH data:bobFoaf {
+         ?x foaf:mbox <mailto:bob@work.example> .
+         ?x foaf:nick ?nick }
+  }
+>> OK
+
+// 13.3.3 Restricting Possible Graph IRIs
+
+<<
+PREFIX  data:  <http://example.org/foaf/>
+PREFIX  foaf:  <http://xmlns.com/foaf/0.1/>
+PREFIX  rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?mbox ?nick ?ppd
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+{
+  GRAPH data:aliceFoaf
+  {
+    ?alice foaf:mbox <mailto:alice@work.example> ;
+           foaf:knows ?whom .
+    ?whom  foaf:mbox ?mbox ;
+           rdfs:seeAlso ?ppd .
+    ?ppd  a foaf:PersonalProfileDocument .
+  } .
+  GRAPH ?ppd
+  {
+      ?w foaf:mbox ?mbox ;
+         foaf:nick ?nick
+  }
+}
+>> OK
+
+// 13.3.1 Named and Default Graphs
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+
+SELECT ?name ?mbox ?date
+WHERE
+  {  ?g dc:publisher ?name ;
+        dc:date ?date .
+    GRAPH ?g
+      { ?person foaf:name ?name ; foaf:mbox ?mbox }
+  }
+>> OK
+
+// 15.1 ORDER BY
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+ORDER BY ?name
+>> OK
+
+<<
+PREFIX     :    <http://example.org/ns#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name ; :empId ?emp }
+ORDER BY DESC(?emp)
+>> OK
+
+<<
+PREFIX     :    <http://example.org/ns#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name ; :empId ?emp }
+ORDER BY ?name DESC(?emp)
+>> OK
+
+// 15.2 Projection
+
+<<
+PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+WHERE
+ { ?x foaf:name ?name }
+>> OK
+
+// 15.3.1 DISTINCT
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT DISTINCT ?name WHERE { ?x foaf:name ?name }
+>> OK
+
+// 15.3.2 REDUCED
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT REDUCED ?name WHERE { ?x foaf:name ?name }
+>> OK
+
+// 15.4 OFFSET
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT  ?name
+WHERE   { ?x foaf:name ?name }
+ORDER BY ?name
+LIMIT   5
+OFFSET  10
+>> OK
+
+// 15.5 LIMIT
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+LIMIT 20
+>> OK
+
+// 16.1.1 Projection
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?nameX ?nameY ?nickY
+WHERE
+  { ?x foaf:knows ?y ;
+       foaf:name ?nameX .
+    ?y foaf:name ?nameY .
+    OPTIONAL { ?y foaf:nick ?nickY }
+  }
+>> OK
+
+// 16.1.2 SELECT Expression
+
+<<
+PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title (?p*(1-?discount) AS ?price)
+{ ?x ns:price ?p .
+  ?x dc:title ?title . 
+  ?x ns:discount ?discount 
+}
+>> OK
+
+<<
+PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title (?p AS ?fullPrice) (?fullPrice*(1-?discount) AS ?customerPrice)
+{ ?x ns:price ?p .
+   ?x dc:title ?title . 
+   ?x ns:discount ?discount 
+}
+>> OK
+
+// 16.2 CONSTRUCT
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+CONSTRUCT   { <http://example.org/person#Alice> vcard:FN ?name }
+WHERE       { ?x foaf:name ?name }
+>> OK
+
+// 16.2.1 Templates with Blank Nodes
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+
+CONSTRUCT { ?x  vcard:N _:v .
+            _:v vcard:givenName ?gname .
+            _:v vcard:familyName ?fname }
+WHERE
+ {
+    { ?x foaf:firstname ?gname } UNION  { ?x foaf:givenname   ?gname } .
+    { ?x foaf:surname   ?fname } UNION  { ?x foaf:family_name ?fname } .
+ }
+>> OK
+
+// 16.2.2 Accessing Graphs in the RDF Dataset
+
+<<
+PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX app: <http://example.org/ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT { ?s ?p ?o } WHERE
+ {
+   GRAPH ?g { ?s ?p ?o } .
+   ?g dc:publisher <http://www.w3.org/> .
+   ?g dc:date ?date .
+   FILTER ( app:customDate(?date) > "2005-02-28T00:00:00Z"^^xsd:dateTime ) .
+ }
+>> OK
+
+// 16.2.3 Solution Modifiers and CONSTRUCT
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX site: <http://example.org/stats#>
+
+CONSTRUCT { [] foaf:name ?name }
+WHERE
+{ [] foaf:name ?name ;
+     site:hits ?hits .
+}
+ORDER BY desc(?hits)
+LIMIT 2
+>> OK
+
+// 16.2.4 CONSTRUCT WHERE
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+CONSTRUCT WHERE { ?x foaf:name ?name } 
+>> OK
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+CONSTRUCT { ?x foaf:name ?name } 
+WHERE
+{ ?x foaf:name ?name }
+>> OK
+
+// 16.3 ASK
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" }
+>> OK
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" ;
+          foaf:mbox  <mailto:alice@work.example> }
+>> OK
+
+// 16.4.1 DESCRIBE 
+
+<<
+DESCRIBE <http://example.org/>
+>> OK
+
+// 16.4.2 Identifying Resources
+
+<<
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x
+WHERE    { ?x foaf:mbox <mailto:alice@org> }
+>> OK
+
+<<
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x ?y <http://example.org/>
+WHERE    {?x foaf:knows ?y}
+>> OK
+
+// 16.4.3 Description of Resources
+
+<<
+PREFIX ent:  <http://org.example.com/employees#>
+DESCRIBE ?x WHERE { ?x ent:employeeId "1234" }
+>> OK
+
+// 17 Expressions and Testing Values
+
+<<
+PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?annot
+WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+        ?annot  dc:date      ?date .
+        FILTER ( ?date > "2005-01-01T00:00:00Z"^^xsd:dateTime ) }
+>> OK
+
+// 17.4 Operator and Function Definitions
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+SELECT ?givenName
+ WHERE { ?x foaf:givenName  ?givenName .
+         OPTIONAL { ?x dc:date ?date } .
+         FILTER ( bound(?date) ) }
+>> OK
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+SELECT ?name
+ WHERE { ?x foaf:givenName  ?name .
+         OPTIONAL { ?x dc:date ?date } .
+         FILTER (!bound(?date)) }
+>> OK
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name1 ?name2
+WHERE { ?x foaf:name  ?name1 ;
+        foaf:mbox  ?mbox1 .
+        ?y foaf:name  ?name2 ;
+        foaf:mbox  ?mbox2 .
+        FILTER (?mbox1 = ?mbox2 && ?name1 != ?name2)
+      }
+>> OK
+
+<<
+PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?annotates
+WHERE { ?annot  a:annotates  ?annotates .
+        ?annot  dc:date      ?date .
+        FILTER ( ?date = xsd:dateTime("2005-01-01T00:00:00Z") ) 
+      }
+>> OK
+
+// 17.4.1.8 sameTerm
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name1 ?name2
+WHERE { ?x foaf:name  ?name1 ;
+        foaf:mbox  ?mbox1 .
+         ?y foaf:name  ?name2 ;
+         foaf:mbox  ?mbox2 .
+         FILTER (sameTerm(?mbox1, ?mbox2) && !sameTerm(?name1, ?name2))
+      } 
+>> OK
+
+<<
+PREFIX  :      <http://example.org/WMterms#>
+PREFIX  t:     <http://example.org/types#>
+
+SELECT ?aLabel1 ?bLabel
+WHERE { ?a  :label        ?aLabel .
+        ?a  :weight       ?aWeight .
+        ?a  :displacement ?aDisp .
+
+        ?b  :label        ?bLabel .
+        ?b  :weight       ?bWeight .
+        ?b  :displacement ?bDisp .
+
+        FILTER ( sameTerm(?aWeight, ?bWeight) && !sameTerm(?aDisp, ?bDisp)) }
+>> OK
+
+// 17.4.2 Functions on RDF Terms
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER isIRI(?mbox) }
+>> OK
+
+// 17.4.2.2 isBlank
+
+<<
+PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT ?given ?family
+WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+  ?annot  dc:creator   ?c .
+  OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .
+  FILTER isBlank(?c)
+}
+>> OK
+
+// 17.4.2.3 isLiteral
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE { ?x foaf:name  ?name ;
+        foaf:mbox  ?mbox .
+        FILTER isLiteral(?mbox) }
+>> OK
+
+// 17.4.2.5 str
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER regex(str(?mbox), "@work.example") }
+>> OK
+
+// 17.4.2.6 lang
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER ( lang(?name) = "ES" ) }
+>> OK
+
+// 17.4.2.7 dataType
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX eg:   <http://biometrics.example/ns#>
+SELECT ?name ?shoeSize
+ WHERE { ?x foaf:name  ?name ; eg:shoeSize  ?shoeSize .
+         FILTER ( datatype(?shoeSize) = xsd:integer ) }
+>> OK
+
+// 17.4.3.10 langMatches
+
+<<
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?title
+ WHERE { ?x dc:title  "That Seventies Show"@en ;
+            dc:title  ?title .
+         FILTER langMatches( lang(?title), "FR" ) }
+>> OK
+
+<<
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?title
+ WHERE { ?x dc:title  ?title .
+         FILTER langMatches( lang(?title), "*" ) }
+>> OK
+
+// 17.4.3.11 regex
+
+<<
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+ WHERE { ?x foaf:name  ?name
+         FILTER regex(?name, "^ali", "i") }
+>> OK
+
+/*
+The following gunit test cases were generated form the DAWG test suites
+data-r2 and data-sparql11
+ 
+W3C(R) SOFTWARE NOTICE AND LICENSE
+http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
+
+This work (and included software, documentation such as READMEs, or other
+related items) is being provided by the copyright holders under the
+following license. By obtaining, using and/or copying this work, you (the
+licensee) agree that you have read, understood, and will comply with the
+following terms and conditions.
+
+Permission to copy, modify, and distribute this software and its
+documentation, with or without modification, for any purpose and without
+fee or royalty is hereby granted, provided that you include the following
+on ALL copies of the software and documentation or portions thereof,
+including modifications:
+
+   1. The full text of this NOTICE in a location viewable to users of the
+   redistributed or derivative work.
+
+   2. Any pre-existing intellectual property disclaimers, notices, or terms
+   and conditions. If none exist, the W3C Software Short Notice should be
+   included (hypertext is preferred, text is permitted) within the body of
+   any redistributed or derivative code.
+
+   3. Notice of any changes or modifications to the files, including the
+   date changes were made. (We recommend you provide URIs to the location
+   from which the code is derived.)
+
+THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS
+MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR
+PURPOSE OR THAT THE USE OF THE SOFTWARE OR DOCUMENTATION WILL NOT INFRINGE
+ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.
+
+COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR
+CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR
+DOCUMENTATION.
+
+The name and trademarks of copyright holders may NOT be used in advertising
+or publicity pertaining to the software without specific, written prior
+permission. Title to copyright in this software and any associated
+documentation will at all times remain with copyright holders.  
+*/
+
+
+
+<<PREFIX : <http://example/> 
+
+SELECT ?v
+{ :x :p ?v . FILTER(?v = 1) }
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT ?v
+{ :x :p ?v . { FILTER(?v = 1) } }
+>> OK
+
+<<PREFIX : <http://example/>
+
+SELECT ?v 
+{ 
+    ?s :p ?v . 
+    FILTER (?v = 2)
+}
+>> OK
+
+<<PREFIX : <http://example/>
+
+SELECT ?v 
+{ 
+    FILTER (?v = 2)
+    ?s :p ?v . 
+}
+>> OK
+
+<<PREFIX : <http://example/>
+
+SELECT ?v ?w
+{ 
+    FILTER (?v = 2)
+    FILTER (?w = 3)
+    ?s :p ?v . 
+    ?s :q ?w .
+}
+>> OK
+
+<<PREFIX :    <http://example/>
+
+SELECT *
+{ 
+    :x :p ?v . 
+    { :x :q ?w 
+      OPTIONAL {  :x :p ?v2 FILTER(?v = 1) }
+    }
+}
+>> OK
+
+<<PREFIX :    <http://example/>
+
+SELECT ?a ?y ?d ?z
+{ 
+    ?a :p ?c OPTIONAL { ?a :r ?d }. 
+    ?a ?p 1 { ?p a ?y } UNION { ?a ?z ?p } 
+}>> OK
+
+<<PREFIX :    <http://example/>
+
+SELECT ?x ?y ?z
+{ 
+    GRAPH ?g { ?x ?p 1 } { ?x :p ?y } UNION { ?p a ?z }
+}
+>> OK
+
+<<PREFIX :    <http://example/>
+
+SELECT *
+{ 
+  ?x :p ?v .
+  OPTIONAL
+  { 
+    ?y :q ?w .
+    FILTER(?v=2)
+  }
+}
+>> OK
+
+<<PREFIX :    <http://example/>
+
+SELECT *
+{ 
+  ?x :p ?v .
+  OPTIONAL
+  { 
+    ?y :q ?w .
+    FILTER(?v=2)
+    FILTER(?w=3)
+  }
+}
+>> OK
+
+<<PREFIX :    <http://example/>
+
+SELECT *
+{ 
+    :x :p ?v . 
+    { :x :q ?w 
+      # ?v is not in scope so ?v2 never set
+      OPTIONAL {  :x :p ?v2 FILTER(?v = 1) }
+    }
+}
+>> OK
+
+<<PREFIX :    <http://example/>
+
+## The nested optional example, rewritten to a form that is the same
+## for the SPARQL algebra and the declarative semantics.
+SELECT *
+{ 
+    :x1 :p ?v .
+    OPTIONAL { :x3 :q ?w }
+    OPTIONAL { :x3 :q ?w  . :x2 :p ?v }
+}
+>> OK
+
+<<PREFIX :    <http://example/>
+
+SELECT *
+{ 
+    :x1 :p ?v .
+    OPTIONAL
+    {
+      :x3 :q ?w .
+      OPTIONAL { :x2 :p ?v }
+    }
+}
+>> OK
+
+<<PREFIX : <http://example/>
+
+SELECT *
+{ 
+  ?X  :name "paul"
+  {?Y :name "george" . OPTIONAL { ?X :email ?Z } }
+}
+
+>> OK
+
+<<PREFIX :   <http://example/>
+
+ASK { :x :p 1 }
+>> OK
+
+<<PREFIX :   <http://example/>
+
+ASK { :x :p 99 }
+>> OK
+
+<<PREFIX :   <http://example/>
+
+ASK { :x :p ?x }
+>> OK
+
+<<PREFIX :   <http://example/>
+
+ASK { :x :p ?x . FILTER(?x = 99) }
+>> OK
+
+<<BASE <http://example.org/x/> 
+PREFIX : <>
+
+SELECT * WHERE { :x ?p ?v } 
+>> OK
+
+<<BASE <http://example.org/x/> 
+PREFIX : <#>
+
+SELECT * WHERE { :x ?p ?v } 
+>> OK
+
+<<PREFIX ns: <http://example.org/ns#>
+PREFIX x:  <http://example.org/x/>
+
+SELECT * WHERE { x:x ns:p ?v } 
+>> OK
+
+<<BASE <http://example.org/x/>
+
+SELECT * WHERE { <x> <p> ?v } 
+>> OK
+
+<<BASE <http://example.org/x/>
+
+SELECT * WHERE { <#x> <#p> ?v } 
+>> OK
+
+<<PREFIX : <http://example.org/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?x
+WHERE {
+  ?x foaf:name "John Smith" ;
+       a foaf:Womble .
+}
+
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?p
+{ :x ?p () . }
+
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?p
+{ :x ?p (1) . }
+
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?p ?v
+{ :x ?p (?v) . }
+
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?p ?v ?w
+{ :x ?p (?v ?w) . }
+
+>> OK
+
+<<PREFIX ex: <http://example.org/ns#x> 
+SELECT ?p {
+  ex: ?p 1 .
+}
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?x
+{ ?x ?p '''x''' }
+
+
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?x
+{ ?x ?p """x""" }
+
+
+>> OK
+
+<<# This query uses UNIX line end conventions.
+# It is in CVS in binary.
+PREFIX : <http://example.org/ns#>
+
+SELECT ?x
+{ ?x ?p '''x
+y'''
+}
+>> OK
+
+<<# This query uses UNIX line end conventions.
+# It is in CVS in binary.
+PREFIX : <http://example.org/ns#>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#> 
+
+SELECT ?x
+{ ?x ?p """x
+y"""^^:someType
+}
+>> OK
+
+<<PREFIX : <http://example.org/ns#> 
+PREFIX xsd:        <http://www.w3.org/2001/XMLSchema#> 
+
+SELECT ?s WHERE {
+ ?s :p1 1, 2 .
+}
+
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT * { :x ?p true . }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT * { :x ?p false }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT * { :x a ?C . }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT * { :x ?p 123.0 }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT * { :x ?p 123.0. }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+# DOT is part of the decimal.
+SELECT * { :x ?p 456. }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+# DOT is part of the decimal.
+SELECT * { :x ?p 456. . }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+# DOT is part of the decimal.
+SELECT * { :x ?p +5 }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+# DOT is part of the decimal.
+SELECT * { :x ?p -18 }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT * { :x ?p $v }
+>> OK
+
+<<PREFIX :     <http://example.org/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT * { :x ?p $v . :x ?p ?v }
+>> OK
+
+<<PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:       <http://xmlns.com/foaf/0.1/>
+
+SELECT ?x ?y
+WHERE {
+  ?x foaf:knows ?y .
+}
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/ns#>
+SELECT  ?a
+WHERE
+    { ?a :p ?v . 
+      FILTER (?v) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/ns#>
+SELECT  ?a
+WHERE
+    { ?a :p ?v . 
+      FILTER ( ! ?v ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/ns#>
+SELECT  ?a
+WHERE
+    { ?a :p ?v . 
+      FILTER ("true"^^xsd:boolean && ?v) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/ns#>
+SELECT  ?a
+WHERE
+    { ?a :p ?v . 
+      FILTER ("false"^^xsd:boolean || ?v) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/ns#>
+SELECT  ?a
+WHERE
+    { ?a :p ?v . 
+      OPTIONAL
+        { ?a :q ?w } . 
+      FILTER (?w) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/ns#>
+SELECT  ?a ?w
+WHERE
+    { ?a :p ?v . 
+      OPTIONAL
+        { ?a :q ?w } . 
+      FILTER ( ! ?w ) .
+    }
+>> OK
+
+<<prefix : <http://example.org/ns#>
+select ?x where {
+    ?x :p "foo" .
+    FILTER (true) .
+}
+>> OK
+
+<<PREFIX  : <http://example.org/ns#>
+SELECT  ?a ?c
+WHERE
+    { ?a :b ?c . 
+      OPTIONAL
+        { ?c :d ?e } . 
+      FILTER (! bound(?e)) 
+    }
+>> OK
+
+<<PREFIX : <http://example.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s WHERE {
+    ?s :p ?v .
+    FILTER(datatype(xsd:boolean(?v)) = xsd:boolean) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s WHERE {
+    ?s :p ?v .
+    FILTER(datatype(xsd:double(?v)) = xsd:double) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s WHERE {
+    ?s :p ?v .
+    FILTER(datatype(xsd:decimal(?v)) = xsd:decimal) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s WHERE {
+    ?s :p ?v .
+    FILTER(datatype(xsd:dateTime(?v)) = xsd:dateTime) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s WHERE {
+    ?s :p ?v .
+    FILTER(datatype(xsd:float(?v)) = xsd:float) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s WHERE {
+    ?s :p ?v .
+    FILTER(datatype(xsd:integer(?v)) = xsd:integer) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s WHERE {
+    ?s :p ?v .
+    FILTER(datatype(xsd:string(?v)) = xsd:string) .
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+CONSTRUCT { ?x :p2 ?v }
+
+WHERE
+{
+  ?x :p ?o .
+  OPTIONAL {?o :q ?v }
+}
+
+>> OK
+
+<<PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:       <http://xmlns.com/foaf/0.1/>
+
+CONSTRUCT { ?s ?p ?o . }
+WHERE {
+  ?s ?p ?o .
+}
+>> OK
+
+<<PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:       <http://xmlns.com/foaf/0.1/>
+
+CONSTRUCT { [ rdf:subject ?s ;
+              rdf:predicate ?p ;
+              rdf:object ?o ] . }
+WHERE {
+  ?s ?p ?o .
+}
+>> OK
+
+<<PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:       <http://xmlns.com/foaf/0.1/>
+
+CONSTRUCT { _:a rdf:subject ?s ;
+                rdf:predicate ?p ;
+                rdf:object ?o  . }
+WHERE {
+  ?s ?p ?o .
+}
+>> OK
+
+<<PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:       <http://xmlns.com/foaf/0.1/>
+
+CONSTRUCT { ?s foaf:name ?o . }
+WHERE {
+  ?s foaf:name ?o .
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g1.ttl>
+{ ?s ?p ?o }
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT *
+FROM NAMED <data-g1.ttl>
+{ ?s ?p ?o }
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM NAMED <data-g1.ttl>
+{ 
+    GRAPH ?g { ?s ?p ?o }
+}
+
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g1.ttl>
+{ 
+    GRAPH ?g { ?s ?p ?o }
+}
+
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g1.ttl>
+FROM NAMED <data-g2.ttl>
+{ ?s ?p ?o }
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g1.ttl>
+FROM NAMED <data-g2.ttl>
+{ 
+    GRAPH ?g { ?s ?p ?o }
+}
+
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g1.ttl>
+FROM NAMED <data-g2.ttl>
+{ 
+   { ?s ?p ?o }
+  UNION
+   { GRAPH ?g { ?s ?p ?o } }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g1.ttl>
+FROM NAMED <data-g2.ttl>
+{ 
+   ?s ?p ?o
+   GRAPH ?g { ?s ?q ?v }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g3.ttl>
+FROM NAMED <data-g3.ttl>{ 
+   ?s ?p ?o
+   GRAPH ?g { ?s ?q ?v }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g3-dup.ttl>
+FROM NAMED <data-g3.ttl>{ 
+   ?s ?p ?o
+   GRAPH ?g { ?s ?q ?v }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g3.ttl>
+FROM NAMED <data-g3.ttl>
+{ 
+   ?s ?p ?o
+   GRAPH ?g { ?s ?q ?v }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g3-dup.ttl>
+FROM NAMED <data-g3.ttl>
+{ 
+   ?s ?p ?o
+   GRAPH ?g { ?s ?q ?v }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g1.ttl>
+FROM NAMED <data-g1.ttl>
+FROM NAMED <data-g2.ttl>
+FROM NAMED <data-g3.ttl>
+FROM NAMED <data-g4.ttl>
+{ 
+   { ?s ?p ?o }
+  UNION
+   { GRAPH ?g { ?s ?p ?o } }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g1.ttl>
+FROM <data-g2.ttl>
+FROM <data-g3.ttl>
+FROM <data-g4.ttl>
+FROM NAMED <data-g1.ttl>
+FROM NAMED <data-g2.ttl>
+FROM NAMED <data-g3.ttl>
+FROM NAMED <data-g4.ttl>
+{ 
+   { ?s ?p ?o }
+  UNION
+   { GRAPH ?g { ?s ?p ?o } }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+FROM <data-g1-dup.ttl>
+FROM <data-g2-dup.ttl>
+FROM <data-g3-dup.ttl>
+FROM <data-g4-dup.ttl>
+FROM NAMED <data-g1.ttl>
+FROM NAMED <data-g2.ttl>
+FROM NAMED <data-g3.ttl>
+FROM NAMED <data-g4.ttl>
+{ 
+   { ?s ?p ?o }
+  UNION
+   { GRAPH ?g { ?s ?p ?o } }
+}
+>> OK
+
+<<PREFIX :      <http://example/> 
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+
+SELECT DISTINCT ?v
+{
+    ?x ?p ?v .
+}
+>> OK
+
+<<PREFIX :      <http://example/> 
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+
+SELECT DISTINCT ?v
+{
+    :x1 ?p ?o
+    OPTIONAL { ?o :q ?v }
+}
+>> OK
+
+<<PREFIX :         <http://example/> 
+PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#> 
+SELECT DISTINCT * 
+WHERE { 
+  { ?s :p ?o } UNION { ?s :q ?o }
+}
+
+>> OK
+
+<<SELECT ?v
+{
+    ?x ?p ?v .
+}
+>> OK
+
+<<PREFIX :      <http://example/> 
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?v
+{
+    :x1 ?p ?o
+    OPTIONAL { ?o :q ?v }
+}
+>> OK
+
+<<# Test: 'xyz'@en = 'xyz'@EN
+
+PREFIX     :    <http://example/>
+
+SELECT *
+{
+    ?x1 :p ?v1 .
+    ?x2 :p ?v2 .
+    FILTER ( ?v1 = ?v2 )
+}
+>> OK
+
+<<# Test: 'xyz'@en != 'xyz'@EN
+
+PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{
+    ?x1 :p ?v1 .
+    ?x2 :p ?v2 .
+    FILTER ( ?v1 != ?v2 )
+}
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x ?v
+WHERE
+    { ?x :p ?v . 
+      FILTER isBlank(?v) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x ?v
+WHERE
+    { ?x :p ?v . 
+      FILTER ( datatype(?v) = xsd:double ) .
+    }
+>> OK
+
+<<# Which literals have a datatype and which are errors.
+
+PREFIX : <http://example/> 
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?x
+{ ?x :p ?v . 
+  FILTER(  datatype(?v) != <http://example/NotADataTypeIRI> ) 
+}
+>> OK
+
+<<# Whichliterals have xsd:string as a datatype
+
+PREFIX : <http://example/> 
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?x
+{ ?x :p ?v . 
+  FILTER( datatype(?v) = xsd:string ) 
+}
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x ?v
+WHERE
+    { ?x :p ?v . 
+      FILTER isIRI(?v) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example/>
+SELECT  ?x 
+WHERE
+    { ?x :p ?v . 
+      FILTER isLiteral(?v) .
+    }
+>> OK
+
+<<# Test which things have a lang tag of some form.
+
+PREFIX : <http://example/> 
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?x
+{ ?x :p ?v . 
+  FILTER ( lang(?v) != '@NotALangTag@' )
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?x
+{ ?x :p ?v . 
+  FILTER ( lang(?v) = '' )
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?x
+{ ?x :p "string"@EN
+}
+>> OK
+
+<<PREFIX : <http://example.org/#>
+
+SELECT *
+{ :x ?p ?v . FILTER langMatches(lang(?v), "en-GB") . }
+>> OK
+
+<<PREFIX : <http://example.org/#>
+
+SELECT *
+{ :x ?p ?v . FILTER langMatches(lang(?v), "en") . }
+>> OK
+
+<<PREFIX : <http://example.org/#>
+
+SELECT *
+{ :x ?p ?v . FILTER langMatches(lang(?v), "*") . }
+>> OK
+
+<<PREFIX : <http://example.org/#>
+
+SELECT *
+{ :x ?p ?v . FILTER (! langMatches(lang(?v), "*")) . }
+>> OK
+
+<<# q-langMatches-de-de.rq
+
+PREFIX : <http://example.org/#>
+
+SELECT *
+{ :x ?p ?v . FILTER langMatches(lang(?v), "de-de") . }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x ?v
+WHERE
+    { ?x :p ?v . 
+      FILTER ( str(?v) = "1" ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x ?v
+WHERE
+    { ?x :p ?v . 
+      FILTER ( str(?v) = "01" ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x ?v
+WHERE
+    { ?x :p ?v . 
+      FILTER ( str(?v) = "zzz" ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x ?v
+WHERE
+    { ?x :p ?v . 
+      FILTER ( str(?v) = ""  ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x ?v
+WHERE
+    { ?x :p ?v . 
+      FILTER isURI(?v) .
+    }
+>> OK
+
+<<# Test: sameTerm and eq
+
+PREFIX     :    <http://example.org/things#>
+
+SELECT *
+{
+    ?x1 :p ?v1 .
+    ?x2 :p ?v2 .
+    FILTER ( sameTerm(?v1, ?v2) && ?v1 = ?v2 )
+}
+>> OK
+
+<<# Test: !sameTerm and eq
+
+PREFIX     :    <http://example.org/things#>
+
+SELECT *
+{
+    ?x1 :p ?v1 .
+    ?x2 :p ?v2 .
+    FILTER ( !sameTerm(?v1, ?v2) && ?v1 = ?v2 )
+}
+>> OK
+
+<<# Test: sameTerm
+
+PREFIX     :    <http://example.org/things#>
+
+SELECT *
+{
+    ?x1 :p ?v1 .
+    ?x2 :p ?v2 .
+    FILTER sameTerm(?v1, ?v2)
+}
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p ?v . 
+      FILTER ( ?v = 1 ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p ?v . 
+      FILTER ( ?v = 1.0e0 )  .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p ?v . 
+      FILTER ( ?v = "1" ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p ?v . 
+      FILTER ( ?v = "zzz" ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p ?v . 
+      FILTER ( ?v = :z  ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p 1 . 
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p 1.0e0 .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p "1"
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p "zzz" .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x
+WHERE
+    { ?x :p ?v . 
+      FILTER ( ?v = :z  ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?v1 ?v2
+WHERE
+    { ?x1 :p ?v1 .
+      ?x2 :p ?v2 . 
+      FILTER ( ?v1 = ?v2 ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?v1 ?v2
+WHERE
+    { ?x1 :p ?v1 .
+      ?x2 :p ?v2 . 
+      FILTER ( ?v1 != ?v2 ) .
+    }
+>> OK
+
+<<PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX  : <http://example.org/things#>
+SELECT  ?x1 ?x2 ?v
+WHERE
+    { ?x1 :p ?v .
+      ?x2 :p ?v . 
+    }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?s WHERE {
+    ?s :p ?o .
+    FILTER(?o >= 3) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?s WHERE {
+    ?s :p ?o .
+    FILTER(?o <= 2) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?s WHERE {
+    ?s :p ?o .
+    ?s2 :p ?o2 .
+    FILTER(?o - ?o2 = 3) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?s WHERE {
+    ?s :p ?o .
+    ?s2 :p ?o2 .
+    FILTER(?o * ?o2 = 4) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?s WHERE {
+    ?s :p ?o .
+    ?s2 :p ?o2 .
+    FILTER(?o + ?o2 = 3) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?s WHERE {
+    ?s :p ?o .
+    FILTER(-?o = -2) .
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?s WHERE {
+    ?s :p ?o .
+    FILTER(?o = +3) .
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * { ?s ?p ?o }
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * { ?s ?p ?o }
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * { 
+    GRAPH ?g { ?s ?p ?o }
+}
+
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * { 
+    GRAPH ?g { ?s ?p ?o }
+}
+
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * { ?s ?p ?o }
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * { 
+    GRAPH ?g { ?s ?p ?o }
+}
+
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+{ 
+   { ?s ?p ?o }
+  UNION
+   { GRAPH ?g { ?s ?p ?o } }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+{ 
+   ?s ?p ?o
+   GRAPH ?g { ?s ?q ?v }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+{ 
+   ?s ?p ?o
+   GRAPH ?g { ?s ?q ?v }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+{ 
+   ?s ?p ?o
+   GRAPH ?g { ?s ?q ?v }
+}
+>> OK
+
+<<PREFIX : <http://example/> 
+
+SELECT * 
+{ 
+   { ?s ?p ?o }
+  UNION
+   { GRAPH ?g { ?s ?p ?o } }
+}
+>> OK
+
+<<# Example 1 from
+# http://lists.w3.org/Archives/Public/public-rdf-dawg/2005JulSep/0096
+PREFIX : <http://example/vocab#>
+PREFIX p1: <eXAMPLE://a/./b/../b/%63/%7bfoo%7d#>
+
+SELECT ?S WHERE { ?S :p p1:xyz }
+
+>> OK
+
+<<# Example 2 from
+# http://lists.w3.org/Archives/Public/public-rdf-dawg/2005JulSep/0096
+PREFIX : <http://example/vocab#>
+PREFIX p2: <http://example.com:80/#>
+
+SELECT ?S WHERE { ?S :p p2:abc }
+
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{
+    ?x :r ?v .
+    FILTER ( ?v = "2006-08-23"^^xsd:date )
+}
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{
+    ?x :r ?v .
+    FILTER ( ?v != "2006-08-23"^^xsd:date )
+}
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{
+    ?x :r ?v .
+    FILTER ( ?v > "2006-08-22"^^xsd:date )
+}
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?x ?date
+{
+    ?x :s ?date .
+    FILTER ( datatype(?date) = xsd:date )
+}
+>> OK
+
+<<PREFIX      :    <http://example/> 
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?x ?v1 ?v2
+{
+    ?x :p [ :v1 ?v1 ; :v2 ?v2 ] .
+    FILTER ( ?v1 < ?v2 || ?v1 > ?v2 )
+}
+>> OK
+
+<<PREFIX      :    <http://example/> 
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?x ?v1 ?v2
+{
+    ?x :p [ :v1 ?v1 ; :v2 ?v2 ] .
+    FILTER ( ?v1 < ?v2 || ?v1 = ?v2 || ?v1 > ?v2 )
+}
+>> OK
+
+<<# SPARQL is defined over simple entailment so
+# only syntactic matches show.  
+# (Some systems may match because they do
+# value-based matching in the graph (D-entailment))
+
+# Does not strictly match "1"^xsd:integer
+
+PREFIX  :       <http://example/ns#>
+PREFIX  t:      <http://example/t#>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{ ?x :p "001"^^xsd:integer }>> OK
+
+<<# Test matching in a graph pattern
+# Unknown type
+
+PREFIX  :       <http://example/ns#>
+PREFIX  t:      <http://example/t#>
+
+SELECT *
+{ ?x :p "a"^^t:type1 }
+>> OK
+
+<<# SPARQL FILTER test by value.
+# A processor knows about XSD integer
+# so 1 and 01 pass the filter
+
+PREFIX  :       <http://example/ns#>
+PREFIX  t:      <http://example/t#>
+PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{ ?x :p ?v 
+  FILTER ( ?v = 1 )
+}
+>> OK
+
+<<# SPARQL FILTER test by value.
+# A processor knows about XSD integer
+# so 1 and 01 are excluded by the filter
+
+PREFIX  :       <http://example/ns#>
+PREFIX  t:      <http://example/t#>
+PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{ ?x :p ?v 
+  FILTER ( ?v != 1 )
+}
+>> OK
+
+<<# SPARQL FILTER test by value.
+# Only one valus is known to be "a"^^t:type1
+# (others maybe but the processor does not positively know this)
+
+PREFIX  :       <http://example/ns#>
+PREFIX  t:      <http://example/t#>
+
+SELECT *
+{ ?x :p ?v 
+  FILTER ( ?v = "a"^^t:type1 )
+}
+>> OK
+
+<<# SPARQL FILTER test by value for known types.
+# Nothing is known to be not the same value as  "a"^^t:type1
+#  "b"^^t:type1 might be a different lexical form for the same value
+#  "a"^^t:type2 might have overlapping value spaces for this lexicial form.
+
+PREFIX  :       <http://example/ns#>
+PREFIX  t:      <http://example/t#>
+
+SELECT *
+{ ?x :p ?v 
+  FILTER ( ?v != "a"^^t:type1 )
+}
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{
+    ?x1 :p ?v1 .
+    ?x2 :p ?v2 .
+    FILTER ( ?v1 = ?v2 )
+}
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{
+    ?x1 :p ?v1 .
+    ?x2 :p ?v2 .
+    FILTER ( ?v1 != ?v2 )
+}
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{
+    ?x :p ?v1 .
+    ?y :q ?v2 .
+    FILTER ( ?v1 = ?v2 )
+}
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{
+    ?x :p ?v1 .
+    ?y :q ?v2 .
+    FILTER ( ?v1 != ?v2 )
+}
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT *
+{
+    ?x :p ?v1 .
+    ?y :q ?v2 .
+    FILTER ( ?v1 != ?v2 || ?v1 = ?v2 )
+}
+>> OK
+
+<<PREFIX     :    <http://example/>
+PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?x ?v1 ?y ?v2
+{
+    ?x :p ?v1 .
+    ?y :p ?v2 .
+    OPTIONAL { ?y :p ?v3 . FILTER( ?v1 != ?v3 || ?v1 = ?v3 )}
+    FILTER (!bound(?v3))
+}
+>> OK
+
+<<PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT ?mbox ?name
+   {
+     ?x foaf:mbox ?mbox .
+     OPTIONAL { ?x foaf:name  ?name } .
+   }
+>> OK
+
+<<PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT ?mbox ?name ?nick
+   {
+     ?x foaf:mbox ?mbox .
+     OPTIONAL { ?x foaf:name  ?name } .
+     OPTIONAL { ?x foaf:nick  ?nick } .
+   }
+>> OK
+
+<<PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT ?mbox ?name
+   {
+     { ?x foaf:mbox ?mbox }
+   UNION 
+     { ?x foaf:mbox ?mbox . ?x foaf:name  ?name }
+   }
+>> OK
+
+<<PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>
+SELECT ?person ?nick ?page ?img ?name ?firstN
+{ 
+    ?person foaf:nick ?nick
+    OPTIONAL { ?person foaf:isPrimaryTopicOf ?page } 
+    OPTIONAL { 
+        ?person foaf:name ?name 
+        { ?person foaf:depiction ?img } UNION 
+        { ?person foaf:firstName ?firstN } 
+    } FILTER ( bound(?page) || bound(?img) || bound(?firstN) ) 
+} >> OK
+
+<<PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX    ex:   <http://example.org/things#>
+SELECT ?id ?ssn
+WHERE 
+{ 
+    ?person 
+        a foaf:Person;
+        foaf:name ?name . 
+    GRAPH ?x { 
+        [] foaf:name ?name;
+           foaf:nick ?nick
+    } 
+    OPTIONAL { 
+        { ?person ex:empId ?id } UNION { ?person ex:ssn ?ssn } 
+    } 
+} >> OK
+
+<<PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX    ex:   <http://example.org/things#>
+SELECT ?name ?nick ?plan ?dept
+WHERE 
+{ 
+    ?person 
+        a foaf:Person;
+        foaf:name ?name . 
+    GRAPH ?x { 
+        [] foaf:name ?name;
+           foaf:nick ?nick
+    } 
+    OPTIONAL { 
+        ?person ex:healthplan ?plan 
+        OPTIONAL { ?person ex:department ?dept } 
+    } 
+}>> OK
+
+<<PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX    ex:   <http://example.org/things#>
+SELECT ?name ?plan ?dept ?img 
+WHERE 
+{ 
+    ?person foaf:name ?name  
+    { ?person ex:healthplan ?plan } UNION { ?person ex:department ?dept } 
+    OPTIONAL { 
+        ?person a foaf:Person
+        GRAPH ?g { 
+            [] foaf:name ?name;
+               foaf:depiction ?img 
+        } 
+    } 
+}>> OK
+
+<<PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX  x: <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE
+    { ?book dc:title ?title . 
+      OPTIONAL
+        { ?book x:price ?price . 
+          FILTER (?price < 15) .
+        } .
+    }
+>> OK
+
+<<PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX  x: <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE
+    { ?book dc:title ?title . 
+      OPTIONAL
+        { ?book x:price ?price } . 
+      FILTER (?price < 15)  .
+    }
+>> OK
+
+<<PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX  x: <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE
+    { ?book dc:title ?title . 
+      OPTIONAL
+        { ?book x:price ?price } . 
+      FILTER ( ( ! bound(?price) ) || ( ?price < 15 ) ) .
+    }
+>> OK
+
+<<PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX  x: <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE
+    { ?book dc:title ?title . 
+      OPTIONAL
+        { ?book x:price ?price . 
+          FILTER (?price < 15 && ?title = "TITLE 2") .
+        } .
+    }
+>> OK
+
+<<PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX  x: <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE
+    { ?book dc:title ?title . 
+      OPTIONAL
+        {
+          { 
+            ?book x:price ?price . 
+            FILTER (?title = "TITLE 2") .
+          }
+        } .
+    }
+>> OK
+
+<<PREFIX :         <http://example/> 
+PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#> 
+SELECT REDUCED * 
+WHERE { 
+  { ?s :p ?o } UNION { ?s :q ?o }
+}
+
+>> OK
+
+<<PREFIX :      <http://example/> 
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+
+SELECT REDUCED ?v
+{
+    ?x ?p ?v .
+}
+>> OK
+
+<<PREFIX  rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  ex: <http://example.com/#>
+
+SELECT ?val
+WHERE {
+	ex:foo rdf:value ?val .
+	FILTER regex(?val, "GHI")
+}
+>> OK
+
+<<PREFIX  ex: <http://example.com/#>
+PREFIX  rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?val
+WHERE {
+	ex:foo rdf:value ?val .
+	FILTER regex(?val, "DeFghI", "i")
+}
+>> OK
+
+<<PREFIX  rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  ex:  <http://example.com/#>
+
+SELECT ?val
+WHERE {
+	ex:foo rdf:value ?val .
+	FILTER regex(?val, "example\\.com")
+}
+>> OK
+
+<<PREFIX  rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  ex: <http://example.com/#>
+SELECT ?val
+WHERE {
+	ex:foo rdf:value ?val .
+	FILTER regex(str(?val), "example\\.com")
+}
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+LIMIT 1
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+LIMIT 100
+
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+LIMIT 0
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT DISTINCT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+LIMIT 100
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+OFFSET 1
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+OFFSET 0
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+OFFSET 100
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT DISTINCT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+OFFSET 2
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+LIMIT 1
+OFFSET 1
+
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+OFFSET 1
+LIMIT 2>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT ?v
+WHERE { [] ?p ?v }
+ORDER BY ?v
+OFFSET 100
+LIMIT 1>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT  ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+OFFSET 2
+LIMIT 5>> OK
+
+<<PREFIX : <http://example.org/ns#>
+
+SELECT  DISTINCT ?v
+WHERE { [] :num ?v }
+ORDER BY ?v
+OFFSET 2
+LIMIT 5
+>> OK
+
+<<PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+ORDER BY ?name
+>> OK
+
+<<PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+ORDER BY DESC(?name)
+>> OK
+
+<<PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+ORDER BY DESC(?name)
+>> OK
+
+<<PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE { ?x foaf:name ?name .
+           OPTIONAL { ?x foaf:mbox ?mbox }
+      }
+ORDER BY ASC(?mbox)
+>> OK
+
+<<PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+PREFIX ex:        <http://example.org/things#> 
+
+SELECT ?name ?emp
+WHERE { ?x foaf:name ?name ;
+           ex:empId ?emp
+      }
+ORDER BY ASC(?emp)
+>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX ex:      <http://example.org/things#> 
+
+SELECT ?name ?emp
+WHERE { ?x foaf:name ?name ; 
+           ex:empId ?emp 
+      }
+ORDER BY ?name DESC(?emp)
+>> OK
+
+<<PREFIX ex:      <http://example.org/things#> 
+
+SELECT ?address
+WHERE { ?x ex:address ?address }
+ORDER BY ASC(?address)
+>> OK
+
+<<PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+ORDER BY ?name
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?s WHERE {
+  ?s :p ?o .
+} ORDER BY str(?o)
+>> OK
+
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s WHERE {
+  ?s :p ?o .
+} ORDER BY xsd:integer(?o)
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?s WHERE {
+  ?s :p ?o1 ; :q ?o2 .
+} ORDER BY (?o1 + ?o2)
+>> OK
+
+<<SELECT *
+WHERE { }
+>> OK
+
+<<SELECT * {}
+>> OK
+
+<<# No trailing dot
+PREFIX : <http://example.org/ns#> 
+SELECT *
+WHERE { ?x ?y ?z }
+>> OK
+
+<<# With trailing dot
+SELECT *
+WHERE { ?x ?y ?z . }
+>> OK
+
+<<# Two triples : no trailing dot
+SELECT *
+WHERE { ?x ?y ?z . ?a ?b ?c }
+>> OK
+
+<<# Two triples : with trailing dot
+SELECT *
+WHERE { ?x ?y ?z . ?a ?b ?c . }
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+SELECT * WHERE { [:p :q ] }
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+SELECT * WHERE { [] :p :q }
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+SELECT * WHERE { [ ?x ?y ] :p [ ?pa ?b ] }
+>> OK
+
+<<PREFIX : <http://example.org/ns#> 
+SELECT *
+WHERE { [ :p :q ; ] }
+>> OK
+
+<<PREFIX : <http://example.org/ns#> 
+SELECT *
+WHERE { _:a :p1 :q1 .
+        _:a :p2 :q2 .
+      }
+>> OK
+
+<<SELECT *
+WHERE { ?s ?p ?o . FILTER (?o) }
+>> OK
+
+<<SELECT *
+WHERE { ?s ?p ?o . FILTER REGEX(?o, "foo") }
+>> OK
+
+<<SELECT *
+WHERE { ?s ?p ?o . FILTER REGEX(?o, "foo", "i") }
+>> OK
+
+<<PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+SELECT *
+WHERE { ?s ?p ?o . FILTER xsd:integer(?o) }
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+SELECT *
+WHERE { ?s ?p ?o . FILTER :myFunc(?s,?o) }
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+SELECT * WHERE { ( [ ?x ?y ] ) :p ( [ ?pa ?b ] 57 ) }
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+SELECT * WHERE { ( [] [] ) }
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY ?o
+LIMIT 5
+>> OK
+
+<<# LIMIT and OFFSET can be in either order
+PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY ?o
+LIMIT 5
+OFFSET 3
+>> OK
+
+<<# LIMIT and OFFSET can be in either order
+PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY ?o
+OFFSET 3
+LIMIT 5
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY ?o
+OFFSET 3
+>> OK
+
+<<PREFIX : <http://example.org/ns#> 
+SELECT * WHERE { ( ?x ) :p ?z  }
+>> OK
+
+<<PREFIX : <http://example.org/ns#> 
+SELECT * WHERE { ?x :p ( ?z ) }
+>> OK
+
+<<SELECT * WHERE { ( ?z ) }
+>> OK
+
+<<SELECT * WHERE { ( ( ?z ) ) }
+>> OK
+
+<<SELECT * WHERE { ( ( ) ) }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p "x" }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p 'x' }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p "x\"y'z" }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p 'x"y\'z' }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p "x\"" }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p 'x\'' }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p 123 }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p 123. . }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p """Long
+""
+Literal
+""" }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p '''Long
+'' """
+Literal''' }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p """Long""\"Literal""" }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p '''Long''\'Literal''' }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p """Long\"""Literal""" }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p '''Long\'''Literal''' }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p '''Long '' Literal''' }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p '''Long ' Literal''' }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p '''Long''\\Literal with '\\ single quotes ''' }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p """Long "" Literal""" }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p """Long " Literal""" }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT * WHERE { :x :p """Long""\\Literal with "\\ single quotes""" }
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY ?o
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY (?o+5)
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY ASC(?o)
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY DESC(?o)
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY DESC(:func(?s, ?o))
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY 
+  DESC(?o+57) :func2(?o) ASC(?s)
+>> OK
+
+<<PREFIX :      <http://example.org/ns#> 
+SELECT *
+{ ?s ?p ?o }
+ORDER BY str(?o)
+>> OK
+
+<<PREFIX : <http://example.org/ns#> 
+SELECT *
+{ }
+>> OK
+
+<<# No DOT after optional
+PREFIX : <http://example.org/ns#> 
+SELECT *
+{ ?a :b :c OPTIONAL{:x :y :z} :x ?y ?z }
+>> OK
+
+<<# No DOT between non-triples patterns
+PREFIX : <http://example.org/ns#> 
+SELECT *
+{ ?a :b :c 
+  OPTIONAL{:x :y :z} 
+  { :x1 :y1 :z1 } UNION { :x2 :y2 :z2 }
+}
+>> OK
+
+<<# No DOT between non-triples patterns
+PREFIX : <http://example.org/ns#> 
+SELECT *
+{
+  OPTIONAL{:x :y :z} 
+  ?a :b :c 
+  { :x1 :y1 :z1 } UNION { :x2 :y2 :z2 }
+}
+>> OK
+
+<<PREFIX : <http://example.org/ns#> 
+SELECT *
+{ ?x :p ?z }
+>> OK
+
+<<PREFIX : <http://example.org/ns#> 
+SELECT *
+WHERE { :x :p :z . }
+>> OK
+
+<<PREFIX : <http://example.org/ns#> 
+SELECT *
+WHERE { :_1 :p.rdf :z.z . }
+>> OK
+
+<<PREFIX :  <http://example.org/ns#> 
+PREFIX a: <http://example.org/ns2#> 
+SELECT *
+WHERE { : a: :a . : : : . }
+>> OK
+
+<<PREFIX :  <> 
+SELECT *
+WHERE { : : : . }
+>> OK
+
+<<PREFIX :  <#> 
+SELECT *
+WHERE { : : : . }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#> 
+SELECT *
+WHERE { : : : . }
+>> OK
+
+<<BASE   <http://example.org/>
+PREFIX :  <#>
+PREFIX x.y:  <x#>
+SELECT *
+WHERE { :a.b  x.y:  : . }
+>> OK
+
+<<# Operator
+PREFIX :  <http://example.org/ns#> 
+SELECT *
+{ OPTIONAL { } }
+>> OK
+
+<<# Operator
+PREFIX :  <http://example.org/ns#> 
+SELECT *
+{ OPTIONAL { :a :b :c } }
+>> OK
+
+<<# Triple, no DOT, operator
+PREFIX :  <http://example.org/ns#> 
+SELECT *
+{ :p :q :r OPTIONAL { :a :b :c } }
+>> OK
+
+<<# Triple, DOT, operator
+PREFIX :  <http://example.org/ns#> 
+SELECT *
+{ :p :q :r . OPTIONAL { :a :b :c } }
+>> OK
+
+<<# Triple, DOT, operator, DOT
+PREFIX :  <http://example.org/ns#> 
+SELECT *
+{ :p :q :r . OPTIONAL { :a :b :c } . }
+>> OK
+
+<<# Operator, no DOT
+PREFIX :  <http://example.org/ns#> 
+SELECT *
+{ OPTIONAL { :a :b :c } }
+>> OK
+
+<<# Operator, DOT
+PREFIX :  <http://example.org/ns#> 
+SELECT *
+{ OPTIONAL { :a :b :c } . }
+>> OK
+
+<<# Operator, triple
+PREFIX :  <http://example.org/ns#> 
+SELECT *
+{ OPTIONAL { :a :b :c } ?x ?y ?z }
+>> OK
+
+<<# Operator, DOT triple
+PREFIX :  <http://example.org/ns#> 
+SELECT *
+{ OPTIONAL { :a :b :c } . ?x ?y ?z }
+>> OK
+
+<<# Triple, semi, operator
+PREFIX :  <http://example.org/ns#>
+SELECT *
+{ :p :q :r ; OPTIONAL { :a :b :c } }
+>> OK
+
+<<# Triple, semi, DOT, operator
+PREFIX :  <http://example.org/ns#>
+SELECT *
+{ :p :q :r ; . OPTIONAL { :a :b :c } }
+>> OK
+
+<<# Two elements in the group
+PREFIX :  <http://example.org/ns#>
+SELECT *
+{ :p :q :r . OPTIONAL { :a :b :c } 
+  :p :q :r . OPTIONAL { :a :b :c } 
+}
+>> OK
+
+<<# Two elements in the group
+PREFIX :  <http://example.org/ns#>
+SELECT *
+{ :p :q :r  OPTIONAL { :a :b :c } 
+  :p :q :r  OPTIONAL { :a :b :c } 
+}
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+SELECT *
+{
+  { ?s ?p ?o } UNION { ?a ?b ?c } 
+}
+>> OK
+
+<<PREFIX : <http://example.org/ns#>
+SELECT *
+{
+  { ?s ?p ?o } UNION { ?a ?b ?c } UNION { ?r ?s ?t }
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT * WHERE { [] :p [] }
+>> OK
+
+<<PREFIX : <http://example.org/>
+# Tab
+SELECT * WHERE { [ ] :p [
+	] }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT * WHERE { [ :p :q 
+ ] }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?x
+FROM <http://example.org/graph>
+WHERE {}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?x
+FROM NAMED <http://example.org/graph1>
+WHERE {}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?x
+FROM NAMED :graph1
+FROM NAMED :graph2
+WHERE {}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT ?x
+FROM :g1
+FROM :g2
+FROM NAMED :graph1
+FROM NAMED :graph2
+WHERE {}
+>> OK
+
+<<SELECT *
+WHERE { <x> <p> "\t" }
+>> OK
+
+<<SELECT *
+WHERE { <x> <p> "x\t" }
+>> OK
+
+<<SELECT *
+WHERE { <x> <p> "\tx" }
+>> OK
+
+
+<<ASK {}
+>> OK
+
+<<CONSTRUCT { ?s <p1> <o> . ?s <p2> ?o } WHERE {?s ?p ?o}
+>> OK
+
+<<CONSTRUCT { ?s <p1> <o> . ?s <p2> ?o .} WHERE {?s ?p ?o}
+>> OK
+
+<<PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+CONSTRUCT { [] rdf:subject ?s ;
+               rdf:predicate ?p ;
+               rdf:object ?o }
+WHERE {?s ?p ?o}
+>> OK
+
+<<PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+CONSTRUCT { [] rdf:subject ?s ;
+               rdf:predicate ?p ;
+               rdf:object ?o . }
+WHERE {?s ?p ?o}
+>> OK
+
+<<CONSTRUCT {} WHERE {}
+>> OK
+
+<<DESCRIBE <u>
+>> OK
+
+<<DESCRIBE <u> ?u WHERE { <x> <q> ?u . }
+>> OK
+
+<<SELECT * WHERE { }
+>> OK
+
+<<SELECT * { }
+>> OK
+
+<<PREFIX q: <http://example.org/>
+SELECT * WHERE { FILTER (q:name()) }
+>> OK
+
+<<PREFIX q: <http://example.org/>
+SELECT * WHERE { FILTER (q:name( )) }
+>> OK
+
+<<PREFIX q: <http://example.org/>
+SELECT * WHERE { FILTER (q:name(
+)) }
+>> OK
+
+<<PREFIX q: <http://example.org/>
+SELECT * WHERE { FILTER (q:name(1
+)) . FILTER (q:name(1,2)) . FILTER (q:name(1
+,2))}
+>> OK
+
+<<SELECT * WHERE { <a><b><c> }
+>> OK
+
+<<SELECT * WHERE { <a><b>_:x }
+>> OK
+
+<<SELECT * WHERE { <a><b>1 }
+>> OK
+
+<<SELECT * WHERE { <a><b>+11 }
+>> OK
+
+<<SELECT * WHERE { <a><b>-1 }
+>> OK
+
+<<SELECT * WHERE { <a><b>1.0 }
+>> OK
+
+<<SELECT * WHERE { <a><b>+1.0 }
+>> OK
+
+<<SELECT * WHERE { <a><b>-1.0 }
+>> OK
+
+<<SELECT * WHERE { <a><b>1.0e0 }
+>> OK
+
+<<SELECT * WHERE { <a><b>+1.0e+1 }
+>> OK
+
+<<SELECT * WHERE { <a><b>-1.0e-1 }
+>> OK
+
+<<# Legal, if unusual, IRIs
+SELECT * WHERE { <a> <b> <?z> }
+>> OK
+
+<<# Legal, if unusual, IRIs
+BASE <http://example/page.html>
+SELECT * WHERE { <a> <b> <#x> }
+>> OK
+
+<<# Legal, if unusual, IRIs
+BASE <http://example/page.html?query>
+SELECT * WHERE { <a> <b> <&param=value> }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  GRAPH ?g { } 
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  GRAPH :a { } 
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  GRAPH ?g { :x :b ?a } 
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  :x :p :z
+  GRAPH ?g { :x :b ?a } 
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  :x :p :z
+  GRAPH ?g { :x :b ?a . GRAPH ?g2 { :x :p ?x } }
+}
+>> OK
+
+<<# use keyword FILTER as a namespace prefix
+PREFIX FILTER: <http://example.org/ns#> 
+SELECT *
+WHERE { ?x FILTER:foo ?z FILTER (?z) }
+>> OK
+
+<<# use keyword FILTER as a local name
+PREFIX : <http://example.org/ns#> 
+SELECT *
+WHERE { ?x :FILTER ?z FILTER (?z) }
+>> OK
+
+<<# use keyword UNION as a namespace prefix
+PREFIX UNION: <http://example.org/ns#> 
+SELECT *
+WHERE { ?x UNION:foo ?z }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT * WHERE { () :p 1 }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT * WHERE { ( ) :p 1 }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT * WHERE { ( 
+) :p 1 }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT * WHERE { ( 1 2
+) :p 1 }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT * WHERE { ( 1 2
+) }
+>> OK
+
+<<# Dot after triple
+SELECT * WHERE
+{ ?s ?p ?o . }
+>> OK
+
+<<# No dot after triple
+SELECT * WHERE
+{ ?s ?p ?o }
+>> OK
+
+<<SELECT * WHERE
+{ ?s ?p ?o . ?s ?p ?o . }
+>> OK
+
+<<# No dot
+SELECT * WHERE
+{ ?s ?p ?o . ?s ?p ?o }
+>> OK
+
+<<# DOT after non-triples
+SELECT * WHERE
+{ FILTER (?o>5) . }
+>> OK
+
+<<# DOT after non-triples
+SELECT * WHERE
+{ FILTER (?o>5) . ?s ?p ?o }
+>> OK
+
+<<# Trailing ;
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s :p :o ; FILTER(?x) }
+>> OK
+
+<<# Broken ;
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s :p :o ; . }
+>> OK
+
+<<# More a test that bad syntax tests work!
+PREFIX ex:   <http://example/ns#>
+SELECT *
+>> FAIL
+
+<<# Missing DOT, 2 triples
+PREFIX :   <http://example/ns#>
+SELECT *
+{ :s1 :p1 :o1 :s2 :p2 :o2 . }
+>> FAIL
+
+<<# Missing DOT between triples
+PREFIX :   <http://example/ns#>
+SELECT *
+{ :s1 :p1 :o1 :s2 :p2 :o2 . }
+>> FAIL
+
+<<# Missing DOT after ; between triples
+PREFIX :   <http://example/ns#>
+SELECT *
+{ :s1 :p1 :o1 ; :s2 :p2 :o2 . }
+>> FAIL
+
+<<# DOT, no triples
+SELECT * WHERE
+{ . }
+>> FAIL
+
+<<# DOT, no triples
+SELECT * WHERE
+{ . . }
+>> FAIL
+
+<<# DOT, then triples
+SELECT * WHERE
+{ . ?s ?p ?o }
+>> FAIL
+
+<<# Multiple DOTs
+SELECT * WHERE
+{ ?s ?p ?o . . }
+>> FAIL
+
+<<# Multiple DOTs
+SELECT * WHERE
+{ ?s ?p ?o .. }
+>> FAIL
+
+<<# Multiple DOTs
+SELECT * WHERE
+{ ?s ?p ?o . . ?s1 ?p1 ?o1 }
+>> FAIL
+
+<<# Multiple DOTs
+SELECT * WHERE
+{ ?s ?p ?o .. ?s1 ?p1 ?o1 }
+>> FAIL
+
+<<# Multiple DOTs
+SELECT * WHERE
+{ ?s ?p ?o . . ?s1 ?p1 ?o1 }
+>> FAIL
+
+<<# Multiple DOTs
+SELECT * WHERE
+{ ?s ?p ?o . ?s1 ?p1 ?o1 .. }
+>> FAIL
+
+<<# DOT, no triples
+SELECT * WHERE
+{ . FILTER(?x) }
+>> FAIL
+
+<<# Broken ;
+SELECT * WHERE
+{ ; FILTER(?x) }
+>> FAIL
+
+<<# Broken ;
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s ; :p :o }
+>> FAIL
+
+<<# Broken ;
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s :p ; }
+>> FAIL
+
+<<# Broken ;
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s :p ; FILTER(?x) }
+>> FAIL
+
+<<# Broken ;
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s :p :o . ;  }
+>> FAIL
+
+<<# Broken ,
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s , :p :o  }
+>> FAIL
+
+<<# Broken ,
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s  :p , :o  }
+>> FAIL
+
+<<# Broken ,
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s  :p , }
+>> FAIL
+
+<<# Broken , can't trail
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s  :p :o , }
+>> FAIL
+
+<<# Broken , (should be ;)
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ :s :p1 :o1 , :p2 :o2}
+>> FAIL
+
+<<CONSTRUCT 
+>> FAIL
+
+<<# Tokenizing matters.
+# "longest token rule" means this isn't a "<" and "&&"
+PREFIX :   <http://example/ns#>
+SELECT * WHERE
+{ FILTER (?x<?a&&?b>?y) }
+>> FAIL
+
+<<PREFIX : <http://example.org/ns#>
+SELECT * WHERE { :x [] :q }
+>> FAIL
+
+<<PREFIX : <http://example.org/ns#>
+SELECT * WHERE { :x _:a :q }
+>> FAIL
+
+<<# Syntactic blank node in a filter.
+SELECT * WHERE { <a><b>_:x FILTER(_:x) }
+>> FAIL
+
+<<# Syntactic blank node in a filter.
+SELECT * WHERE { <a><b>_:x FILTER(_:x < 3) }
+>> FAIL
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  GRAPH [] { } 
+}
+>> FAIL
+
+<<# NegativeSyntax/bnode-dot.rq
+SELECT * WHERE {[] . }
+>> FAIL
+
+<<# NegativeSyntax/bnodes-missing-pvalues.rq
+PREFIX :   <http://example/ns#>
+SELECT * WHERE { [,] :p [;] . }
+>> FAIL
+
+<<# NegativeSyntax/bnodes-missing-pvalues-02.rq
+SELECT * WHERE {() . [,] . [,;] }
+>> FAIL
+
+<<# NegativeSyntax/empty-optional.rq
+SELECT * { OPTIONAL FILTER (?x) }
+>> FAIL
+
+<<# NegativeSyntax/empty-optional-02.rq
+SELECT * { OPTIONAL GRAPH ?v OPTIONAL FILTER (?x) }
+>> FAIL
+
+<<# NegativeSyntax/filter-missing-parens.rq
+SELECT * { ?s ?p ?o FILTER ?x }
+>> FAIL
+
+<<# NegativeSyntax/lone-list.rq
+SELECT * WHERE { () }
+>> FAIL
+
+<<# NegativeSyntax/lone-node.rq
+SELECT * WHERE {<a>}
+>> FAIL
+
+<<# BNode label used across a FILTER.
+PREFIX : <http://xmlns.com/foaf/0.1/>
+
+ASK { _:who :homepage ?homepage 
+      FILTER REGEX(?homepage, "^http://example.org/") 
+      _:who :schoolHomepage ?schoolPage }
+>> OK
+
+<<# BNode label used across a GRAPH.
+PREFIX : <http://xmlns.com/foaf/0.1/>
+
+ASK { _:who :homepage ?homepage 
+      GRAPH ?g { ?someone :made ?homepage } 
+      _:who :schoolHomepage ?schoolPage }
+>> OK
+
+<<# BNode label used across an OPTIONAL.
+# This isn't necessarily a *syntax* test, but references to bnode labels
+# may not span basic graph patterns.
+PREFIX foaf: 	<http://xmlns.com/foaf/0.1/>
+
+ASK { _:who foaf:homepage ?homepage 
+      OPTIONAL { ?someone foaf:made ?homepage } 
+      _:who foaf:schoolHomepage ?schoolPage }
+>> OK
+
+<<# BNode label used across a UNION.
+# This isn't necessarily a *syntax* test, but references to bnode labels
+# may not span basic graph patterns.
+PREFIX foaf: 	<http://xmlns.com/foaf/0.1/>
+
+ASK { _:who foaf:homepage ?homepage 
+      { ?someone foaf:made ?homepage }
+      UNION
+      { ?homepage foaf:maker ?someone }
+      _:who foaf:schoolHomepage ?schoolPage }
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  _:a ?p ?v .  _:a ?q 1 
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  { _:a ?p ?v .  _:a ?q _:a } UNION { _:b ?q _:c }
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  _:a ?p ?v .  FILTER(true) . [] ?q _:a
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  _:a ?p ?v . { _:a ?q 1 }
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  { _:a ?p ?v . } _:a ?q 1 
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  { _:a ?p ?v . } UNION { _:a ?q 1 } 
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  { _:a ?p ?v . } _:a ?q 1 
+}
+>> OK
+
+<<PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  _:a ?p ?v . OPTIONAL {_:a ?q 1 }
+}
+>> OK
+
+<<# bad: re-used BNode label after GRAPH
+
+PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  _:a ?p ?v . GRAPH ?g { ?s ?p ?v } _:a ?q 1
+}
+>> OK
+
+<<# bad: re-used BNode label after OPTIONAL
+
+PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  _:a ?p ?v . OPTIONAL { ?s ?p ?v } _:a ?q 1
+}
+>> OK
+
+<<# bad: re-used BNode label after UNION
+# This isn't necessarily a *syntax* test, but references to bnode labels
+# may not span basic graph patterns.
+
+PREFIX : <http://example.org/>
+SELECT *
+WHERE
+{
+  _:a ?p ?v1 { ?s <p1> ?o } UNION { ?s <p2> ?o } _:a ?p ?v2
+}
+>> OK
+
+<<PREFIX dob: <http://placetime.com/interval/gregorian/1977-01-18T04:00:00Z/P> 
+PREFIX time: <http://www.ai.sri.com/daml/ontologies/time/Time.daml#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?desc
+WHERE  { 
+  dob:1D a time:ProperInterval;
+         dc:description ?desc.
+}
+>> OK
+
+<<SELECT REDUCED * WHERE { ?x ?y ?z }
+>> OK
+
+<<SELECT REDUCED ?x ?y WHERE { ?x ?y ?z }
+>> OK
+
+<<PREFIX : <http://example.org/data/>
+
+SELECT *
+WHERE { :x ?p ?q . }
+>> OK
+
+<<PREFIX : <http://example.org/data/>
+
+SELECT *
+WHERE { ?x :p ?q . }
+
+>> OK
+
+<<SELECT *
+WHERE { ?a ?a ?b . }
+>> OK
+
+<<PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:       <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE {
+  ?x rdf:type foaf:Person .
+  ?x foaf:name ?name .
+}
+>> OK
+
+<<PREFIX : <http://example.org/data/>
+
+SELECT *
+WHERE { ?x :p ?q . }
+
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:byte1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:short ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:byte1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:decimal1 rdf:value ?l .
+         t:decimal1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:decimal ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:double1 rdf:value ?l .
+         t:decimal1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:decimal ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:double1 rdf:value ?l .
+         t:decimal1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:double ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:double1 rdf:value ?l .
+         t:double1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:double ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:double1 rdf:value ?l .
+         t:float1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:float ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:double1 rdf:value ?l .
+         t:float1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:double ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:float1 rdf:value ?l .
+         t:decimal1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:decimal ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:float1 rdf:value ?l .
+         t:decimal1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:float ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:float1 rdf:value ?l .
+         t:float1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:float ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:int1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:integer1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:long1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:negativeIntegerN1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:nonNegativeInteger1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:nonPositiveIntegerN1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:positiveInteger1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:short1 rdf:value ?l .
+         t:byte1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:double ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:short1 rdf:value ?l .
+         t:decimal1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:decimal ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:short1 rdf:value ?l .
+         t:double1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:double ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:short1 rdf:value ?l .
+         t:float1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:float ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:short1 rdf:value ?l .
+         t:int1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:float ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:short1 rdf:value ?l .
+         t:long1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:decimal ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:short1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:short ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:short1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:unsignedByte1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:unsignedInt1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:unsignedLong1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<# Positive test: product of type promotion within the xsd:decimal type tree.
+
+PREFIX t: <http://www.w3.org/2001/sw/DataAccess/tests/data/TypePromotion/tP-0#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK
+ WHERE { t:unsignedShort1 rdf:value ?l .
+         t:short1 rdf:value ?r .
+         FILTER ( datatype(?l + ?r) = xsd:integer ) }
+>> OK
+
+<<SELECT ?title
+WHERE
+{
+  <http://example.org/book/book1> <http://purl.org/dc/elements/1.1/title> ?title .
+}>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE
+  { ?x foaf:name ?name .
+    ?x foaf:mbox ?mbox }>> OK
+
+<<SELECT ?v WHERE { ?v ?p "cat" }>> OK
+
+<<SELECT ?v WHERE { ?v ?p 42 }>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+SELECT ?x ?name
+WHERE  { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+SELECT ( fn:concat(?G, " ", ?S) AS ?name )
+WHERE  { ?P foaf:givenName ?G ; foaf:surname ?S }>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX org:    <http://example.com/ns#>
+
+CONSTRUCT { ?x foaf:name ?name }
+WHERE  { ?x org:employeeName ?name }>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+SELECT  ?title
+WHERE   { ?x dc:title ?title
+          FILTER regex(?title, "^SPARQL") 
+        }>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+SELECT  ?title
+WHERE   { ?x dc:title ?title
+          FILTER regex(?title, "web", "i" ) 
+        }>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE   { ?x ns:price ?price .
+          FILTER (?price < 30.5)
+          ?x dc:title ?title . }>> OK
+
+<<PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+SELECT  ?title
+WHERE   { <http://example.org/book/book1> dc:title ?title }>> OK
+
+<<PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX  : <http://example.org/book/>
+
+SELECT  $title
+WHERE   { :book1  dc:title  $title }>> OK
+
+<<BASE    <http://example.org/book/>
+PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+
+SELECT  $title
+WHERE   { <book1>  dc:title  ?title }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE  {
+          ?x foaf:name ?name .
+          ?x foaf:mbox ?mbox .
+       }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE  { { ?x foaf:name ?name . }
+         { ?x foaf:mbox ?mbox . }
+       }>> OK
+
+<<SELECT ?x
+WHERE {}>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE  { ?x foaf:name  ?name .
+         OPTIONAL { ?x  foaf:mbox  ?mbox }
+       }>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE   { ?x dc:title ?title .
+          OPTIONAL { ?x ns:price ?price . FILTER (?price < 30) }
+        }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox ?hpage
+WHERE  { ?x foaf:name  ?name .
+         OPTIONAL { ?x foaf:mbox ?mbox } .
+         OPTIONAL { ?x foaf:homepage ?hpage }
+       }>> OK
+
+<<PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
+PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
+
+SELECT ?title
+WHERE  { { ?book dc10:title  ?title } UNION { ?book dc11:title  ?title } }>> OK
+
+<<PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
+PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
+
+SELECT ?x ?y
+WHERE  { { ?book dc10:title ?x } UNION { ?book dc11:title  ?y } }>> OK
+
+<<PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
+PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
+
+SELECT ?title ?author
+WHERE  { { ?book dc10:title ?title .  ?book dc10:creator ?author }
+         UNION
+         { ?book dc11:title ?title .  ?book dc11:creator ?author }
+       }>> OK
+
+<<PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+
+SELECT ?person
+WHERE 
+{
+    ?person rdf:type  foaf:Person .
+    FILTER NOT EXISTS { ?person foaf:name ?name }
+}>> OK
+
+<<PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+
+SELECT ?person
+WHERE 
+{
+    ?person rdf:type  foaf:Person .
+    FILTER EXISTS { ?person foaf:name ?name }
+}>> OK
+
+<<PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?s
+WHERE {
+   ?s ?p ?o .
+   MINUS {
+      ?s foaf:givenName "Bob" .
+   }
+}>> OK
+
+<<SELECT * { ?s ?p ?o FILTER NOT EXISTS { ?x ?y ?z } }>> OK
+
+<<SELECT * { ?s ?p ?o MINUS { ?x ?y ?z } }>> OK
+
+<<PREFIX : <http://example/>
+SELECT * 
+{ 
+  ?s ?p ?o 
+  FILTER NOT EXISTS { :a :b :c }
+}>> OK
+
+<<PREFIX : <http://example/>
+SELECT * 
+{ 
+  ?s ?p ?o 
+  MINUS { :a :b :c }
+}>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT  ?name
+FROM    <http://example.org/foaf/aliceFoaf>
+WHERE   { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+SELECT ?who ?g ?mbox
+FROM <http://example.org/dft.ttl>
+FROM NAMED <http://example.org/alice>
+FROM NAMED <http://example.org/bob>
+WHERE
+{
+   ?g dc:publisher ?who .
+   GRAPH ?g { ?x foaf:mbox ?mbox }
+}>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT ?src ?bobNick
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+  {
+    GRAPH ?src
+    { ?x foaf:mbox <mailto:bob@work.example> .
+      ?x foaf:nick ?bobNick
+    }
+  }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX data: <http://example.org/foaf/>
+
+SELECT ?nick
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+  {
+     GRAPH data:bobFoaf {
+         ?x foaf:mbox <mailto:bob@work.example> .
+         ?x foaf:nick ?nick }
+  }>> OK
+
+<<PREFIX  data:  <http://example.org/foaf/>
+PREFIX  foaf:  <http://xmlns.com/foaf/0.1/>
+PREFIX  rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?mbox ?nick ?ppd
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+{
+  GRAPH data:aliceFoaf
+  {
+    ?alice foaf:mbox <mailto:alice@work.example> ;
+           foaf:knows ?whom .
+    ?whom  foaf:mbox ?mbox ;
+           rdfs:seeAlso ?ppd .
+    ?ppd  a foaf:PersonalProfileDocument .
+  } .
+  GRAPH ?ppd
+  {
+      ?w foaf:mbox ?mbox ;
+         foaf:nick ?nick
+  }
+}>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+
+SELECT ?name ?mbox ?date
+WHERE
+  {  ?g dc:publisher ?name ;
+        dc:date ?date .
+    GRAPH ?g
+      { ?person foaf:name ?name ; foaf:mbox ?mbox }
+  }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+ORDER BY ?name>> OK
+
+<<PREFIX     :    <http://example.org/ns#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name ; :empId ?emp }
+ORDER BY DESC(?emp)>> OK
+
+<<PREFIX     :    <http://example.org/ns#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name ; :empId ?emp }
+ORDER BY ?name DESC(?emp)>> OK
+
+<<PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+WHERE
+ { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name WHERE { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT DISTINCT ?name WHERE { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT REDUCED ?name WHERE { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT  ?name
+WHERE   { ?x foaf:name ?name }
+ORDER BY ?name
+LIMIT   5
+OFFSET  10>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+LIMIT 20>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?nameX ?nameY ?nickY
+WHERE
+  { ?x foaf:knows ?y ;
+       foaf:name ?nameX .
+    ?y foaf:name ?nameY .
+    OPTIONAL { ?y foaf:nick ?nickY }
+  }>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title (?p*(1-?discount) AS ?price)
+   { ?x ns:price ?p .
+     ?x dc:title ?title . 
+     ?x ns:discount ?discount 
+   }>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title (?p AS ?fullPrice) (?fullPrice*(1-?discount) AS ?customerPrice)
+   { ?x ns:price ?p .
+     ?x dc:title ?title . 
+     ?x ns:discount ?discount 
+   }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+CONSTRUCT   { <http://example.org/person#Alice> vcard:FN ?name }
+WHERE       { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+
+CONSTRUCT { ?x  vcard:N _:v .
+            _:v vcard:givenName ?gname .
+            _:v vcard:familyName ?fname }
+WHERE
+ {
+    { ?x foaf:firstname ?gname } UNION  { ?x foaf:givenname   ?gname } .
+    { ?x foaf:surname   ?fname } UNION  { ?x foaf:family_name ?fname } .
+ }>> OK
+
+<<PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX app: <http://example.org/ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT { ?s ?p ?o } WHERE
+ {
+   GRAPH ?g { ?s ?p ?o } .
+   { ?g dc:publisher <http://www.w3.org/> } .
+   { ?g dc:date ?date } .
+   FILTER ( app:customDate(?date) > "2005-02-28T00:00:00Z"^^xsd:dateTime ) .
+ }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX site: <http://example.org/stats#>
+
+CONSTRUCT { [] foaf:name ?name }
+WHERE
+{ [] foaf:name ?name ;
+     site:hits ?hits .
+}
+ORDER BY desc(?hits)
+LIMIT 2>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" ;
+          foaf:mbox  <mailto:alice@work.example> }>> OK
+
+<<DESCRIBE <http://example.org/> >> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x
+WHERE    { ?x foaf:mbox <mailto:alice@org> }>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x
+WHERE    { ?x foaf:name "Alice" }>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x ?y <http://example.org/>
+WHERE    {?x foaf:knows ?y}>> OK
+
+<<PREFIX ent:  <http://org.example.com/employees#>
+DESCRIBE ?x WHERE { ?x ent:employeeId "1234" }>> OK
+
+<<PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?annot
+WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+        ?annot  dc:date      ?date .
+        FILTER ( ?date > "2005-01-01T00:00:00Z"^^xsd:dateTime ) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+SELECT ?givenName
+ WHERE { ?x foaf:givenName  ?givenName .
+         OPTIONAL { ?x dc:date ?date } .
+         FILTER ( bound(?date) ) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+SELECT ?name
+ WHERE { ?x foaf:givenName  ?name .
+         OPTIONAL { ?x dc:date ?date } .
+         FILTER (!bound(?date)) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER isIRI(?mbox) }>> OK
+
+<<PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT ?given ?family
+ WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+         ?annot  dc:creator   ?c .
+         OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .
+         FILTER isBlank(?c)
+       }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+           foaf:mbox  ?mbox .
+         FILTER isLiteral(?mbox) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER regex(str(?mbox), "@work.example") }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER ( lang(?name) = "ES" ) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX eg:   <http://biometrics.example/ns#>
+SELECT ?name ?shoeSize
+ WHERE { ?x foaf:name  ?name ; eg:shoeSize  ?shoeSize .
+         FILTER ( datatype(?shoeSize) = xsd:integer ) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name1 ?name2
+ WHERE { ?x foaf:name  ?name1 ;
+            foaf:mbox  ?mbox1 .
+         ?y foaf:name  ?name2 ;
+            foaf:mbox  ?mbox2 .
+         FILTER (?mbox1 = ?mbox2 && ?name1 != ?name2)
+       }>> OK
+
+<<PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?annotates
+WHERE { ?annot  a:annotates  ?annotates .
+        ?annot  dc:date      ?date .
+        FILTER ( ?date = xsd:dateTime("2005-01-01T00:00:00Z") ) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name1 ?name2
+ WHERE { ?x foaf:name  ?name1 ;
+            foaf:mbox  ?mbox1 .
+         ?y foaf:name  ?name2 ;
+            foaf:mbox  ?mbox2 .
+         FILTER (sameTerm(?mbox1, ?mbox2) && !sameTerm(?name1, ?name2))
+       }>> OK
+
+<<PREFIX  :      <http://example.org/WMterms#>
+PREFIX  t:     <http://example.org/types#>
+
+SELECT ?aLabel1 ?bLabel
+WHERE { ?a  :label        ?aLabel .
+        ?a  :weight       ?aWeight .
+        ?a  :displacement ?aDisp .
+
+        ?b  :label        ?bLabel .
+        ?b  :weight       ?bWeight .
+        ?b  :displacement ?bDisp .
+
+        FILTER ( sameTerm(?aWeight, ?bWeight) && !sameTerm(?aDisp, ?bDisp)) }>> OK
+
+<<PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?title
+ WHERE { ?x dc:title  "That Seventies Show"@en ;
+            dc:title  ?title .
+         FILTER langMatches( lang(?title), "FR" ) }>> OK
+
+<<PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?title
+ WHERE { ?x dc:title  ?title .
+         FILTER langMatches( lang(?title), "*" ) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+ WHERE { ?x foaf:name  ?name
+         FILTER regex(?name, "^ali", "i") }>> OK
+
+<<PREFIX aGeo: <http://example.org/geo#>
+
+SELECT ?neighbor
+WHERE { ?a aGeo:placeName "Grenoble" .
+        ?a aGeo:location ?axLoc .
+        ?a aGeo:location ?ayLoc .
+
+        ?b aGeo:placeName ?neighbor .
+        ?b aGeo:location ?bxLoc .
+        ?b aGeo:location ?byLoc .
+
+        FILTER ( aGeo:distance(?axLoc, ?ayLoc, ?bxLoc, ?byLoc) < 10 ) .
+      }>> OK
+
+<<PREFIX person: <http://localhost/persons/>
+
+SELECT ?subject ?predicate
+WHERE {
+  ?subject ?predicate person:Paul_Erdoes
+}
+>> OK
+
+<<PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?ee
+WHERE {
+  ?publication rdfs:seeAlso ?ee
+}
+ORDER BY ?ee
+LIMIT 10
+OFFSET 50
+>> OK
+
+<<PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf:  <http://xmlns.com/foaf/0.1/>
+PREFIX bench: <http://localhost/vocabulary/bench/>
+PREFIX dc:    <http://purl.org/dc/elements/1.1/>
+
+ASK {
+  ?article rdf:type bench:Article .
+  ?article dc:creator ?person1 .
+  ?inproc  rdf:type bench:Inproceedings .
+  ?inproc  dc:creator ?person2 .
+  ?person1 foaf:name ?name1 .
+  ?person2 foaf:name ?name2
+  FILTER (?name1=?name2)
+}
+>> OK
+
+<<PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#> 
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+
+ASK {
+  ?erdoes rdf:type foaf:Person .
+  ?erdoes foaf:name "Paul Erdoes"^^xsd:string .
+  {
+    ?document dc:creator ?erdoes .
+    ?document dc:creator ?author .
+    ?document2 dc:creator ?author .
+    ?document2 dc:creator ?author2 .
+    ?author2 foaf:name ?name
+    FILTER (?author!=?erdoes &&
+            ?document2!=?document &&
+            ?author2!=?erdoes &&
+            ?author2!=?author)
+  } UNION {
+    ?document dc:creator ?erdoes .
+    ?document dc:creator ?author .
+    ?author foaf:name ?name 
+    FILTER (?author!=?erdoes)
+  }
+}
+>> OK
+
+<<PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX person: <http://localhost/persons/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+ASK {
+  person:John_Q_Public rdf:type foaf:Person.
+}
+>> OK
+
+<<PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX swrc:    <http://swrc.ontoware.org/ontology#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX bench:   <http://localhost/vocabulary/bench/>
+PREFIX dc:      <http://purl.org/dc/elements/1.1/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?inproc ?author ?booktitle ?title 
+       ?proc ?ee ?page ?url ?yr ?abstract
+WHERE {
+  ?inproc rdf:type bench:Inproceedings .
+  ?inproc dc:creator ?author .
+  ?inproc bench:booktitle ?booktitle .
+  ?inproc dc:title ?title .
+  ?inproc dcterms:partOf ?proc .
+  ?inproc rdfs:seeAlso ?ee .
+  ?inproc swrc:pages ?page .
+  ?inproc foaf:homepage ?url .
+  ?inproc dcterms:issued ?yr 
+  OPTIONAL {
+    ?inproc bench:abstract ?abstract
+  }
+}
+ORDER BY ?yr
+>> OK
+
+<<PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX bench: <http://localhost/vocabulary/bench/>
+PREFIX swrc:  <http://swrc.ontoware.org/ontology#>
+
+SELECT ?article
+WHERE {
+  ?article rdf:type bench:Article .
+  ?article ?property ?value 
+  FILTER (?property=swrc:pages) 
+}
+>> OK
+
+<<PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX bench: <http://localhost/vocabulary/bench/>
+PREFIX swrc:  <http://swrc.ontoware.org/ontology#>
+
+SELECT ?article
+WHERE {
+  ?article rdf:type bench:Article .
+  ?article ?property ?value
+  FILTER (?property=swrc:month)
+}
+>> OK
+
+<<PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX swrc:  <http://swrc.ontoware.org/ontology#>
+PREFIX bench: <http://localhost/vocabulary/bench/>
+
+SELECT ?article
+WHERE {
+  ?article rdf:type bench:Article .
+  ?article ?property ?value
+  FILTER (?property=swrc:isbn)
+}
+>> OK
+
+<<PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX bench:   <http://localhost/vocabulary/bench/>
+PREFIX dc:      <http://purl.org/dc/elements/1.1/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX swrc:    <http://swrc.ontoware.org/ontology#>
+
+SELECT DISTINCT ?name1 ?name2 
+WHERE {
+  ?article1 rdf:type bench:Article .
+  ?article2 rdf:type bench:Article .
+  ?article1 dc:creator ?author1 .
+  ?author1 foaf:name ?name1 .
+  ?article2 dc:creator ?author2 .
+  ?author2 foaf:name ?name2 .
+  ?article1 swrc:journal ?journal .
+  ?article2 swrc:journal ?journal
+  FILTER (?name1<?name2)
+}
+>> OK
+
+<<PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf:  <http://xmlns.com/foaf/0.1/>
+PREFIX bench: <http://localhost/vocabulary/bench/>
+PREFIX dc:    <http://purl.org/dc/elements/1.1/>
+
+SELECT DISTINCT ?person ?name
+WHERE {
+  ?article rdf:type bench:Article .
+  ?article dc:creator ?person .
+  ?inproc rdf:type bench:Inproceedings .
+  ?inproc dc:creator ?person2 .
+  ?person foaf:name ?name .
+  ?person2 foaf:name ?name2
+  FILTER (?name=?name2)
+}
+>> OK
+
+<<PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf:  <http://xmlns.com/foaf/0.1/>
+PREFIX bench: <http://localhost/vocabulary/bench/>
+PREFIX dc:    <http://purl.org/dc/elements/1.1/>
+
+SELECT DISTINCT ?person ?name
+WHERE {
+  ?article rdf:type bench:Article .
+  ?article dc:creator ?person .
+  ?inproc rdf:type bench:Inproceedings .
+  ?inproc dc:creator ?person .
+  ?person foaf:name ?name
+}
+>> OK
+
+<<PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX dc:      <http://purl.org/dc/elements/1.1/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?yr ?name ?document
+WHERE {
+  ?class rdfs:subClassOf foaf:Document .
+  ?document rdf:type ?class .
+  ?document dcterms:issued ?yr .
+  ?document dc:creator ?author .
+  ?author foaf:name ?name
+  OPTIONAL {
+    ?class2 rdfs:subClassOf foaf:Document .
+    ?document2 rdf:type ?class2 .
+    ?document2 dcterms:issued ?yr2 .
+    ?document2 dc:creator ?author2 
+    FILTER (?author=?author2 && ?yr2<?yr)
+  } FILTER (!bound(?author2))
+}
+>> OK
+
+<<PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX dc:      <http://purl.org/dc/elements/1.1/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT DISTINCT ?title
+WHERE {
+  ?class rdfs:subClassOf foaf:Document .
+  ?doc rdf:type ?class .
+  ?doc dc:title ?title .
+  ?bag2 ?member2 ?doc .
+  ?doc2 dcterms:references ?bag2
+  OPTIONAL {
+    ?class3 rdfs:subClassOf foaf:Document .
+    ?doc3 rdf:type ?class3 .
+    ?doc3 dcterms:references ?bag3 .
+    ?bag3 ?member3 ?doc
+    OPTIONAL {
+      ?class4 rdfs:subClassOf foaf:Document .
+      ?doc4 rdf:type ?class4 .
+      ?doc4 dcterms:references ?bag4 .
+      ?bag4 ?member4 ?doc3
+    } FILTER (!bound(?doc4))
+  } FILTER (!bound(?doc3))
+}
+>> OK
+
+<<PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#> 
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+
+SELECT DISTINCT ?name
+WHERE {
+  ?erdoes rdf:type foaf:Person .
+  ?erdoes foaf:name "Paul Erdoes"^^xsd:string .
+  {
+    ?document dc:creator ?erdoes .
+    ?document dc:creator ?author .
+    ?document2 dc:creator ?author .
+    ?document2 dc:creator ?author2 .
+    ?author2 foaf:name ?name
+    FILTER (?author!=?erdoes &&
+            ?document2!=?document &&
+            ?author2!=?erdoes &&
+            ?author2!=?author)
+  } UNION {
+    ?document dc:creator ?erdoes.
+    ?document dc:creator ?author.
+    ?author foaf:name ?name
+    FILTER (?author!=?erdoes)
+  }
+}
+>> OK
+
+<<PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?predicate
+WHERE {
+  {
+    ?person rdf:type foaf:Person .
+    ?subject ?predicate ?person
+  } UNION {
+    ?person rdf:type foaf:Person .
+    ?person ?predicate ?object
+  }
+}
+>> OK
+
+<<PREFIX dc: <http://purl.org/dc/elements/1.1/>
+INSERT DATA
+{ <http://example/book3> dc:title    "A new book" ;
+                         dc:creator  "A.N.Other" .
+}
+>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+SELECT ( CONCAT(?G, " ", ?S) AS ?name )
+WHERE  { ?P foaf:givenName ?G ; foaf:surname ?S }>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+WHERE  { 
+   ?P foaf:givenName ?G ; 
+      foaf:surname ?S 
+   BIND(CONCAT(?G, " ", ?S) AS ?name)
+}>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+SELECT  ?title
+WHERE   { ?x dc:title ?title
+          FILTER regex(?title, "^SPARQL") 
+        }>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE   { ?x ns:price ?price .
+          FILTER (?price < 30.5)
+          ?x dc:title ?title . }>> OK
+          
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE  { { ?x foaf:name ?name . }
+         { ?x foaf:mbox ?mbox . }
+       }>> OK
+       
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title ?price
+WHERE   { ?x dc:title ?title .
+          OPTIONAL { ?x ns:price ?price . FILTER (?price < 30) }
+        }>> OK
+        
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox ?hpage
+WHERE  { ?x foaf:name  ?name .
+         OPTIONAL { ?x foaf:mbox ?mbox } .
+         OPTIONAL { ?x foaf:homepage ?hpage }
+       }>> OK
+
+<<PREFIX dc10:  <http://purl.org/dc/elements/1.0/>
+PREFIX dc11:  <http://purl.org/dc/elements/1.1/>
+
+SELECT ?title
+WHERE  { { ?book dc10:title  ?title } UNION { ?book dc11:title  ?title } }>> OK
+
+<<PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+
+SELECT ?person
+WHERE 
+{
+    ?person rdf:type  foaf:Person .
+    FILTER NOT EXISTS { ?person foaf:name ?name }
+}>> OK
+
+<<PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+
+SELECT ?person
+WHERE 
+{
+    ?person rdf:type  foaf:Person .
+    FILTER EXISTS { ?person foaf:name ?name }
+}>> OK
+
+<<PREFIX :       <http://example/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT DISTINCT ?s
+WHERE {
+   ?s ?p ?o .
+   MINUS {
+      ?s foaf:givenName "Bob" .
+   }
+}>> OK
+
+<<SELECT *
+{ 
+  ?s ?p ?o
+  FILTER NOT EXISTS { ?x ?y ?z }
+}>> OK
+
+<<SELECT *
+{ 
+   ?s ?p ?o 
+   MINUS 
+     { ?x ?y ?z }
+}>> OK
+
+<<PREFIX : <http://example/>
+SELECT * 
+{ 
+  ?s ?p ?o 
+  FILTER NOT EXISTS { :a :b :c }
+}>> OK
+
+<<PREFIX : <http://example/>
+SELECT * 
+{ 
+  ?s ?p ?o 
+  MINUS { :a :b :c }
+}>> OK
+
+<<PREFIX : <http://example.com/>
+SELECT * WHERE {
+        ?a :p ?n
+        FILTER NOT EXISTS {
+                ?a :q ?m .
+                FILTER(?n = ?m)
+        }
+}>> OK
+
+<<PREFIX : <http://example/>
+SELECT * WHERE {
+        ?x :p ?n
+        MINUS {
+                ?x :q ?m .
+                FILTER(?n = ?m)
+        }
+}>> OK
+
+<<PREFIX :   <http://example/>
+SELECT * 
+{  ?s :p/:q ?o . }>> OK
+
+<<PREFIX :   <http://example/>
+SELECT * 
+{ :x :p+ ?o }>> OK
+
+<<PREFIX :   <http://example/>
+SELECT * 
+{  
+   { :x :p{0} ?o } UNION { :x :p+ ?o } 
+}>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+
+SELECT  ?title ?price
+{  ?x ns:price ?p .
+   ?x ns:discount ?discount
+   BIND (?p*(1-?discount) AS ?price)
+   FILTER(?price < 20)
+   ?x dc:title ?title . 
+}>> OK
+
+<<PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
+PREFIX :     <http://example.org/book/> 
+PREFIX ns:   <http://example.org/ns#> 
+
+SELECT ?book ?title ?price
+{
+   ?book dc:title ?title ;
+         ns:price ?price .
+}
+BINDINGS ?book {
+ (:book1)
+}>> OK
+
+<<PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
+PREFIX :     <http://example.org/book/> 
+PREFIX ns:   <http://example.org/ns#> 
+
+SELECT ?book ?title ?price
+{
+   ?book dc:title ?title ;
+         ns:price ?price .
+}
+BINDINGS ?book ?title {
+ (UNDEF "SPARQL Tutorial")
+ (:book2 UNDEF)
+}>> OK
+
+<<PREFIX : <http://books.example/>
+SELECT (SUM(?lprice) AS ?totalPrice)
+WHERE {
+  ?org :affiliates ?auth .
+  ?auth :writesBook ?book .
+  ?book :price ?lprice .
+}
+GROUP BY ?org
+HAVING (SUM(?lprice) > 10)>> OK
+
+<<SELECT (AVG(?y) AS ?avg)
+WHERE {
+  ?a :x ?x ;
+     :y ?y .
+}
+GROUP BY ?x>> OK
+
+<<PREFIX : <http://data.example/>
+SELECT (AVG(?size) AS ?asize)
+WHERE {
+  ?x :size ?size
+}
+GROUP BY ?x
+HAVING(AVG(?size) > 10)>> OK
+
+<<PREFIX : <http://example.com/data/#>
+SELECT ?g (AVG(?p) AS ?avg) ((MIN(?p) + MAX(?p)) / 2 AS ?c)
+WHERE {
+  ?g :p ?p .
+}
+GROUP BY ?g>> OK
+
+<<PREFIX : <http://people.example/>
+PREFIX : <http://people.example/>
+SELECT ?y ?minName
+WHERE {
+  :alice :knows ?y .
+  {
+    SELECT ?y (MIN(?name) AS ?minName)
+    WHERE {
+      ?y :name ?name .
+    } GROUP BY ?y
+  }
+}>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT  ?name
+FROM    <http://example.org/foaf/aliceFoaf>
+WHERE   { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+SELECT ?who ?g ?mbox
+FROM <http://example.org/dft.ttl>
+FROM NAMED <http://example.org/alice>
+FROM NAMED <http://example.org/bob>
+WHERE
+{
+   ?g dc:publisher ?who .
+   GRAPH ?g { ?x foaf:mbox ?mbox }
+}>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT ?src ?bobNick
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+  {
+    GRAPH ?src
+    { ?x foaf:mbox <mailto:bob@work.example> .
+      ?x foaf:nick ?bobNick
+    }
+  }>> OK
+  
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX data: <http://example.org/foaf/>
+
+SELECT ?nick
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+  {
+     GRAPH data:bobFoaf {
+         ?x foaf:mbox <mailto:bob@work.example> .
+         ?x foaf:nick ?nick }
+  }>> OK
+  
+<<PREFIX  data:  <http://example.org/foaf/>
+PREFIX  foaf:  <http://xmlns.com/foaf/0.1/>
+PREFIX  rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?mbox ?nick ?ppd
+FROM NAMED <http://example.org/foaf/aliceFoaf>
+FROM NAMED <http://example.org/foaf/bobFoaf>
+WHERE
+{
+  GRAPH data:aliceFoaf
+  {
+    ?alice foaf:mbox <mailto:alice@work.example> ;
+           foaf:knows ?whom .
+    ?whom  foaf:mbox ?mbox ;
+           rdfs:seeAlso ?ppd .
+    ?ppd  a foaf:PersonalProfileDocument .
+  } .
+  GRAPH ?ppd
+  {
+      ?w foaf:mbox ?mbox ;
+         foaf:nick ?nick
+  }
+}>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+
+SELECT ?name ?mbox ?date
+WHERE
+  {  ?g dc:publisher ?name ;
+        dc:date ?date .
+    GRAPH ?g
+      { ?person foaf:name ?name ; foaf:mbox ?mbox }
+  }>> OK
+  
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+ORDER BY ?name>> OK
+
+<<PREFIX     :    <http://example.org/ns#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name ; :empId ?emp }
+ORDER BY DESC(?emp)>> OK
+
+<<PREFIX     :    <http://example.org/ns#>
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name ; :empId ?emp }
+ORDER BY ?name DESC(?emp)>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT DISTINCT ?name WHERE { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT REDUCED ?name WHERE { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT  ?name
+WHERE   { ?x foaf:name ?name }
+ORDER BY ?name
+LIMIT   5
+OFFSET  10>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+
+SELECT ?name
+WHERE { ?x foaf:name ?name }
+LIMIT 20>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?nameX ?nameY ?nickY
+WHERE
+  { ?x foaf:knows ?y ;
+       foaf:name ?nameX .
+    ?y foaf:name ?nameY .
+    OPTIONAL { ?y foaf:nick ?nickY }
+  }>> OK
+  
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title (?p*(1-?discount) AS ?price)
+{ ?x ns:price ?p .
+  ?x dc:title ?title . 
+  ?x ns:discount ?discount 
+}>> OK
+
+<<PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+PREFIX  ns:  <http://example.org/ns#>
+SELECT  ?title (?p AS ?fullPrice) (?fullPrice*(1-?discount) AS ?customerPrice)
+{ ?x ns:price ?p .
+   ?x dc:title ?title . 
+   ?x ns:discount ?discount 
+}>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+CONSTRUCT   { <http://example.org/person#Alice> vcard:FN ?name }
+WHERE       { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+
+CONSTRUCT { ?x  vcard:N _:v .
+            _:v vcard:givenName ?gname .
+            _:v vcard:familyName ?fname }
+WHERE
+ {
+    { ?x foaf:firstname ?gname } UNION  { ?x foaf:givenname   ?gname } .
+    { ?x foaf:surname   ?fname } UNION  { ?x foaf:family_name ?fname } .
+ }>> OK
+ 
+<<PREFIX  dc: <http://purl.org/dc/elements/1.1/>
+PREFIX app: <http://example.org/ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT { ?s ?p ?o } WHERE
+ {
+   GRAPH ?g { ?s ?p ?o } .
+   ?g dc:publisher <http://www.w3.org/> .
+   ?g dc:date ?date .
+   FILTER ( app:customDate(?date) > "2005-02-28T00:00:00Z"^^xsd:dateTime ) .
+ }>> OK
+ 
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX site: <http://example.org/stats#>
+
+CONSTRUCT { [] foaf:name ?name }
+WHERE
+{ [] foaf:name ?name ;
+     site:hits ?hits .
+}
+ORDER BY desc(?hits)
+LIMIT 2>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+CONSTRUCT WHERE { ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+CONSTRUCT { ?x foaf:name ?name } 
+WHERE
+{ ?x foaf:name ?name }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" }>> OK
+
+<<PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+ASK  { ?x foaf:name  "Alice" ;
+          foaf:mbox  <mailto:alice@work.example> }>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x
+WHERE    { ?x foaf:mbox <mailto:alice@org> }>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x
+WHERE    { ?x foaf:name "Alice" }>> OK
+
+<<PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+DESCRIBE ?x ?y <http://example.org/>
+WHERE    {?x foaf:knows ?y}>> OK
+
+<<PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?annot
+WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+        ?annot  dc:date      ?date .
+        FILTER ( ?date > "2005-01-01T00:00:00Z"^^xsd:dateTime ) }>> OK
+        
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+SELECT ?givenName
+ WHERE { ?x foaf:givenName  ?givenName .
+         OPTIONAL { ?x dc:date ?date } .
+         FILTER ( bound(?date) ) }>> OK
+         
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+SELECT ?name
+ WHERE { ?x foaf:givenName  ?name .
+         OPTIONAL { ?x dc:date ?date } .
+         FILTER (!bound(?date)) }>> OK
+         
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name1 ?name2
+WHERE { ?x foaf:name  ?name1 ;
+        foaf:mbox  ?mbox1 .
+        ?y foaf:name  ?name2 ;
+        foaf:mbox  ?mbox2 .
+        FILTER (?mbox1 = ?mbox2 && ?name1 != ?name2)
+      }>> OK
+      
+<<PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?annotates
+WHERE { ?annot  a:annotates  ?annotates .
+        ?annot  dc:date      ?date .
+        FILTER ( ?date = xsd:dateTime("2005-01-01T00:00:00Z") ) 
+      }>> OK
+      
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name1 ?name2
+WHERE { ?x foaf:name  ?name1 ;
+        foaf:mbox  ?mbox1 .
+         ?y foaf:name  ?name2 ;
+         foaf:mbox  ?mbox2 .
+         FILTER (sameTerm(?mbox1, ?mbox2) && !sameTerm(?name1, ?name2))
+      }>> OK
+      
+<<PREFIX  :      <http://example.org/WMterms#>
+PREFIX  t:     <http://example.org/types#>
+
+SELECT ?aLabel1 ?bLabel
+WHERE { ?a  :label        ?aLabel .
+        ?a  :weight       ?aWeight .
+        ?a  :displacement ?aDisp .
+
+        ?b  :label        ?bLabel .
+        ?b  :weight       ?bWeight .
+        ?b  :displacement ?bDisp .
+
+        FILTER ( sameTerm(?aWeight, ?bWeight) && !sameTerm(?aDisp, ?bDisp)) }>> OK
+        
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER isIRI(?mbox) }>> OK
+         
+<<PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+SELECT ?given ?family
+WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+  ?annot  dc:creator   ?c .
+  OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .
+  FILTER isBlank(?c)
+}>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+WHERE { ?x foaf:name  ?name ;
+        foaf:mbox  ?mbox .
+        FILTER isLiteral(?mbox) }>> OK
+        
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER regex(str(?mbox), "@work.example") }>> OK
+         
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER ( lang(?name) = "ES" ) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX eg:   <http://biometrics.example/ns#>
+SELECT ?name ?shoeSize
+ WHERE { ?x foaf:name  ?name ; eg:shoeSize  ?shoeSize .
+         FILTER ( datatype(?shoeSize) = xsd:integer ) }>> OK
+
+<<PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?title
+ WHERE { ?x dc:title  "That Seventies Show"@en ;
+            dc:title  ?title .
+         FILTER langMatches( lang(?title), "FR" ) }>> OK
+
+<<PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?title
+ WHERE { ?x dc:title  ?title .
+         FILTER langMatches( lang(?title), "*" ) }>> OK
+
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name
+ WHERE { ?x foaf:name  ?name
+         FILTER regex(?name, "^ali", "i") }>> OK
+         
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX func: <http://example.org/functions#>
+SELECT ?name ?id
+WHERE { ?x foaf:name  ?name ;
+           func:empId   ?id .
+        FILTER (func:even(?id)) } >> OK
+        
+
+/* testsuite sparql11 */
+
+/* +++ Testset aggegrates +++ */
+
+// agg-avg-01.rq 
+<<PREFIX : <http://www.example.org/>
+SELECT (AVG(?o) AS ?avg)
+WHERE {
+	?s :dec ?o
+}
+>> OK
+// agg-avg-02.rq 
+<<PREFIX : <http://www.example.org/>
+SELECT ?s (AVG(?o) AS ?avg)
+WHERE {
+	?s ?p ?o
+}
+GROUP BY ?s
+HAVING (AVG(?o) <= 2.0)
+>> OK
+// agg-err-01.rq 
+<<PREFIX : <http://example.com/data/#>
+SELECT ?g (AVG(?p) AS ?avg) ((MIN(?p) + MAX(?p)) / 2 AS ?c)
+WHERE {
+  ?g :p ?p .
+}
+GROUP BY ?g
+>> OK
+// agg-err-02.rq 
+<<PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX : <http://example.com/data/#>
+SELECT ?g 
+(AVG(IF(isNumeric(?p), ?p, COALESCE(xsd:double(?p),0))) AS ?avg) 
+WHERE {
+  ?g :p ?p .
+}
+GROUP BY ?g
+>> OK
+// agg-groupconcat-1.rq 
+<<PREFIX : <http://www.example.org/>
+ASK {
+	{SELECT (GROUP_CONCAT(?o) AS ?g) WHERE {
+		[] :p1 ?o
+	}}
+	FILTER(?g = "1 22" || ?g = "22 1")
+}
+>> OK
+// agg-groupconcat-2.rq 
+<<PREFIX : <http://www.example.org/>
+SELECT (COUNT(*) AS ?c) {
+	{SELECT ?p (GROUP_CONCAT(?o) AS ?g) WHERE {
+		[] ?p ?o
+	} GROUP BY ?p}
+	FILTER(
+		(?p = :p1 && (?g = "1 22" || ?g = "22 1"))
+		|| (?p = :p2 && (?g = "aaa bb c" || ?g = "aaa c bb" || ?g = "bb aaa c" || ?g = "bb c aaa" || ?g = "c aaa bb" || ?g = "c bb aaa"))
+	)
+}
+>> OK
+// agg-groupconcat-3.rq 
+<<PREFIX : <http://www.example.org/>
+ASK {
+	{SELECT (GROUP_CONCAT(?o;SEPARATOR=":") AS ?g) WHERE {
+		[] :p1 ?o
+	}}
+	FILTER(?g = "1:22" || ?g = "22:1")
+}
+>> OK
+// agg-max-01.rq 
+<<PREFIX : <http://www.example.org/>
+SELECT (MAX(?o) AS ?max)
+WHERE {
+	?s ?p ?o
+}
+>> OK
+// agg-max-02.rq 
+<<PREFIX : <http://www.example.org/>
+SELECT ?s (MAX(?o) AS ?max)
+WHERE {
+	?s ?p ?o
+}
+GROUP BY ?s
+>> OK
+// agg-min-01.rq 
+<<PREFIX : <http://www.example.org/>
+SELECT (MIN(?o) AS ?min)
+WHERE {
+	?s :dec ?o
+}
+>> OK
+// agg-min-02.rq 
+<<PREFIX : <http://www.example.org/>
+SELECT ?s (MIN(?o) AS ?min)
+WHERE {
+	?s ?p ?o
+}
+GROUP BY ?s
+>> OK
+// agg-sample-01.rq 
+<<PREFIX : <http://www.example.org/>
+ASK {
+	{
+		SELECT (SAMPLE(?o) AS ?sample)
+		WHERE {
+			?s :dec ?o
+		}
+	}
+	FILTER(?sample = 1.0 || ?sample = 2.2 || ?sample = 3.5)
+}
+>> OK
+// agg-sum-01.rq 
+<<PREFIX : <http://www.example.org/>
+SELECT (SUM(?o) AS ?sum)
+WHERE {
+	?s :dec ?o
+}
+>> OK
+// agg-sum-02.rq 
+<<PREFIX : <http://www.example.org/>
+SELECT ?s (SUM(?o) AS ?sum)
+WHERE {
+	?s ?p ?o
+}
+GROUP BY ?s
+>> OK
+// agg01.rq 
+<<PREFIX : <http://www.example.org>
+
+SELECT (COUNT(?O) AS ?C)
+WHERE { ?S ?P ?O }
+>> OK
+// agg02.rq 
+<<PREFIX : <http://www.example.org>
+
+SELECT ?P (COUNT(?O) AS ?C)
+WHERE { ?S ?P ?O }
+GROUP BY ?P
+>> OK
+// agg03.rq 
+<<PREFIX : <http://www.example.org>
+
+SELECT ?P (COUNT(?O) AS ?C)
+WHERE { ?S ?P ?O }
+GROUP BY ?P
+HAVING (COUNT(?O) > 2 )
+>> OK
+// agg04.rq 
+<<PREFIX : <http://www.example.org>
+
+SELECT (COUNT(*) AS ?C)
+WHERE { ?S ?P ?O }
+>> OK
+// agg05.rq 
+<<PREFIX : <http://www.example.org>
+
+SELECT ?P (COUNT(*) AS ?C)
+WHERE { ?S ?P ?O }
+GROUP BY ?P
+>> OK
+// agg06.rq 
+<<PREFIX : <http://www.example.org>
+
+SELECT (COUNT(*) AS ?C)
+WHERE { ?S ?P ?O }
+HAVING (COUNT(*) > 0 )
+>> OK
+// agg07.rq 
+<<PREFIX : <http://www.example.org>
+
+SELECT ?P (COUNT(*) AS ?C)
+WHERE { ?S ?P ?O }
+GROUP BY ?P
+HAVING ( COUNT(*) > 2 )
+>> OK
+// agg08.rq 
+<<PREFIX : <http://www.example.org/>
+
+SELECT ((?O1 + ?O2) AS ?O12) (COUNT(?O1) AS ?C)
+WHERE { ?S :p ?O1; :q ?O2 } GROUP BY (?O1 + ?O2)
+ORDER BY ?O12
+>> OK
+// agg08b.rq 
+<<PREFIX : <http://www.example.org/>
+
+   SELECT ?O12 (COUNT(?O1) AS ?C)
+   WHERE { ?S :p ?O1; :q ?O2 } GROUP BY ((?O1 + ?O2) AS ?O12)
+   ORDER BY ?O12
+>> OK
+// agg09.rq 
+<<PREFIX : <http://www.example.org/>
+
+SELECT ?P (COUNT(?O) AS ?C)
+WHERE { ?S ?P ?O } GROUP BY ?S
+>> OK
+// agg10.rq 
+<<PREFIX : <http://www.example.org/>
+
+SELECT ?P (COUNT(?O) AS ?C)
+WHERE { ?S ?P ?O }
+>> OK
+// agg11.rq 
+<<PREFIX : <http://www.example.org/>
+
+SELECT ((?O1 + ?O2) AS ?O12) (COUNT(?O1) AS ?C)
+WHERE { ?S :p ?O1; :q ?O2 } GROUP BY (?S)
+>> OK
+// agg12.rq 
+<<PREFIX : <http://www.example.org/>
+
+SELECT ?O1 (COUNT(?O2) AS ?C)
+WHERE { ?S :p ?O1; :q ?O2 } GROUP BY (?O1 + ?O2)
+>> OK
+
+/* +++ Testset basic-update +++ */
+
+
+/* +++ Testset basic-update +++ */
+
+
+/* +++ Testset basic-update +++ */
+
+// insert-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+INSERT {
+	?s ?p "q"
+} WHERE {
+	?s ?p ?o
+}
+>> OK
+// insert-02.ru 
+<<PREFIX     : <http://example.org/> 
+
+INSERT {
+	GRAPH :g1 {
+		?s ?p "q"
+	}
+} WHERE {
+	?s ?p ?o
+}
+>> OK
+// insert-03.ru 
+<<PREFIX     : <http://example.org/> 
+
+WITH :g1
+INSERT {
+	?s ?p "z"
+} WHERE {
+	?s ?p ?o
+}
+>> OK
+// insert-04.ru 
+<<PREFIX     : <http://example.org/> 
+
+INSERT {
+	?s ?p "q"
+}
+USING :g1
+WHERE {
+	?s ?p ?o
+}
+>> OK
+// insert-data-named1.ru 
+<<PREFIX : <http://example.org/ns#>
+
+INSERT DATA { GRAPH <http://example.org/g1> { :s :p :o } }
+>> OK
+// insert-data-named2.ru 
+<<PREFIX : <http://example.org/ns#>
+
+INSERT DATA { GRAPH <http://example.org/g1> { :s :p :o2 } }
+>> OK
+// insert-data-spo1.ru 
+<<PREFIX : <http://example.org/ns#>
+
+INSERT DATA { :s :p :o }
+>> OK
+// insert-using-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+INSERT {
+	?s ?p "q"
+}
+USING :g1
+USING :g2
+WHERE {
+	?s ?p ?o
+}
+>> OK
+
+/* +++ Testset bind +++ */
+
+// bind01.rq 
+<<PREFIX : <http://example.org/> 
+
+SELECT ?z
+{
+  ?s ?p ?o .
+  BIND(?o+10 AS ?z)
+}>> OK
+// bind02.rq 
+<<PREFIX : <http://example.org/> 
+
+SELECT ?o ?z ?z2
+{
+  ?s ?p ?o .
+  BIND(?o+10 AS ?z)
+  BIND(?o+100 AS ?z2)
+}>> OK
+// bind03.rq 
+<<PREFIX : <http://example.org/> 
+
+SELECT ?z ?s1
+{
+  ?s ?p ?o .
+  BIND(?o+1 AS ?z)
+  ?s1 ?p1 ?z
+}
+>> OK
+// bind04.rq 
+<<PREFIX : <http://example.org/> 
+
+SELECT *
+{
+  ?s ?p ?o .
+  BIND(?nova AS ?z)
+}
+>> OK
+// bind05.rq 
+<<PREFIX : <http://example.org/> 
+
+SELECT ?s ?p ?o ?z
+{
+  ?s ?p ?o .
+  BIND(?o+1 AS ?z)
+  FILTER(?z = 3 )
+}
+>> OK
+// bind06.rq 
+<<PREFIX : <http://example.org/> 
+
+SELECT *
+{
+  ?s ?p ?o .
+  BIND(?o+10 AS ?z)
+}>> OK
+// bind07.rq 
+<<PREFIX : <http://example.org/> 
+
+SELECT ?s ?p ?o ?z
+{
+  ?s ?p ?o .
+  { BIND(?o+1 AS ?z) } UNION { BIND(?o+2 AS ?z) }
+}
+>> OK
+// bind08.rq 
+<<PREFIX : <http://example.org/> 
+
+SELECT ?s ?p ?o ?z
+{
+  ?s ?p ?o .
+  FILTER(?z = 3 )
+  BIND(?o+1 AS ?z)
+}
+>> OK
+
+/* +++ Testset bindings +++ */
+
+// bindings01.rq 
+<<PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
+PREFIX :     <http://example.org/book/> 
+PREFIX ns:   <http://example.org/ns#> 
+
+SELECT ?book ?title ?price
+{
+   ?book dc:title ?title ;
+         ns:price ?price .
+}
+BINDINGS ?book {
+ (:book1)
+}>> OK
+// bindings02.rq 
+<<# bindings with one element and one value in the object variable
+
+PREFIX : <http://example.org/> 
+
+SELECT ?s ?o
+{
+  ?s ?p ?o .
+} BINDINGS ?o {
+ (:b)
+}>> OK
+// bindings03.rq 
+<<# bindings with two variables and one set of values
+
+PREFIX : <http://example.org/> 
+
+SELECT ?s ?o1 ?o2
+{
+  ?s ?p1 ?o1 .
+  ?s ?p2 ?o2 .
+} BINDINGS ?o1 ?o2 {
+ ("Alan" "alan@example.org")
+}>> OK
+// bindings04.rq 
+<<# bindings with one element UNDEF
+
+PREFIX : <http://example.org/> 
+
+SELECT ?s ?o1 ?o2
+{
+  ?s ?p1 ?o1 .
+  ?s ?p2 ?o2 .
+} BINDINGS ?o1 ?o2 {
+ ("Alan" UNDEF)
+}>> OK
+// bindings05.rq 
+<<PREFIX : <http://example.org/> 
+
+SELECT ?s ?o1 ?o2
+{
+  ?s ?p1 ?o1 .
+  ?s ?p2 ?o2 .
+} BINDINGS ?o1 ?o2 {
+ (UNDEF "Alan")
+ (:b UNDEF)
+}>> OK
+// bindings06.rq 
+<<# bindings with two variables and two sets of values
+
+PREFIX : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+SELECT ?s ?p1 ?o1
+{
+  ?s ?p1 ?o1 .
+} BINDINGS ?p1 {
+ (foaf:knows)
+}>> OK
+// bindings07.rq 
+<<# bindings with two variables and two sets of values
+
+PREFIX : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+SELECT ?s ?o1 ?o2
+{
+  ?s ?p1 ?o1 
+  OPTIONAL { ?s foaf:knows ?o2 }
+} BINDINGS ?o2 {
+ (:b)
+}>> OK
+// bindings08.rq 
+<<PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
+PREFIX :     <http://example.org/book/> 
+PREFIX ns:   <http://example.org/ns#> 
+
+SELECT ?book ?title ?price
+{
+   ?book dc:title ?title ;
+         ns:price ?price .
+}
+BINDINGS ?book ?title {
+ (UNDEF "SPARQL Tutorial")
+ (:book2 UNDEF)
+}>> OK
+
+/* +++ Testset clear +++ */
+
+// clear-all-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+CLEAR ALL
+
+>> OK
+// clear-default-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+CLEAR DEFAULT
+
+>> OK
+// clear-graph-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+CLEAR GRAPH :g1
+>> OK
+// clear-named-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+CLEAR NAMED
+>> OK
+
+/* +++ Testset construct +++ */
+
+// constructwhere01.rq 
+<<PREFIX : <http://example.org/>
+
+CONSTRUCT WHERE { ?s ?p ?o}>> OK
+// constructwhere02.rq 
+<<PREFIX : <http://example.org/>
+
+CONSTRUCT WHERE { :s1 :p ?o . ?s2 :p ?o }>> OK
+// constructwhere03.rq 
+<<PREFIX : <http://example.org/>
+
+CONSTRUCT WHERE { :s2 :p ?o1, ?o2 }>> OK
+// constructwhere04.rq 
+<<PREFIX : <http://example.org/>
+
+CONSTRUCT 
+FROM <data.ttl>
+WHERE { ?s ?p ?o }>> OK
+// constructwhere05.rq 
+<<PREFIX : <http://example.org/>
+
+CONSTRUCT 
+WHERE { ?s ?p ?o FILTER ( ?o = :o1) }>> OK
+// constructwhere06.rq 
+<<CONSTRUCT 
+WHERE { GRAPH <data.ttl> { ?s ?p ?o } }>> OK
+
+/* +++ Testset csv-tsv-res +++ */
+
+// csvtsv01.rq 
+<<PREFIX : <http://example.org/>
+
+SELECT * WHERE { ?s ?p ?o} ORDER BY ?s ?p ?o>> OK
+// csvtsv02.rq 
+<<PREFIX : <http://example.org/>
+
+SELECT * WHERE { ?s ?p ?o OPTIONAL {?o ?p2 ?o2 } } ORDER BY ?s ?p ?o ?p2 ?o2>> OK
+
+/* +++ Testset delete +++ */
+
+// delete-01.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?s ?p ?o .
+}
+WHERE
+{
+  :a foaf:knows ?s .
+  ?s ?p ?o
+}
+>> OK
+// delete-02.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  GRAPH <http://example.org/g1> { ?s ?p ?o }
+}
+WHERE 
+{
+  GRAPH <http://example.org/g1> { :a foaf:knows ?s .
+                                  ?s ?p ?o }
+}
+>> OK
+// delete-03.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?s ?p ?o .
+}
+WHERE 
+{
+  ?s foaf:knows :c .
+  ?s ?p ?o 
+}
+>> OK
+// delete-04.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  GRAPH <http://example.org/g1> { ?s ?p ?o }
+}
+WHERE
+{
+  GRAPH <http://example.org/g1> { ?s foaf:knows :c .
+                                  ?s ?p ?o }
+}
+>> OK
+// delete-05.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?s ?p ?o .
+}
+WHERE 
+{ 
+  :a foaf:knows ?s .
+  ?s ?p ?o
+}
+>> OK
+// delete-06.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  GRAPH <http://example.org/g2> { ?s ?p ?o }
+}
+WHERE 
+{
+  GRAPH <http://example.org/g2> { ?s foaf:name "Chris" .
+                                  ?s ?p ?o }
+}
+>> OK
+// delete-07.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?s ?p ?o .
+}
+WHERE
+{
+  :a foaf:knows ?s .
+}
+>> OK
+// delete-using-01.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?s ?p ?o .
+}
+USING <http://example.org/g2>
+WHERE
+{
+  :a foaf:knows ?s .
+  ?s ?p ?o 
+}
+>> OK
+// delete-using-02.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?s ?p ?o .
+}
+USING <http://example.org/g3>
+WHERE 
+{
+  GRAPH <http://example.org/g2> { :a foaf:knows ?s .
+                                  ?s ?p ?o }
+}
+>> OK
+// delete-using-03.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?s ?p ?o .
+}
+USING <http://example.org/g2>
+WHERE 
+{
+  ?s foaf:knows :d .
+  ?s ?p ?o 
+}
+>> OK
+// delete-using-04.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?s ?p ?o .
+}
+USING <http://example.org/g3>
+WHERE
+{
+  GRAPH <http://example.org/g2> { ?s foaf:knows :d .
+                                  ?s ?p ?o }
+}
+>> OK
+// delete-using-05.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  GRAPH <http://example.org/g1> { ?s ?p ?o }
+}
+USING <http://example.org/g1>
+WHERE 
+{ 
+  ?s foaf:knows :b .
+  ?s ?p ?o 
+}
+>> OK
+// delete-using-06.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  GRAPH <http://example.org/g2> { ?s ?p ?o }
+}
+USING <http://example.org/g3>
+WHERE 
+{
+  GRAPH <http://example.org/g2> { ?s foaf:name "Chris" .
+                                  ?s ?p ?o }
+}
+>> OK
+// delete-with-01.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+WITH <http://example.org/g1>
+DELETE 
+{
+  ?s ?p ?o .
+}
+WHERE
+{
+  :a foaf:knows ?s .
+  ?s ?p ?o
+}
+>> OK
+// delete-with-02.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+WITH <http://example.org/g2>
+DELETE 
+{
+  GRAPH <http://example.org/g1> { ?s ?p ?o }
+}
+WHERE 
+{
+  GRAPH <http://example.org/g1> { :a foaf:knows ?s .
+                                  ?s ?p ?o }
+}
+>> OK
+// delete-with-03.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+WITH <http://example.org/g1>
+DELETE 
+{
+  ?s ?p ?o .
+}
+WHERE 
+{
+  ?s foaf:knows :c .
+  ?s ?p ?o
+}
+>> OK
+// delete-with-04.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+WITH <http://example.org/g2>
+DELETE 
+{
+  GRAPH <http://example.org/g1> { ?s ?p ?o }
+}
+WHERE
+{
+  GRAPH <http://example.org/g1> { ?s foaf:knows :c .
+                                  ?s ?p ?o }
+}
+>> OK
+// delete-with-05.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+WITH <http://example.org/g1>
+DELETE 
+{
+  ?s ?p ?o .
+}
+WHERE 
+{ 
+  ?s foaf:knows :b .
+  ?s ?p ?o 
+}
+>> OK
+// delete-with-06.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+WITH <http://example.org/g3>
+DELETE 
+{
+  GRAPH <http://example.org/g2> { ?s ?p ?o }
+}
+WHERE 
+{
+  GRAPH <http://example.org/g2> { ?s foaf:name "Chris" .
+                                  ?s ?p ?o }
+}
+>> OK
+
+/* +++ Testset delete-data +++ */
+
+// delete-data-01.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE DATA 
+{
+  :a foaf:knows :b .
+}
+>> OK
+// delete-data-02.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE DATA 
+{
+  GRAPH <http://example.org/g1> { :a foaf:knows :b }
+}
+>> OK
+// delete-data-03.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE DATA 
+{
+  :a foaf:knows :c .
+}
+>> OK
+// delete-data-04.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE DATA 
+{
+  GRAPH <http://example.org/g1> { :a foaf:knows :c }
+}
+>> OK
+// delete-data-05.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE DATA 
+{ 
+  :a foaf:knows :b .
+}
+>> OK
+// delete-data-06.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE DATA 
+{
+  GRAPH <http://example.org/g2> { :c foaf:name "Chris" }
+}
+>> OK
+
+/* +++ Testset delete-insert +++ */
+
+// delete-insert-01.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows ?b .
+}
+INSERT
+{
+  ?b foaf:knows ?a .
+}
+WHERE
+{
+  ?a foaf:knows ?b .
+}
+>> OK
+// delete-insert-01b.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows ?b .
+}
+WHERE
+{
+  ?a foaf:knows ?b .
+}
+;
+INSERT
+{
+  ?b foaf:knows ?a .
+}
+WHERE
+{
+  ?a foaf:knows ?b .
+}
+>> OK
+// delete-insert-01c.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+INSERT
+{
+  ?b foaf:knows ?a .
+}
+WHERE
+{
+  ?a foaf:knows ?b .
+}
+;
+DELETE 
+{
+  ?a foaf:knows ?b .
+}
+WHERE
+{
+  ?a foaf:knows ?b .
+}
+
+>> OK
+// delete-insert-02.ru 
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows ?b .
+}
+WHERE
+{
+  ?a foaf:name "Alan" . ?a foaf:knows ?b 
+}
+>> OK
+// delete-insert-03.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows [] .
+}
+WHERE
+{
+  ?a foaf:name "Alan" .
+}
+>> OK
+// delete-insert-03b.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows _:b .
+}
+WHERE
+{
+  ?a foaf:name "Alan" .
+}
+>> OK
+// delete-insert-04.ru 
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows ?Var_B .
+}
+WHERE
+{
+  { ?a foaf:name "Alan" }
+  { SELECT DISTINCT ?Var_B 
+            {  { ?Var_B ?Var_B1 ?Var_B2 } UNION 
+               { ?Var_B1 ?Var_B ?Var_B2 } UNION 
+               { ?Var_B1 ?Var_B2 ?Var_B } UNION 
+               { GRAPH ?Var_Bg {?Var_B ?Var_B1 ?Var_B2 } } UNION
+               { GRAPH ?Var_Bg {?Var_B1 ?Var_B ?Var_B2 } } UNION
+               { GRAPH ?Var_Bg {?Var_B1 ?Var_B2 ?Var_B } } } }
+}>> OK
+// delete-insert-04b.ru 
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows ?Var_B .
+}
+WHERE
+{
+  { ?a foaf:name "Alan" }
+  { ?a foaf:knows ?Var_B . }
+  
+}>> OK
+// delete-insert-05.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows [] .
+}
+INSERT
+{
+  ?a foaf:knows ?a .
+}
+WHERE
+{
+  ?a foaf:name "Alan" .
+}
+>> OK
+// delete-insert-05b.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows ?Var_B .
+}
+INSERT
+{
+  ?a foaf:knows ?a .
+}
+WHERE
+{
+  { ?a foaf:name "Alan" . }
+  { ?a foaf:knows ?Var_B . }
+}
+>> OK
+// delete-insert-07.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows [] .
+}
+INSERT
+{
+  ?a foaf:knows [] .
+}
+WHERE
+{
+  ?a foaf:name "Alan" . 
+}
+>> OK
+// delete-insert-07b.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE 
+{
+  ?a foaf:knows [] .
+}
+INSERT
+{
+  ?a foaf:knows [] .
+}
+WHERE
+{
+  ?a foaf:name "Alan" . ?a foaf:knows [] .
+}
+>> OK
+// delete-insert-08.ru 
+<<PREFIX     : <http://example.org/> 
+
+DELETE
+ { _:a :p 12 .
+   _:a :q ?o .
+ }
+WHERE {?s :r ?q OPTIONAL { ?q :s ?o } }
+>> OK
+// delete-insert-09.ru 
+<<PREFIX     : <http://example.org/> 
+
+DELETE
+ { _:a :p 12 .
+   _:a :q _:b .
+ }
+WHERE {}>> OK
+
+/* +++ Testset delete-where +++ */
+
+// delete-where-01.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE WHERE
+{
+  :a foaf:knows ?b .
+}
+>> OK
+// delete-where-02.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE WHERE 
+{
+  GRAPH <http://example.org/g1> { :a foaf:knows ?b }
+}
+>> OK
+// delete-where-03.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE WHERE 
+{
+  ?a foaf:knows :c .
+}
+>> OK
+// delete-where-04.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE WHERE
+{
+  GRAPH <http://example.org/g1> { ?a foaf:knows :c }
+}
+>> OK
+// delete-where-05.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE WHERE 
+{ 
+  ?a foaf:knows :b .
+}
+>> OK
+// delete-where-06.ru 
+<<PREFIX     : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+
+DELETE WHERE 
+{
+  GRAPH <http://example.org/g2> { ?c foaf:name "Chris" }
+}
+>> OK
+
+/* +++ Testset drop +++ */
+
+// drop-all-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+DROP ALL
+
+>> OK
+// drop-default-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+DROP DEFAULT
+
+>> OK
+// drop-graph-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+DROP GRAPH :g1
+>> OK
+// drop-named-01.ru 
+<<PREFIX     : <http://example.org/> 
+
+DROP NAMED
+>> OK
+
+/* +++ Testset entailment +++ */
+
+// bind01.rq 
+<<PREFIX : <http://example.org/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?z
+{
+  ?s ?p ?o .
+  ?p a owl:DatatypeProperty . 
+  BIND(?o+10 AS ?z)
+}
+>> OK
+// bind02.rq 
+<<PREFIX : <http://example.org/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?o ?z ?z2
+{
+  ?s ?p ?o .
+  ?p a owl:DatatypeProperty . 
+  BIND(?o+10 AS ?z)
+  BIND(?o+100 AS ?z2)
+}
+>> OK
+// bind03.rq 
+<<PREFIX : <http://example.org/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?z ?s1
+{
+  ?s ?p ?o .
+  ?p a owl:DatatypeProperty . 
+  BIND(?o+1 AS ?z)
+  ?s1 ?p1 ?z .
+  ?p1 a owl:DatatypeProperty . 
+}
+>> OK
+// bind04.rq 
+<<PREFIX : <http://example.org/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT *
+{
+  ?s ?p ?o .
+  ?p a owl:DatatypeProperty . 
+  BIND(?nova AS ?z)
+}
+>> OK
+// bind05.rq 
+<<PREFIX : <http://example.org/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?s ?p ?o ?z
+{
+  ?s ?p ?o .
+  ?p a owl:DatatypeProperty . 
+  BIND(?o+1 AS ?z)
+  FILTER(?z = 3 )
+}
+>> OK
+// bind06.rq 
+<<PREFIX : <http://example.org/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT *
+{
+  ?s ?p ?o .
+  ?p a owl:DatatypeProperty . 
+  BIND(?o+10 AS ?z)
+}
+>> OK
+// bind07.rq 
+<<PREFIX : <http://example.org/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?s ?p ?o ?z
+{
+  ?s ?p ?o .
+  ?p a owl:DatatypeProperty . 
+  { BIND(?o+1 AS ?z) } UNION { BIND(?o+2 AS ?z) }
+}
+>> OK
+// bind08.rq 
+<<PREFIX : <http://example.org/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?s ?p ?o ?z
+{
+  ?s ?p ?o .
+  ?p a owl:DatatypeProperty . 
+  FILTER(?z = 3 )
+  BIND(?o+1 AS ?z)
+}
+>> OK
+// d-ent-01.rq 
+<<PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?L
+WHERE {
+  ?L a xsd:integer
+}
+
+>> OK
+// lang.rq 
+<<PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf:  <http://xmlns.com/foaf/0.1/>
+
+SELECT ?x
+WHERE { ?x foaf:name "name"@en .
+      } >> OK
+// owlds01.rq 
+<<PREFIX   ex:  <http://example.org/x/>
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?x ?c
+WHERE { 
+?x rdf:type ?c . 
+?c rdfs:subClassOf ex:c . 
+?x ex:p _:y . 
+
+}
+>> OK
+// owlds02.rq 
+<<PREFIX     :  <http://example.org/x/>
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?x ?y
+WHERE { 
+?x :p ?y . 
+?y rdf:type :c . 
+}
+>> OK
+// rdf01.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?x
+WHERE {
+  ex:b ?x rdf:Property .
+}
+
+>> OK
+// rdf02.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?x
+WHERE {
+  ?x rdf:type rdf:Property .
+}
+
+>> OK
+// rdf03.rq 
+<<PREFIX ex: <http://example.org/ns#>
+SELECT ?x
+WHERE {
+  ?x ex:b1 _:c .
+}
+
+>> OK
+// rdf04.rq 
+<<PREFIX    :  <http://example.org/x/>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?x
+WHERE { ?x rdf:type :c . }
+>> OK
+// rdfs01.rq 
+<<PREFIX ex: <http://example.org/ns#>
+SELECT ?x
+WHERE {
+  ex:a ?x ex:c .
+}
+
+>> OK
+// rdfs02.rq 
+<<PREFIX ex: <http://example.org/ns#>
+SELECT ?x
+WHERE {
+  ?x ex:b2 ex:c .
+}
+
+>> OK
+// rdfs03.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?x
+WHERE {
+  ?x rdf:type ex:c2 .
+}
+
+>> OK
+// rdfs04.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?x
+WHERE {
+  ?x rdf:type ex:c2 .
+}
+
+>> OK
+// rdfs05.rq 
+<<PREFIX     :  <http://example.org/x/>
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?x ?c
+WHERE { ?x rdf:type ?c . ?c rdfs:subClassOf :d }
+>> OK
+// rdfs06.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?x
+WHERE {
+  ?x rdf:type ex:aType .
+}
+
+>> OK
+// rdfs07.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?x
+WHERE {
+  ?x rdf:type ex:cType .
+}
+
+>> OK
+// rdfs08.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?x
+WHERE {
+  ex:d rdfs:range ?x .
+}
+
+>> OK
+// rdfs09.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+SELECT ?x
+WHERE {
+  ?x rdf:type ex:f .
+}
+
+>> OK
+// rdfs10.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?x
+WHERE {
+  ?x ex:f ?y .
+}
+
+>> OK
+// rdfs11.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?x
+WHERE {
+  ?x rdfs:subClassOf rdfs:Container .
+}
+
+>> OK
+// rdfs12.rq 
+<<PREFIX ex: <http://example.org/ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?x
+WHERE {
+  ?x rdf:type rdfs:ContainerMembershipProperty .
+}
+
+>> OK
+// rdfs13.rq 
+<<PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?L
+WHERE {
+  ?L a rdfs:Literal
+}
+
+>> OK
+
+/* +++ Testset exists +++ */
+
+// exists01.rq 
+<<prefix ex: <http://www.example.org/>
+
+select * where {
+?s ?p ?o
+filter exists {?s ?p ex:o}
+}
+>> OK
+// exists02.rq 
+<<prefix ex: <http://www.example.org/>
+
+select * where {
+?s ?p ex:o2
+filter exists {ex:s ex:p ex:o}
+}
+>> OK
+// exists03.rq 
+<<prefix ex: <http://www.example.org/>
+
+select * where {
+graph <exists02.ttl> { 
+  ?s ?p ex:o1
+  filter exists { ?s ?p ex:o2 } 
+}
+
+}
+>> OK
+// exists04.rq 
+<<prefix ex: <http://www.example.org/>
+
+select * where {
+  ?s ?p ex:o
+  filter exists { ?s ?p ex:o1  filter exists { ?s ?p ex:o2 } } 
+}
+>> OK
+// exists05.rq 
+<<prefix ex: <http://www.example.org/>
+
+select * where {
+  ?s ?p ex:o
+  filter exists { ?s ?p ex:o1  filter not exists { ?s ?p ex:o2 } } 
+}
+>> OK
+
+/* +++ Testset functions +++ */
+
+// abs01.rq 
+<<PREFIX : <http://example.org/>
+SELECT * WHERE {
+	?s :num ?num
+	FILTER(ABS(?num) >= 2)
+}
+>> OK
+// bnode01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s1 ?s2
+(BNODE(?s1) AS ?b1) (BNODE(?s2) AS ?b2)
+WHERE {
+	?a :str ?s1 .
+	?b :str ?s2 .
+	FILTER (?a = :s1 || ?a = :s3)
+	FILTER (?b = :s1 || ?b = :s3)
+}
+>> OK
+// bnode02.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT (BNODE() AS ?b1) (BNODE() AS ?b2)
+WHERE {}
+>> OK
+// ceil01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s ?num (CEIL(?num) AS ?ceil) WHERE {
+	?s :num ?num
+}
+>> OK
+// coalesce01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT
+	(COALESCE(?x, -1) AS ?cx)     # error when ?x is unbound -> -1
+	(COALESCE(?o/?x, -2) AS ?div) # error when ?x is unbound or zero -> -2
+	(COALESCE(?z, -3) AS ?def)    # always unbound -> -3
+	(COALESCE(?z) AS ?err)        # always an error -> unbound
+WHERE {
+	?s :p ?o .
+	OPTIONAL {
+		?s :q ?x
+	}
+}
+>> OK
+// concat01.rq 
+<<PREFIX : <http://example.org/>
+SELECT (CONCAT(?str1,?str2) AS ?str) WHERE {
+	:s6 :str ?str1 .
+	:s7 :str ?str2 .
+}
+>> OK
+// concat02.rq 
+<<PREFIX : <http://example.org/>
+SELECT (CONCAT(?str1,?str2) AS ?str) WHERE {
+	?s1 :str ?str1 .
+	?s2 :str ?str2 .
+}
+>> OK
+// contains01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s ?str WHERE {
+	?s :str ?str
+	FILTER CONTAINS(?str, "a")
+}
+>> OK
+// day-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (DAY(?date) AS ?x) WHERE {
+	?s :date ?date
+}
+>> OK
+// encode01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s ?str (ENCODE_FOR_URI(?str) AS ?encoded) WHERE {
+	?s :str ?str
+}
+>> OK
+// ends01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s ?str WHERE {
+	?s ?p ?str
+	FILTER STRENDS(?str, "bc")
+}
+>> OK
+// floor01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s ?num (FLOOR(?num) AS ?floor) WHERE {
+	?s :num ?num
+}
+>> OK
+// hours-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (HOURS(?date) AS ?x) WHERE {
+	?s :date ?date
+}
+>> OK
+// if01.rq 
+<<BASE <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?o (IF(DATATYPE(?o) = xsd:integer, true, false) AS ?integer)
+WHERE {
+	?s ?p ?o
+}
+>> OK
+// if02.rq 
+<<SELECT (IF(1/0, false, true) AS ?error) WHERE {}
+>> OK
+// in01.rq 
+<<ASK {
+	FILTER(2 IN (1, 2, 3))
+}
+>> OK
+// in02.rq 
+<<ASK {
+	FILTER(2 IN (1, 3))
+}
+>> OK
+// iri01.rq 
+<<BASE <http://example.org/>
+SELECT (URI("uri") AS ?uri) (IRI("iri") AS ?iri)
+WHERE {}
+>> OK
+// isnumeric01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s ?num WHERE {
+	?s ?p ?num
+	FILTER isNumeric(?num)
+}
+>> OK
+// lcase01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (LCASE(?str) AS ?lstr) WHERE {
+	?s :str ?str
+}
+>> OK
+// length01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?str (STRLEN(?str) AS ?len) WHERE {
+	?s :str ?str
+}
+>> OK
+// md5-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT (MD5(?l) AS ?hash) WHERE {
+	:s1 :str ?l
+}
+>> OK
+// md5-02.rq 
+<<PREFIX : <http://example.org/>
+SELECT (MD5(?l) AS ?hash) WHERE {
+	:s4 :str ?l
+}
+>> OK
+// minutes-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (MINUTES(?date) AS ?x) WHERE {
+	?s :date ?date
+}
+>> OK
+// month-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (MONTH(?date) AS ?x) WHERE {
+	?s :date ?date
+}
+>> OK
+// notin01.rq 
+<<ASK {
+	FILTER(2 NOT IN ())
+}
+>> OK
+// notin02.rq 
+<<ASK {
+	FILTER(2 NOT IN (1/0, 2))
+}
+>> OK
+// now01.rq 
+<<PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK {
+	BIND(NOW() AS ?n)
+	FILTER(DATATYPE(?n) = xsd:dateTime)
+}
+>> OK
+// plus-1.rq 
+<<PREFIX  : <http://example/>
+SELECT  ?x ?y ( ?x + ?y AS ?sum)
+WHERE
+    { ?s :p ?x ; :q ?y . 
+    }
+ORDER BY ?x ?y ?sum
+>> OK
+// plus-2.rq 
+<<PREFIX  : <http://example/>
+
+SELECT  ?x ?y ( str(?x) + str(?y) AS ?sum)
+WHERE
+    { ?s :p ?x ; :q ?y . 
+    }
+ORDER BY ?x ?y ?sum
+>> OK
+// rand01.rq 
+<<PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ASK {
+	BIND(RAND() AS ?r)
+	FILTER(DATATYPE(?r) = xsd:double && ?r >= 0.0 && ?r < 1.0)
+}
+>> OK
+// replace01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s (REPLACE(?str,"[^a-z0-9]", "-") AS ?new) WHERE {
+	?s :str ?str
+}
+>> OK
+// replace02.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT (REPLACE(?str,"ana", "*") AS ?new) WHERE {
+	:s8 :str ?str
+}
+>> OK
+// replace03.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT (REPLACE(?str,"(ab)|(a)", "[1=$1][2=$2]") AS ?new) WHERE {
+	:s9 :str ?str
+}
+>> OK
+// round01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s ?num (ROUND(?num) AS ?round) WHERE {
+	?s :num ?num
+}
+>> OK
+// seconds-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (SECONDS(?date) AS ?x) WHERE {
+	?s :date ?date
+}
+>> OK
+// sha1-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT (SHA1(?l) AS ?hash) WHERE {
+	:s1 :str ?l
+}
+>> OK
+// sha1-02.rq 
+<<PREFIX : <http://example.org/>
+SELECT (SHA1(?l) AS ?hash) WHERE {
+	:s8 :str ?l
+}
+>> OK
+// sha256-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT (SHA256(?l) AS ?hash) WHERE {
+	:s1 :str ?l
+}
+>> OK
+// sha256-02.rq 
+<<PREFIX : <http://example.org/>
+SELECT (SHA256(?l) AS ?hash) WHERE {
+	:s8 :str ?l
+}
+>> OK
+// sha384-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT (SHA384(?l) AS ?hash) WHERE {
+	:s1 :str ?l
+}
+>> OK
+// sha384-02.rq 
+<<PREFIX : <http://example.org/>
+SELECT (SHA384(?l) AS ?hash) WHERE {
+	:s8 :str ?l
+}
+>> OK
+// sha512-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT (SHA512(?l) AS ?hash) WHERE {
+	:s1 :str ?l
+}
+>> OK
+// sha512-02.rq 
+<<PREFIX : <http://example.org/>
+SELECT (SHA512(?l) AS ?hash) WHERE {
+	:s8 :str ?l
+}
+>> OK
+// starts01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s ?str WHERE {
+	?s ?p ?str
+	FILTER STRSTARTS(STR(?str), "1")
+}
+>> OK
+// strafter01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s (STRAFTER(?str,"e") AS ?suffix) WHERE {
+	?s :str ?str
+}
+>> OK
+// strbefore01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s (STRBEFORE(?str,"s") AS ?prefix) WHERE {
+	?s :str ?str
+}
+>> OK
+// strdt01.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s (STRDT(?str,xsd:string) AS ?str1) WHERE {
+	?s :str ?str
+	FILTER(LANGMATCHES(LANG(?str), "en"))
+}
+>> OK
+// strdt02.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s (STRDT(STR(?str),xsd:string) AS ?str1) WHERE {
+	?s :str ?str
+	FILTER(LANGMATCHES(LANG(?str), "en"))
+}
+>> OK
+// strdt03.rq 
+<<PREFIX : <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?s (STRDT(?o,xsd:string) AS ?str1) WHERE {
+	?s ?p ?o
+}
+>> OK
+// strlang01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (STRLANG(?str,"en-US") AS ?s2) WHERE {
+	?s :str ?str
+	FILTER(LANGMATCHES(LANG(?str), "en"))
+}
+>> OK
+// strlang02.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (STRLANG(STR(?str),"en-US") AS ?s2) WHERE {
+	?s :str ?str
+	FILTER(LANGMATCHES(LANG(?str), "en"))
+}
+>> OK
+// strlang03.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (STRLANG(?o,"en-US") AS ?str1) WHERE {
+	?s ?p ?o
+}
+>> OK
+// substring01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s ?str (SUBSTR(?str,1,1) AS ?substr) WHERE {
+	?s :str ?str
+}
+>> OK
+// substring02.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s ?str (SUBSTR(?str,2) AS ?substr) WHERE {
+	?s :str ?str
+}
+>> OK
+// timezone-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (TIMEZONE(?date) AS ?x) WHERE {
+	?s :date ?date
+}
+>> OK
+// tz-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (TZ(?date) AS ?x) WHERE {
+	?s :date ?date
+}
+>> OK
+// ucase01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (UCASE(?str) AS ?ustr) WHERE {
+	?s :str ?str
+}
+>> OK
+// year-01.rq 
+<<PREFIX : <http://example.org/>
+SELECT ?s (YEAR(?date) AS ?x) WHERE {
+	?s :date ?date
+}
+>> OK
+
+/* +++ Testset grouping +++ */
+
+// group01.rq 
+<<PREFIX : <http://example/>
+
+SELECT ?s
+{
+  ?s :p ?v .
+}
+GROUP BY ?s
+>> OK
+// group02.rq 
+<<PREFIX : <http://example/>
+
+SELECT ?s
+{
+  ?s :p ?v .
+}
+GROUP BY ?s
+>> OK
+// group03.rq 
+<<PREFIX : <http://example/>
+
+SELECT ?w (SAMPLE(?v) AS ?S)
+{
+  ?s :p ?v .
+  OPTIONAL { ?s :q ?w }
+}
+GROUP BY ?w
+>> OK
+// group04.rq 
+<<PREFIX :        <http://example/>
+PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?X (SAMPLE(?v) AS ?S)
+{
+  ?s :p ?v .
+  OPTIONAL { ?s :q ?w }
+}
+GROUP BY (COALESCE(?w, "1605-11-05"^^xsd:date) AS ?X) 
+>> OK
+// group05.rq 
+<<PREFIX : <http://example/>
+
+SELECT ?s ?w
+{
+  ?s :p ?v .
+  OPTIONAL { ?s :q ?w }
+}
+GROUP BY ?s ?w
+>> OK
+// group06.rq 
+<<PREFIX : <http://example/>
+
+SELECT ?s ?v
+{
+  ?s :p ?v .
+}
+GROUP BY ?s
+>> OK
+// group07.rq 
+<<prefix lode: <http://linkedevents.org/ontology/>
+prefix dc: <http://purl.org/dc/elements/1.1/>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+select ?event ?eventName ?venue ?photo
+where {
+   ?photo lode:illustrate ?event .
+   {
+   select ?event ?eventName ?venue
+   where {
+         ?event dc:title ?eventName .
+         ?event lode:atPlace ?venue .
+         ?venue rdfs:label "Live Music Hall" .
+         }
+   }
+}
+GROUP BY ?event
+>> OK
+
+/* +++ Testset json-res +++ */
+
+// jsonres01.rq 
+<<PREFIX : <http://example.org/>
+
+SELECT * WHERE { ?s ?p ?o} ORDER BY ?s ?p ?o>> OK
+// jsonres02.rq 
+<<PREFIX : <http://example.org/>
+
+SELECT * WHERE { ?s ?p ?o OPTIONAL {?o ?p2 ?o2 } } ORDER BY ?s ?p ?o ?p2 ?o2>> OK
+// jsonres03.rq 
+<<PREFIX : <http://example.org/>
+
+ASK WHERE { :s1 :p1 :s2 }>> OK
+// jsonres04.rq 
+<<PREFIX : <http://example.org/>
+
+ASK WHERE { :s1 :p1 :o1 }>> OK
+
+/* +++ Testset negation +++ */
+
+// set-equals-1.rq 
+<<PREFIX :    <http://example/>
+PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+# Find sets that have exactly the same members.
+# Find all (s1,s2) such that (s1 subset of s) and (s2 subset of s1).
+
+SELECT DISTINCT ?s1 ?s2
+WHERE
+{
+    # All pairs of sets (no duplicates, not reveres pairs)
+    ?s2 rdf:type :Set .
+    ?s1 rdf:type :Set .
+    FILTER(str(?s1) < str(?s2))
+    MINUS 
+    {
+        ?s1 rdf:type :Set .
+        ?s2 rdf:type :Set .
+        ?s1 :member ?x .
+        FILTER NOT EXISTS { ?s2 :member ?x . }
+    }
+    MINUS 
+    {
+        ?s1 rdf:type :Set .
+        ?s2 rdf:type :Set .
+        ?s2 :member ?x .
+        FILTER NOT EXISTS { ?s1 :member ?x . }
+    }
+}
+>> OK
+// subset-01.rq 
+<<PREFIX :    <http://example/>
+PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# SPARQL 1.1
+SELECT (?s1 AS ?subset) (?s2 AS ?superset)
+WHERE
+{
+    # All pairs of sets except (S,S)
+    ?s2 rdf:type :Set .
+    ?s1 rdf:type :Set .
+    FILTER(?s1 != ?s2)
+    MINUS 
+    {
+    	# The MINUS RHS is (?s1, ?s2) where 
+        # ?s1 has a member not in ?s2
+        ?s1 rdf:type :Set .
+        ?s2 rdf:type :Set .
+        FILTER(?s1 != ?s2)
+
+        ?s1 :member ?x .
+        FILTER NOT EXISTS { ?s2 :member ?x . }
+    }
+}
+>> OK
+// subset-02.rq 
+<<PREFIX :    <http://example/>
+PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT (?s1 AS ?subset) (?s2 AS ?superset)
+WHERE
+{
+    # All pairs of sets
+    ?s2 rdf:type :Set .
+    ?s1 rdf:type :Set .
+
+    MINUS {
+        ?s1 rdf:type :Set .
+        ?s2 rdf:type :Set .
+        # Assumes ?s1 has at least one member 
+        ?s1 :member ?x .
+        # If we want to exclude A as a subset of A.
+        # This is not perfect as "?s1 = ?s2" is not a
+        # contents based comparison.
+        FILTER ( ?s1 = ?s2 || NOT EXISTS { ?s2 :member ?x . } )
+    }
+    MINUS {
+        # If we don't want the empty set being a subset of itself.
+        ?s1 rdf:type :Set .
+        ?s2 rdf:type :Set .
+        # Choose the pair (empty set, empty set)
+        FILTER ( NOT EXISTS { ?s1 :member ?y . } )
+        FILTER ( NOT EXISTS { ?s2 :member ?y . } )
+    }
+}
+>> OK
+// subset-03.rq 
+<<PREFIX :    <http://example/>
+PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT (?s1 AS ?subset) (?s2 AS ?superset)
+WHERE
+{
+    # All pairs of sets except (S,S)
+    ?s2 rdf:type :Set .
+    ?s1 rdf:type :Set .
+    MINUS {
+        # See subset-01 ...
+        ?s1 rdf:type :Set .
+        ?s2 rdf:type :Set .
+        ?s1 :member ?x .
+        FILTER ( NOT EXISTS { ?s2 :member ?x . } )
+    }
+    # Remove those that are the pairs with the same elements.
+    # See set-equals-1
+    MINUS {
+        ?s2 rdf:type :Set .
+        ?s1 rdf:type :Set .
+        MINUS 
+        {
+            ?s1 rdf:type :Set .
+            ?s2 rdf:type :Set .
+            ?s1 :member ?x .
+            FILTER NOT EXISTS { ?s2 :member ?x . }
+        }
+        MINUS 
+        {
+            ?s1 rdf:type :Set .
+            ?s2 rdf:type :Set .
+            ?s2 :member ?x .
+            FILTER NOT EXISTS { ?s1 :member ?x . }
+        }
+    }
+}
+>> OK
+// subsetByExcl01.rq 
+<<PREFIX ex: <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#>
+SELECT ?animal { 
+  ?animal a ex:Animal 
+  FILTER NOT EXISTS { ?animal a ex:Insect } 
+}>> OK
+// subsetByExcl02.rq 
+<<PREFIX ex: <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#>
+SELECT ?animal { 
+  ?animal a ex:Animal MINUS { 
+    ?animal a ?type 
+    FILTER(?type = ex:Reptile || ?type = ex:Insect) 
+  } 
+}>> OK
+// temporalProximity01.rq 
+<<PREFIX ex: <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+# The closest pre-operative physical examination
+SELECT ?exam ?date { 
+  ?exam a ex:PhysicalExamination; 
+        dc:date ?date;
+        ex:precedes ex:operation1 .
+  ?op   a ex:SurgicalProcedure; dc:date ?opDT .
+  FILTER NOT EXISTS {
+    ?otherExam a ex:PhysicalExamination; 
+               ex:follows ?exam;
+               ex:precedes ex:operation1
+  } 
+}>> OK
+
+/* +++ Testset project-expression +++ */
+
+// projexp01.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x ?y ?z ((?y = ?z) as ?eq) where {
+  ?x ex:p ?y .
+  ?x ex:q ?z
+}>> OK
+// projexp02.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x ?y ?z ((?y + ?z) as ?sum) where {
+  ?x ex:p ?y .
+  ?x ex:q ?z
+}>> OK
+// projexp03.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x ?y ?z
+  ((?y + ?z) as ?sum) 
+  ((2 * ?sum) as ?twice)
+where {
+  ?x ex:p ?y .
+  ?x ex:q ?z
+}>> OK
+// projexp04.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x ?y 
+  ((?y + ?y) as ?sum) 
+where {
+  ?x ex:p ?y
+}
+order by ?sum>> OK
+// projexp05.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x ?l (datatype(?l) as ?dt) where {
+  ?x ex:p ?l
+}>> OK
+// projexp06.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select  ?x ?l (datatype(?m) as ?dt) where {
+  ?x ex:p ?l
+}
+>> OK
+// projexp07.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x (datatype(?l) as ?dt) where {
+  ?x ex:p ?y .
+  optional {?x ex:q ?l}
+}
+>> OK
+
+/* +++ Testset property-path +++ */
+
+// path-2-1.rq 
+<<prefix : <http://example/> 
+
+select * where {
+    :a :p{2} ?z
+} 
+>> OK
+// path-2-2.rq 
+<<prefix : <http://example/> 
+
+select * where {
+    :a :p+ ?z
+} 
+>> OK
+// path-2-3.rq 
+<<prefix : <http://example/> 
+
+select * where {
+    :a :p{3} ?z
+} 
+>> OK
+// path-3-1.rq 
+<<prefix : <http://example/> 
+
+select * where {
+    ?s :p{2,4} :z
+} 
+>> OK
+// path-3-2.rq 
+<<prefix : <http://example/> 
+
+select * where {
+    ?s :p{,3} :z
+} 
+>> OK
+// path-3-3.rq 
+<<prefix : <http://example/> 
+
+select * where {
+    :a (:p/:p)? ?t
+} 
+>> OK
+// path-3-4.rq 
+<<prefix : <http://example/> 
+
+select * where {
+    ?s :p{2,} :z
+} 
+>> OK
+// path-ng-01.rq 
+<<prefix :  <http://www.example.org/>
+select ?t
+where {
+  GRAPH <ng-01.ttl> {
+    ?s :p1* ?t }
+}>> OK
+// path-ng-02.rq 
+<<prefix :  <http://www.example.org/>
+select ?t
+where {
+  GRAPH ?g {
+    ?s :p1* ?t }
+  FILTER (?g = <ng-01.ttl>)
+}>> OK
+// path-p1.rq 
+<<prefix :  <http://www.example.org/>
+select ?t
+where {
+  :a :p1|:p2/:p3|:p4 ?t
+}>> OK
+// path-p2.rq 
+<<prefix :  <http://www.example.org/>
+select ?t
+where {
+  :a (:p1|:p2)/(:p3|:p4) ?t
+}>> OK
+// path-p3.rq 
+<<prefix :  <http://www.example.org/>
+select ?t
+where {
+  :a :p0|^:p1/:p2|:p3 ?t
+}>> OK
+// path-p4.rq 
+<<prefix :  <http://www.example.org/>
+select ?t
+where {
+  :a (:p0|^:p1)/:p2|:p3 ?t
+}>> OK
+// pp01.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select * where {
+in:a ex:p1/ex:p2/ex:p3 ?x
+}>> OK
+// pp02.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select * where {
+in:a (ex:p1/ex:p2/ex:p3)* ?x
+}>> OK
+// pp03.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select * where {
+in:a ex:p1/ex:p2/ex:p3/ex:p4 ?x
+}>> OK
+// pp04.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select * where {
+in:a (ex:p1/ex:p2){1,}/(ex:p3/ex:p4){1,} ?x
+}>> OK
+// pp05.rq 
+<<prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select * where {
+?x rdf:rest{0,1} ?y
+}
+>> OK
+// pp06.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x where {
+graph ?g {in:a ex:p1/ex:p2 ?x}
+}>> OK
+// pp08.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+ask {
+in:b ^ex:p in:a
+}>> OK
+// pp09.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select  * where {
+in:c ^(ex:p1/ex:p2) ?x
+}>> OK
+// pp10.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select * where {
+in:a !(ex:p1|ex:p2) ?x
+}>> OK
+// pp11.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select * where {
+in:a ex:p1/ex:p2 ?x
+}
+>> OK
+// pp12.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select * where {
+in:a (ex:p1/ex:p2)+ ?x
+}
+>> OK
+// pp13.rq 
+<<prefix : <http://ex.org/>
+
+select * 
+WHERE{ ?X :p{0} ?Y  }
+ORDER BY ?X
+>> OK
+// pp14.rq 
+<<PREFIX : <http://example.org/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT *
+WHERE { ?X foaf:knows* ?Y } 
+ORDER BY ?X ?Y
+
+
+>> OK
+// pp15.rq 
+<<PREFIX : <http://www.example.org/>
+
+SELECT *
+WHERE { ?X :p{0} "o" .
+        ?Y :p{0} :o .
+        :s :p{0} ?Z . } 
+>> OK
+
+/* +++ Testset service +++ */
+
+// service01.rq 
+<<# SERVICE join with pattern in the default graph
+
+PREFIX : <http://example.org/> 
+
+SELECT ?s ?o1 ?o2 
+{
+  ?s ?p1 ?o1 .
+  SERVICE <http://example.org/sparql> {
+    ?s ?p2 ?o2
+  }
+} >> OK
+// service02.rq 
+<<# SERVICE and OPTIONAL
+
+PREFIX : <http://example.org/> 
+
+SELECT ?s ?o1 ?o2
+{
+  SERVICE <http://example1.org/sparql> {
+  ?s ?p ?o1 . }
+  OPTIONAL {
+	SERVICE <http://example2.org/sparql> {
+    ?s ?p2 ?o2 }
+  }
+}>> OK
+// service03.rq 
+<<# SERVICE with one optional and a nested SERVICE. This query depends in the capabilities of the example1.org endpoint
+
+PREFIX : <http://example.org/> 
+
+SELECT ?s ?o1 ?o2
+{
+  SERVICE <http://example1.org/sparql> {
+  ?s ?p ?o1 .
+  OPTIONAL {
+	SERVICE <http://example2.org/sparql> {
+    ?s ?p2 ?o2 }
+  }
+}
+}>> OK
+// service04.rq 
+<<# bindings with two variables and two sets of values
+
+PREFIX : <http://example.org/> 
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+SELECT ?s ?o1 ?o2
+{
+  ?s ?p1 ?o1 
+  OPTIONAL { SERVICE <http://example.org/sparql> {?s foaf:knows ?o2 }}
+} BINDINGS ?o2 {
+ (:b)
+}>> OK
+// service05.rq 
+<<PREFIX  void: <http://rdfs.org/ns/void#>
+PREFIX  dc:   <http://purl.org/dc/elements/1.1/>
+PREFIX  doap: <http://usefulinc.com/ns/doap#> 
+
+SELECT ?service ?title
+WHERE {
+  # Find the service with subject "remote".
+  ?p dc:subject ?projectSubject ;
+     void:sparqlEndpoint ?service  
+     FILTER regex(?projectSubject, "remote")
+
+  # Query that service projects.
+  SERVICE ?service {
+     ?project  doap:name ?title . } 
+}>> OK
+// service06.rq 
+<<# SERVICE with one optional and a nested SERVICE. This query depends in the capabilities of the example1.org endpoint
+
+PREFIX : <http://example.org/> 
+
+SELECT ?s ?o1 ?o2
+{
+  SERVICE <http://example1.org/sparql> {
+  ?s ?p ?o1 .
+  OPTIONAL {
+	SERVICE SILENT <http://invalid.endpoint.org/sparql> {
+    ?s ?p2 ?o2 }
+  }
+}
+}>> OK
+// service07.rq 
+<<# invalid URI for a SERVICE with SILENT
+
+PREFIX : <http://example.org/> 
+
+SELECT ?s ?o1 ?o2
+{
+  ?s ?p ?o1 .
+  SERVICE SILENT <http://invalid.endpoint.org/sparql> {
+    ?s ?p2 ?o2 }
+}
+>> OK
+
+/* +++ Testset subquery +++ */
+
+// sq01.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select  ?x ?p where {
+graph ?g {
+{select * where {?x ?p ?y}}
+}
+}>> OK
+// sq02.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select  ?x ?p where {
+graph ?g {
+{select * where {?x ?p ?g}}
+}
+}>> OK
+// sq03.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x where {
+graph ?g {
+  {select ?x where {?x ?p ?g}}
+}
+}>> OK
+// sq04.rq 
+<<select ?x 
+where {
+graph ?g {
+{select * where {?x ?p ?y}}
+}
+}
+>> OK
+// sq05.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x 
+where {
+graph ?g {
+{select * where {?x ?p ?y}}
+}
+}
+>> OK
+// sq06.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x
+where {
+{select * where {?x ?p ?y}}
+}>> OK
+// sq07.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x
+where {
+{select * where {graph ?g {?x ?p ?y}}}
+}>> OK
+// sq08.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x ?max where {
+{select (max(?y) as ?max) where {?x ex:p ?y} } 
+?x ex:p ?max
+}
+>> OK
+// sq09.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select * where {
+
+{select * where { 
+  {select ?x where {?x ex:q ?t}}
+}}
+
+?x ex:p ?y 
+}
+>> OK
+// sq10.rq 
+<<prefix ex:	<http://www.example.org/schema#>
+prefix in:	<http://www.example.org/instance#>
+
+select ?x  where {
+{select * where {?x ex:p ?y}} 
+filter(exists {?x ex:q ?y}) 
+}
+>> OK
+// sq11.rq 
+<<# return labels of items for the first 2 orders
+
+PREFIX : <http://www.example.org>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?L
+WHERE {
+ ?O :hasItem [ rdfs:label ?L ] .
+ {
+ SELECT DISTINCT ?O  
+ WHERE { ?O a :Order }
+ ORDER BY ?O
+ LIMIT 2
+ }
+} ORDER BY ?L
+
+>> OK
+// sq12.rq 
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+CONSTRUCT{ ?P foaf:name ?FullName }
+WHERE {
+ SELECT ?P ( CONCAT(?F, " ", ?L) AS ?FullName ) 
+ WHERE { ?P foaf:firstName ?F ; foaf:lastName ?L. }
+}
+
+>> OK
+// sq13.rq 
+<<# return labels of items for the first 2 orders
+
+PREFIX : <http://www.example.org>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?O1 ?O2
+WHERE {
+ ?O1 :hasItem [ rdfs:label ?L ] .
+ {
+ SELECT ?O2
+ WHERE {
+ ?O2 :hasItem [ rdfs:label ?L ] .
+ }
+}} ORDER BY ?O1 ?O2
+
+>> OK
+// sq14.rq 
+<<PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+CONSTRUCT {
+   ?person a foaf:Person ;
+           foaf:name ?name ;
+           foaf:homepage ?homepage ;
+           foaf:mbox ?mbox .
+} WHERE {
+  {
+    SELECT ?person ?name WHERE {
+       ?person a foaf:Person ;
+               foaf:name ?name .
+      } ORDER BY ?name LIMIT 3
+  }
+  ?person foaf:homepage ?homepage .
+  OPTIONAL { ?person foaf:mbox ?mbox . }        
+}
+
+>> OK
+
+/* +++ Testset syntax-fed +++ */
+
+// syntax-service-01.rq 
+<<SELECT * { SERVICE <g> { ?s ?p ?o } }
+>> OK
+// syntax-service-02.rq 
+<<SELECT * { ?s ?p ?o SERVICE <g> { ?s ?p ?o } ?s ?p ?o }
+>> OK
+// syntax-service-03.rq 
+<<SELECT * { ?s ?p ?o SERVICE SILENT <g> { ?s ?p ?o } ?s ?p ?o }
+>> OK
+
