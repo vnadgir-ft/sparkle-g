@@ -37,8 +37,7 @@
 group ident;
 
 query(prologue, selectQuery, constructQuery, describeQuery, askQuery, bindingsClause, updateQuery) ::= <<
-<if(prologue)><prologue><endif>
-<if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif>
+<prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif>
 >>
 
 updateQuery(update) ::= <<
@@ -46,8 +45,7 @@ UPDATE<update; separator="\n">
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
-<baseDecl; separator="\n">
-<prefixDecl; separator="\n">
+<baseDecl; separator="\n"><if(baseDecl)><\n><endif><prefixDecl; separator="\n"><if(prefixDecl)><\n><endif><if(baseDecl)><\n><elseif(prefixDecl)><\n><endif>
 >>
 
 baseDecl(iriRef) ::= <<
@@ -59,11 +57,12 @@ PREFIX <pname> \<<iriRef>\>
 >>
 
 selectQuery(selectClause, datasetClause, whereClause, solutionModifier) ::= <<
-<if(selectClause)><selectClause><endif><if(datasetClause)><datasetClause; separator="\n"><endif>
+<if(selectClause)><selectClause><endif><if(datasetClause)><\n><datasetClause; separator="\n"><endif>
 <if(whereClause)><whereClause><endif><if(solutionModifier)><solutionModifier><endif>
 >>
 
-subSelect(whereClause, solutionModifier) ::= <<
+subSelect(selectClause, whereClause, solutionModifier) ::= <<
+<if(selectClause)><selectClause><endif>
 <if(whereClause)><whereClause><endif><if(solutionModifier)><solutionModifier><endif>
 >>
 
@@ -75,25 +74,22 @@ selectVariables(expression, var) ::= <<
 <if(expression)>(<expression> AS <endif><var><if(expression)>)<endif>
 >>
 
-constructQuery(constructTemplate, datasetClause, triplesTemplate, whereClause, solutionModifier) ::= <<
-CONSTRUCT {
-   <if(constructTemplate)><constructTemplate> <endif><datasetClause; separator=", ">
-}
-<if(whereClause)><whereClause><elseif(triplesTemplate)><triplesTemplate; separator=", "><endif><solutionModifier>
+constructQuery(constructTemplate, datasetClause, whereClause, solutionModifier) ::= <<
+CONSTRUCT {<if(constructTemplate)><\n><constructTemplate><endif><if(datasetClause)><datasetClause; separator=", "><\n><endif>}
+<if(whereClause)><whereClause><endif><solutionModifier>
 >>
 
 describeQuery(varOrIRIref, attribute, datasetClause, whereClause, solutionModifier) ::= <<
-DESCRIBE {
-   <varOrIRIref; separator=", "><attribute><whereClause><solutionModifier>
-}
+DESCRIBE <varOrIRIref; separator=" "><if(attribute)><attribute><endif><if(datasetClause)><\n><datasetClause; separator=", "><endif><if(whereClause)><\n><whereClause><endif><solutionModifier>
 >>
 
 askQuery(datasetClause, whereClause) ::= <<
-ASK <datasetClause; separator=", "><whereClause>
+ASK<if(datasetClause)><\n><datasetClause; separator=", "><endif>
+<whereClause>
 >>
 
 datasetClause(attribute, iriRef) ::= <<
-FROM <if(attribute)><attribute> <endif><iriRef>
+FROM <if(attribute)>NAMED <endif><iriRef>
 >>
 
 whereClause(groupGraphPattern) ::= <<
@@ -103,10 +99,7 @@ WHERE {
 >>
 
 solutionModifier(groupClause, havingClause, orderClause, limitOffsetClauses) ::= <<
-<if(groupClause)><groupClause><endif>
-<if(havingClause)><havingClause><endif>
-<if(orderClause)><orderClause><endif>
-<if(limitOffsetClauses)><limitOffsetClauses><endif>
+<if(groupClause)><\n><groupClause><endif><if(havingClause)><\n><havingClause><endif><if(orderClause)><\n><orderClause><endif><if(limitOffsetClauses)><\n><limitOffsetClauses><endif>
 >>
 
 groupClause(groupCondition) ::= <<
@@ -122,11 +115,11 @@ HAVING <constraint; separator=", ">
 >>
 
 orderClause(orderCondition) ::= <<
-ORDER BY <orderCondition; separator=", ">
+ORDER BY <orderCondition; separator=" ">
 >>
 
-orderCondition(attribute, expression, constraint, var) ::= <<
-<if(attribute)><attribute> <expression><elseif(constraint)><constraint><elseif(var)><var><endif> 
+orderCondition(attribute, brackettedExpression, constraint, var) ::= <<
+<if(attribute)><attribute> <brackettedExpression><elseif(constraint)><constraint><elseif(var)><var><endif> 
 >>
 
 limitOffsetClauses(limit, offset) ::= <<
@@ -134,7 +127,7 @@ limitOffsetClauses(limit, offset) ::= <<
 >>
 
 bindingsClause(var, bindingValueList) ::= <<
-BINDINGS <var; separator=", "> {
+<\n>BINDINGS <var; separator=" "> {
    <bindingValueList; separator="\n">
 }
 >>
@@ -148,7 +141,7 @@ bindingValue(iriRef, rdfLiteral, numericLiteral, booleanLiteral, value) ::= <<
 >>
 
 update(prologue, load, clear, drop, add, move, copy, create, insert, delete, modify) ::= <<
-<prologue>
+<if(prologue)><prologue><\n><endif>
 <if(load)><load><elseif(clear)><clear><elseif(drop)><drop><elseif(add)><add><elseif(move)><move><elseif(copy)><copy><elseif(create)><create><elseif(insert)><insert><elseif(delete)><delete><elseif(modify)><modify><endif>
 >>
 
@@ -209,7 +202,7 @@ usingClause(attribute1, attribute2, iriRef) ::= <<
 >>
 
 graphOrDefault(attribute, iriRef) ::= <<
-<if(attribute)><attribute><elseif(iriRef)>   GRAPH <iriRef><endif>
+<if(attribute)><attribute><elseif(iriRef)>GRAPH <iriRef><endif>
 >>
 
 graphRef(iriRef) ::= <<
@@ -236,15 +229,15 @@ triplesTemplate(triplesSameSubject) ::= <<
 >>
 
 groupGraphPattern(subselect, groupGraphPatternSub) ::= <<
-<if(subselect)><subselect><else><groupGraphPatternSub><endif>
+<if(subselect)><subselect><elseif(groupGraphPatternSub)><groupGraphPatternSub><endif>
 >>
 
-groupGraphPatternSub(triplesBlock, groupGraphPatternSubCache) ::= <<
-<if(triplesBlock)><triplesBlock><endif><groupGraphPatternSubCache; separator=" .\n">
+groupGraphPatternSub(triplesBlock, groupGraphPatternSubDetail) ::= <<
+<if(triplesBlock)><triplesBlock><\n><endif><if(groupGraphPatternSubDetail)><groupGraphPatternSubDetail; separator=""><endif>
 >>
 
-groupGraphPatternSubCache(graphPatternNotTriples, triplesBlock) ::= <<
-<graphPatternNotTriples><if(triplesBlock)><triplesBlock><endif>
+groupGraphPatternSubDetail(graphPatternNotTriples, triplesBlock) ::= <<
+<if(graphPatternNotTriples)><graphPatternNotTriples><endif><if(triplesBlock)><triplesBlock><\n><endif>
 >>
 
 triplesBlock(triplesSameSubjectPath) ::= <<
@@ -258,13 +251,13 @@ graphPatternNotTriples(groupOrUnionGraphPattern, optionalGraphPattern, minusGrap
 optionalGraphPattern(groupGraphPattern) ::= <<
 OPTIONAL {
    <groupGraphPattern>
-}
+}<\n>
 >>
 
 graphGraphPattern(varOrIRIref, groupGraphPattern) ::= <<
 GRAPH <varOrIRIref> {
    <groupGraphPattern>
-}
+}<\n>
 >>
 
 serviceGraphPattern(attribute, varOrIRIref, groupGraphPattern) ::= <<
@@ -276,28 +269,29 @@ bind(expression, var)::= <<
 >>
 
 minusGraphPattern(groupGraphPattern) ::= <<
-<groupGraphPattern>
+MINUS {
+   <groupGraphPattern>
+}<\n>
 >>
  
-groupOrUnionGraphPattern(groupGraphPattern1, groupGraphPattern2) ::= <<
-<if(groupGraphPattern2)>   {
-      <groupGraphPattern1>
-   }
-   UNION 
-   {
-      <groupGraphPattern2>
-   }
-<else>
-<groupGraphPattern1>
+groupOrUnionGraphPattern(unionGraphPattern, groupGraphPattern1, groupGraphPattern2) ::= <<
+<if(unionGraphPattern)><unionGraphPattern>UNION 
+{
+   <groupGraphPattern2>
+}
+<elseif(groupGraphPattern1)>
+{
+   <groupGraphPattern1>
+}<\n>
 <endif>
 >>
 
 filter(constraint) ::= <<
-FILTER <constraint>
+   FILTER <constraint><\n>
 >>
 
-constraint(expression, builtInCall, functionCall) ::= <<
-<if(expression)><expression><elseif(builtInCall)><builtInCall><elseif(functionCall)><functionCall><endif>
+constraint(brackettedExpression, builtInCall, functionCall) ::= <<
+<if(brackettedExpression)><brackettedExpression><elseif(builtInCall)><builtInCall><elseif(functionCall)><functionCall><endif>
 >>
 
 functionCall(iriRef, argList) ::= <<
@@ -305,7 +299,7 @@ functionCall(iriRef, argList) ::= <<
 >>
 
 argList(attribute, expression, nil) ::= <<
-<if(attribute)><attribute> <endif><if(expression)><expression; separator=", "><elseif(nil)><nil><endif>
+<if(attribute)><attribute> <endif><if(expression)><expression; separator=", "><endif>
 >>
 
 expressionList(expression, nil) ::= <<
@@ -313,67 +307,72 @@ expressionList(expression, nil) ::= <<
 >>
 
 constructTemplate(constructTriples) ::= <<
-<if(constructTriples)><constructTriples><endif>
+<if(constructTriples)><constructTriples><\n><endif>
 >>
 
 constructTriples(triplesSameSubject) ::= <<
-<triplesSameSubject; separator=",\n">
+   <triplesSameSubject; separator="\n">
 >>
 
 triplesSameSubjectPath(triplesNode, subject, propertyListNotEmpty) ::= <<
-<if(triplesNode)><triplesNode>[<propertyListNotEmpty>]<else><subject> <propertyListNotEmpty><endif>
+<if(triplesNode)><triplesNode><if(propertyListNotEmpty)> <propertyListNotEmpty><endif><else><subject> <propertyListNotEmpty><endif>
 >>
 
 path(pathSequence) ::= <<
-<pathSequence; separator="/">
+<pathSequence; separator="|">
 >>
 
 pathSequence(pathEltOrInverse) ::= <<
-<pathEltOrInverse; separator="---">
+<pathEltOrInverse; separator="/">
 >>
 
 pathEltOrInverse(inverse, pathElt) ::= <<
-<inverse><pathElt>
+<if(inverse)><inverse><endif><pathElt>
 >>
 
 pathElt(pathPrimary, pathMod) ::= <<
-<pathPrimary><pathMod>
+<pathPrimary><if(pathMod)><pathMod><endif>
 >>
 
-pathMod(value, i1, i2, i3) ::= <<
-<value>{<i1>,<i2>,<i3>}
+pathMod(value, i1, comma1, i2, comma2, i3) ::= <<
+<if(value)><value><else>{<if(i1)><i1><if(comma1)>,<if(i2)> <i2><endif><endif>}<elseif(comma2)>, <i3>}<endif><endif>
 >>
 
-pathPrimary(iriRef, value, path, pathNegatedPropertySet) ::= <<
-<iriRef><value><path><pathNegatedPropertySet>
+pathPrimary(iriRef, value, pathNegatedPropertySet, path) ::= <<
+<if(iriRef)><iriRef><elseif(value)><value><endif><if(pathNegatedPropertySet)><pathNegatedPropertySet><endif><if(path)>(<path>)<endif>
 >>
 
 pathNegatedPropertySet(pathOneInPropertySet) ::= <<
-<pathOneInPropertySet; separator=",\n">
+(<pathOneInPropertySet; separator="|">)
 >>
 
 pathOneInPropertySet(attribute, iriRef, value) ::= <<
-<attribute><iriRef><value>
+<if(attribute)><attribute><endif><if(iriRef)><iriRef><else><value><endif>
 >>
 
 triplesSameSubject(triplesNode, subject, propertyListNotEmpty) ::= <<
-<triplesNode><subject> <propertyListNotEmpty> .
+<if(triplesNode)><triplesNode><if(propertyListNotEmpty)> <propertyListNotEmpty><endif><else><subject> <propertyListNotEmpty> .<endif>
 >>
 
-propertyListNotEmpty(verb, objectList) ::= <<
-   <verb, objectList:{v, o|<v> <o>}; separator=";\n   ">
+propertyListNotEmpty(datails) ::= <<
+<details; separator=";\n">
 >>
+
+propertyListNotEmptyDetails(verb, objectList) ::= <<
+<verb> <objectList>
+>>
+
 
 objectList(graphNode) ::= <<
-<graphNode; separator="yyy">
+<graphNode; separator=", ">
 >>
 
 verb(varOrIRIref, a, path) ::= <<
 <varOrIRIref><a><path>
 >>
 
-triplesNode(subject, propertyListNotEmpty, graphNode) ::= <<
-<if(subject)>[<propertyListNotEmpty>]<elseif(graphNode)><graphNode; separator=",\n"><endif>
+triplesNode(propertyListNotEmpty, graphNode) ::= <<
+<if(propertyListNotEmpty)>[<propertyListNotEmpty>]<elseif(graphNode)>(<graphNode; separator=" ">)<endif>
 >>
 
 graphNode(varOrTerm, triplesNode) ::= <<
@@ -397,19 +396,19 @@ graphTerm(iriRef, rdfLiteral, numericLiteral, booleanLiteral, blankNode, value) 
 >>
 
 nil() ::= <<
-[NIL!!!]
+()
 >>
 
-expression(operator, expression1,  expression2, unaryExpression) ::= <<
-<if(operator)>(<expression1> <operator> <expression2>)<else><unaryExpression><endif>
+expression(operator, expression1,  expression2, unaryExpression, numericLiteralPositive, numericLiteralNegative) ::= <<
+<if(expression1)><expression1> <operator> <expression2><elseif(unaryExpression)><unaryExpression><elseif(numericLiteralPositive)><numericLiteralPositive><elseif(numericLiteralNegative)><numericLiteralNegative><endif>
 >>
 
 unaryExpression(operator, primaryExpression) ::= <<
-<if(operator)><operator> <endif><primaryExpression>
+<if(operator)><operator><endif><primaryExpression>
 >>
 
-primaryExpression(builtInCall, iriRefOrFunction, rdfLiteral, numericLiteral, booleanLiteral, var, aggregate) ::= <<
-<if(builtInCall)><builtInCall><elseif(iriRefOrFunction)><iriRefOrFunction><elseif(rdfLiteral)><rdfLiteral><elseif(numericLiteral)><numericLiteral><elseif(booleanLiteral)><booleanLiteral><elseif(var)><var><else><aggregate><endif>
+primaryExpression(brackettedExpression, builtInCall, iriRefOrFunction, rdfLiteral, numericLiteral, booleanLiteral, var, aggregate) ::= <<
+<if(brackettedExpression)><brackettedExpression><elseif(builtInCall)><builtInCall><elseif(iriRefOrFunction)><iriRefOrFunction><elseif(rdfLiteral)><rdfLiteral><elseif(numericLiteral)><numericLiteral><elseif(booleanLiteral)><booleanLiteral><elseif(var)><var><else><aggregate><endif>
 >>
 
 brackettedExpression(expression) ::= <<
@@ -417,11 +416,11 @@ brackettedExpression(expression) ::= <<
 >>
 
 builtInCall(type, expression, expressions, var, expressionList, expression1, expression2, expression3, regexExpression, existsFunction, notExistsFunction) ::= <<
-<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1> <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)>REGEX<regexExpression><elseif(existsFunction)><existsFunction><elseif(notExistsFunction)><notExistsFunction><endif>
+<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)><regexExpression><elseif(existsFunction)>EXISTS {<\n>   <existsFunction>}<elseif(notExistsFunction)>NOT EXISTS {<\n>   <notExistsFunction>}<endif>
 >>
 
-regexExpression(expression) ::= <<
-(<expression; separator=", ">)
+regexExpression(type, expression) ::= <<
+regex (<expression; separator=", ">)
 >>
 
 subStringExpression(expression) ::= <<
@@ -440,16 +439,16 @@ aggregate(operation, attribute, whatever, expression) ::= <<
 <operation><if(attribute)> <attribute><endif><if(whatever)> <whatever><endif>(<expression>)
 >>
 
-iriRefOrFunction(function, iriRef, argList) ::= <<
-<if(function)><iriRef>(<argList>)<else><iriRef><endif>
+iriRefOrFunction(iriRef, argList) ::= <<
+<if(argList)><iriRef>(<argList>)<else><iriRef><endif>
 >>
 
 rdfLiteral(string, langTag, iriRef) ::= <<
-<string><if(langTag)><langTag><else><iriRef><endif>
+<string><if(langTag)><langTag><else><if(iriRef)>^^<iriRef><endif><endif>
 >>
 
-numericLiteral(numericLiteralUnsigned) ::= <<
-<numericLiteralUnsigned>
+numericLiteral(numericLiteralUnsigned, numericLiteralPositive, numericLiteralNegative) ::= <<
+<if(numericLiteralUnsigned)><numericLiteralUnsigned><elseif(numericLiteralPositive)><numericLiteralPositive><elseif(numericLiteralNegative)><numericLiteralNegative><endif>
 >>
 
 numericLiteralUnsigned(value) ::= <<
@@ -481,7 +480,7 @@ prefixedName(name) ::= <<
 >>
 
 blankNode(value, anon) ::= <<
-<if(value)><value><else><anon><endif>
+<if(value)>_:<value><else><anon><endif>
 >>
 
 anon() ::= <<
