@@ -22,8 +22,8 @@
         <groupId>sparkle-g</groupId>
         <version>3.1</version>
         <relativePath>../sparkle-g/pom.xml</relativePath>
-    </parent> 
-    
+    </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>AntlrUnicodePreprocessor</groupId>
