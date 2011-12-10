@@ -1,5 +1,5 @@
 ~~
-~~   Copyright 2007-2010 The sparkle-g Team
+~~   Copyright 2007-2011 The sparkle-g Team
 ~~
 ~~   Licensed under the Apache License, Version 2.0 (the "License");
 ~~   you may not use this file except in compliance with the License.
@@ -24,17 +24,16 @@ Example for a SPARQL request:
 
 Kanji-01 request from the DAWG data-r2 i18n test case set
 
-[images/kanji-01-input.png]Kanji-01 test request from the DAWG data-r2 i18n test case set
+[./images/kanji-01-input.png]Kanji-01 test request from the DAWG data-r2 i18n test case set
 
 Tokenized input of the Kanji-01 request
 
-[images/kanji-01-tokenized-input.png]Tokenized input of the Kanji-01 request
+[./images/kanji-01-tokenized-input.png]Tokenized input of the Kanji-01 request
 
 ANTLR V3 parse tree generated for the Kanji-01 request
 
-[images/kanji-01-parse-tree.png]ANTLR V3 parse tree generated for the Kanji-01 request
+[./images/kanji-01-parse-tree.png]ANTLR V3 parse tree generated for the Kanji-01 request
 
 Abstract Syntax Tree generated for the Kanji-01 request
 
-[images/kanji-01-ast.png]Abstract Syntax Tree generated for the Kanji-01 request
-
+[./images/kanji-01-ast.png]Abstract Syntax Tree generated for the Kanji-01 request
