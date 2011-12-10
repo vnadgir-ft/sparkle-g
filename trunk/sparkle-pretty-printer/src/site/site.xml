@@ -18,12 +18,16 @@
 <!--
   version $Id: site.xml 327 2011-12-10 20:41:39Z simone.tripodi $
 -->
-<project name="${project.name}">
+<project xmlns="http://maven.apache.org/DECORATION/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.1.0 http://maven.apache.org/xsd/decoration-1.1.0.xsd"
+  name="${project.name}">
 
   <body>
     <menu name="Reference">
       <item name="Home" href="index.html" />
     </menu>
+
+    <menu ref="reports"/>
   </body>
 
 </project>
