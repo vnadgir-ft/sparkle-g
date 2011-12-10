@@ -47,7 +47,14 @@
       <groupId>org.antlr</groupId>
       <artifactId>antlr</artifactId>
       <version>3.4</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr-runtime</artifactId>
+      <version>3.4</version>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
