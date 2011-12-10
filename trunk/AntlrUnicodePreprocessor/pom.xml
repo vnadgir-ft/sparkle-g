@@ -26,7 +26,6 @@
     <relativePath>../</relativePath>
   </parent>
 
-  <groupId>AntlrUnicodePreprocessor</groupId>
   <artifactId>AntlrUnicodePreprocessor</artifactId>
   <version>1.1-SNAPSHOT</version>
   <packaging>jar</packaging>
