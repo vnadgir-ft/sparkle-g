@@ -82,9 +82,6 @@
       <action dev="simone.tripodi" type="add">
         Improved Maven2 build
       </action>
-      <action dev="simone.tripodi" type="add">
-        Switched to 99soft.org infra
-      </action>
     </release>
 
     <release version="2.0" date="2009-11-28" description="upgrade release">
