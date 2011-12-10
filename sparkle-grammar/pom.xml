@@ -87,8 +87,8 @@
             </goals>
             <configuration>
               <sources>
-                <source>target/generated-sources/antlr3</source>
-                <source>src/main/antlr3</source>
+                <source>${basedir}/src/main/antlr3</source>
+                <source>${project.build.directory}/generated-sources/antlr3</source>
               </sources>
             </configuration>
           </execution>
