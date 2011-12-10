@@ -83,7 +83,7 @@
   </contributors>
 
   <modules>
-    <module>AntlrUnicodePreprocessor</module>
+    <module>unicode-preprocessor</module>
     <module>sparkle-grammar</module>
     <module>sparkle-pretty-printer</module>
   </modules>
