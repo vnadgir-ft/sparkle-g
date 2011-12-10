@@ -23,7 +23,7 @@
   <version>3.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Sparkle-G</name>
+  <name>sparkle-g :: parent</name>
   <description>The SPARQL (pron: sparkle) query language ANTLR3 Grammar</description>
   <url>http://code.google.com/p/sparkle-g/</url>
   <inceptionYear>2007</inceptionYear>
