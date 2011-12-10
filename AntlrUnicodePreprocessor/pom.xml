@@ -32,7 +32,6 @@
 
   <name>Antlr Unicode Preprocessor</name>
   <description>Unicode preprocessor for the SPARQL (pron: sparkle) query language Grammar for ANTLR3</description>
-  <url>http://code.google.com/p/sparkle-g/downloads/detail?name=ANTLRUnicodePreprocessor-1.0.tar.gz</url>
   <inceptionYear>2011</inceptionYear>
 
   <dependencies>
