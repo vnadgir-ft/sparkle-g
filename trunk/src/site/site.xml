@@ -22,6 +22,14 @@
     <version>1.0</version>
   </skin>
 
+  <custom>
+    <fluidoSkin>
+      <topBarEnabled>true</topBarEnabled>
+      <sideBarEnabled>false</sideBarEnabled>
+      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
+    </fluidoSkin>
+  </custom>
+
   <body>
     <menu name="sparkle-g">
       <item name="Home" href="index.html"/>
