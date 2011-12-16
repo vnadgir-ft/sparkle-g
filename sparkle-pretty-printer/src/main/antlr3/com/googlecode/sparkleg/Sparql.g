@@ -222,7 +222,8 @@ insert
     ;
    
 delete 	  
-    : DELETE (deleteData | deleteWhere)
+    : DELETE deleteData -> ^(DELETE deleteData)
+    | DELETE deleteWhere -> ^(DELETE deleteWhere)
     ;
 
 deleteData
@@ -238,7 +239,7 @@ modify
     ;
   
 deleteClause
-    : DELETE quadPattern -> DELETE quadPattern
+    : DELETE quadPattern -> ^(DELETE quadPattern)
     ;
       
 insertClause
