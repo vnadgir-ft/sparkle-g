@@ -41,7 +41,7 @@ query(prologue, selectQuery, constructQuery, describeQuery, askQuery, bindingsCl
 >>
 
 updateQuery(update) ::= <<
-UPDATE<update; separator="\n">
+<update; separator="\n">
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
@@ -75,7 +75,7 @@ selectVariables(expression, var) ::= <<
 >>
 
 constructQuery(constructTemplate, datasetClause, whereClause, solutionModifier) ::= <<
-CONSTRUCT {<if(constructTemplate)><\n><constructTemplate><endif><if(datasetClause)><datasetClause; separator=", "><\n><endif>}
+CONSTRUCT <if(constructTemplate)>{<\n>   <constructTemplate><\n>}<endif><if(datasetClause)><datasetClause; separator=", "><endif>
 <if(whereClause)><whereClause><endif><solutionModifier>
 >>
 
@@ -107,7 +107,7 @@ GROUP BY <groupCondition; separator="\n">
 >>
 
 groupCondition(builtInCall, functionCall, expression, var) ::= <<
-<if(builtInCall)><builtInCall><elseif(functionCall)><functionCall><elseif(expression)>AS <expression> <var; separator=", "><elseif(var)><var><endif>
+<if(builtInCall)><builtInCall><elseif(functionCall)><functionCall><elseif(expression)> <expression> AS <var; separator=", "><elseif(var)><var><endif>
 >>
 
 havingClause(constraint) ::= <<
@@ -206,7 +206,7 @@ graphOrDefault(attribute, iriRef) ::= <<
 >>
 
 graphRef(iriRef) ::= <<
-<iriRef>
+GRAPH <iriRef>
 >>
 
 graphRefAll(graphRef, attribute) ::= <<
@@ -261,11 +261,11 @@ GRAPH <varOrIRIref> {
 >>
 
 serviceGraphPattern(attribute, varOrIRIref, groupGraphPattern) ::= <<
-<attribute><varOrIRIref><groupGraphPattern>
+SERVICE<if(attribute)> <attribute> <endif><varOrIRIref><groupGraphPattern>
 >>
 
 bind(expression, var)::= <<
-<expression><var>
+BIND(<expression> AS <var>)<\n>
 >>
 
 minusGraphPattern(groupGraphPattern) ::= <<
@@ -287,7 +287,7 @@ groupOrUnionGraphPattern(unionGraphPattern, groupGraphPattern1, groupGraphPatter
 >>
 
 filter(constraint) ::= <<
-   FILTER <constraint><\n>
+FILTER <constraint><\n>
 >>
 
 constraint(brackettedExpression, builtInCall, functionCall) ::= <<
@@ -303,7 +303,7 @@ argList(attribute, expression, nil) ::= <<
 >>
 
 expressionList(expression, nil) ::= <<
-<if(expression)><expression><else><nil><endif>
+<if(expression)><expression; separator=", "><else><nil><endif>
 >>
 
 constructTemplate(constructTriples) ::= <<
