@@ -182,7 +182,8 @@ insert
     ;
    
 delete 	  
-    : DELETE (d=deleteData | w=deleteWhere) -> delete(deleteData={$d.st}, deleteWhere={$w.st})
+    : ^(DELETE d=deleteData) -> delete(deleteData={$d.st})
+    | ^(DELETE w=deleteWhere) -> delete(deleteWhere={$w.st})
     ;
 
 deleteData
@@ -199,7 +200,7 @@ modify
     ;
   
 deleteClause
-    : DELETE q=quadPattern -> deleteClause(quadPattern={$q.st})
+    : ^(DELETE q=quadPattern) -> deleteClause(quadPattern={$q.st})
     ;
       
 insertClause
@@ -227,7 +228,7 @@ graphRefAll
     ;
 
 quadPattern
-    : quads -> quadPattern()
+    : q=quads -> quadPattern(quads={$q.st})
     ;
     
 quads
@@ -497,11 +498,11 @@ builtInCall
     | ^(UCASE e=expression) -> builtInCall(type={$UCASE.text}, expression={$e.st})
     | ^(LCASE e=expression) -> builtInCall(type={$LCASE.text}, expression={$e.st})
     | ^(ENCODE_FOR_URI e=expression) -> builtInCall(type={$ENCODE_FOR_URI.text}, expression={$e.st})
-    | ^(CONTAINS e1=expression e2=expression) -> builtInCall(type={$CONTAINS.text}, expression={$e1.st}, expression={$e2.st})
-    | ^(STRSTARTS e1=expression e2=expression) -> builtInCall(type={$STRSTARTS.text}, expression={$e1.st}, expression={$e2.st})
-    | ^(STRENDS e1=expression e2=expression) -> builtInCall(type={$STRENDS.text}, expression={$e1.st}, expression={$e2.st})
-    | ^(STRBEFORE e1=expression e2=expression) -> builtInCall(type={$STRBEFORE.text}, expression={$e1.st}, expression={$e2.st})
-    | ^(STRAFTER e1=expression e2=expression) -> builtInCall(type={$STRAFTER.text}, expression={$e1.st}, expression={$e2.st})
+    | ^(CONTAINS e1=expression e2=expression) -> builtInCall(type={$CONTAINS.text}, expression1={$e1.st}, expression2={$e2.st})
+    | ^(STRSTARTS e1=expression e2=expression) -> builtInCall(type={$STRSTARTS.text}, expression1={$e1.st}, expression2={$e2.st})
+    | ^(STRENDS e1=expression e2=expression) -> builtInCall(type={$STRENDS.text}, expression1={$e1.st}, expression2={$e2.st})
+    | ^(STRBEFORE e1=expression e2=expression) -> builtInCall(type={$STRBEFORE.text}, expression1={$e1.st}, expression2={$e2.st})
+    | ^(STRAFTER e1=expression e2=expression) -> builtInCall(type={$STRAFTER.text}, expression1={$e1.st}, expression2={$e2.st})
     | ^(REPLACE e1=expression e2=expression e3=expression) -> builtInCall(type={$REPLACE.text}, expression1={$e1.st}, expression2={$e2.st}, expression3={$e3.st})
     | ^(YEAR e=expression) -> builtInCall(type={$YEAR.text}, expression={$e.st})
     | ^(MONTH e=expression) -> builtInCall(type={$MONTH.text}, expression={$e.st})
