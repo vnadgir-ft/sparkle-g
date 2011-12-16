@@ -107,7 +107,7 @@ GROUP BY <groupCondition; separator="\n">
 >>
 
 groupCondition(builtInCall, functionCall, expression, var) ::= <<
-<if(builtInCall)><builtInCall><elseif(functionCall)><functionCall><elseif(expression)> <expression> AS <var; separator=", "><elseif(var)><var><endif>
+<if(builtInCall)><builtInCall><elseif(functionCall)><functionCall><elseif(expression)>(<expression> AS <var; separator=", ">)<elseif(var)><var><endif>
 >>
 
 havingClause(constraint) ::= <<
@@ -182,15 +182,21 @@ delete(deleteData, deleteWhere) ::= <<
 >>
 
 deleteData(quadPattern) ::= <<
-DELETE DATA <quadPattern>
+DELETE DATA {
+   <quadPattern>
+}
 >>
 
 deleteWhere(quadPattern) ::= <<
-DELETE WHERE <quadPattern>
+DELETE WHERE {
+   <quadPattern>
+}
 >>
 
 deleteClause(quadPattern) ::= <<
-DELETE <quadPattern>
+DELETE {
+   <quadPattern>
+}
 >>
 
 insertClause(quadPattern) ::= <<
@@ -213,7 +219,8 @@ graphRefAll(graphRef, attribute) ::= <<
 <if(graphRef)><graphRef><elseif(attribute)><attribute><endif>
 >>
 
-quadPattern() ::= <<
+quadPattern(quads) ::= <<
+   <quads>
 >>
 
 quads(triplesTemplate1, quadsNotTriples, triplesTemplate2) ::= <<
@@ -221,7 +228,9 @@ quads(triplesTemplate1, quadsNotTriples, triplesTemplate2) ::= <<
 >>
 
 quadsNotTriples(varOrIRIref, triplesTemplate) ::= <<
-<varOrIRIref><triplesTemplate>
+GRAPH <varOrIRIref> {
+   <triplesTemplate>
+}
 >>
 
 triplesTemplate(triplesSameSubject) ::= <<
@@ -261,7 +270,9 @@ GRAPH <varOrIRIref> {
 >>
 
 serviceGraphPattern(attribute, varOrIRIref, groupGraphPattern) ::= <<
-SERVICE<if(attribute)> <attribute> <endif><varOrIRIref><groupGraphPattern>
+SERVICE<if(attribute)> <attribute><endif> <varOrIRIref> {
+   <groupGraphPattern>
+}<\n>
 >>
 
 bind(expression, var)::= <<
@@ -415,16 +426,16 @@ brackettedExpression(expression) ::= <<
 (<expression>)
 >>
 
-builtInCall(type, expression, expressions, var, expressionList, expression1, expression2, expression3, regexExpression, existsFunction, notExistsFunction) ::= <<
-<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)><regexExpression><elseif(existsFunction)>EXISTS {<\n>   <existsFunction>}<elseif(notExistsFunction)>NOT EXISTS {<\n>   <notExistsFunction>}<endif>
+builtInCall(type, expression, expressions, var, expressionList, expression1, expression2, expression3, regexExpression, existsFunction, notExistsFunction, subStringExpression) ::= <<
+<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)><regexExpression><elseif(existsFunction)>EXISTS {<\n>   <existsFunction>}<elseif(notExistsFunction)>NOT EXISTS {<\n>   <notExistsFunction>}<elseif(subStringExpression)><subStringExpression><endif>
 >>
 
-regexExpression(type, expression) ::= <<
-regex (<expression; separator=", ">)
+regexExpression(expression) ::= <<
+REGEX(<expression; separator=", ">)
 >>
 
 subStringExpression(expression) ::= <<
-<expression; separator=", ">
+SUBSTR(<expression; separator=", ">)
 >>
 
 existsFunction(groupGraphPattern) ::= <<
