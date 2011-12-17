@@ -90,7 +90,7 @@ public class IdentGunitOkTest {
     @Parameterized.Parameters
     public static Collection<Object[]> generateParams() {
 
-        final String inFile = "./src/test/java/com/googlecode/sparkleg/Sparql.testsuite";
+        final String inFile = "./src/test/gunit/com/googlecode/sparkleg/Sparql.testsuite";
 
         try {
             loadTestData(inFile);
