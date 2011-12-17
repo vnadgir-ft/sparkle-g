@@ -204,7 +204,7 @@ deleteClause
     ;
       
 insertClause
-    : INSERT q=quadPattern -> insertClause(quadPattern={$q.st})
+    : ^(INSERT q=quadPattern) -> insertClause(quadPattern={$q.st})
     ;
 
 usingClause

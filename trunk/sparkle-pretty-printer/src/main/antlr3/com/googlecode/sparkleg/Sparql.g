@@ -243,7 +243,7 @@ deleteClause
     ;
       
 insertClause
-    : INSERT quadPattern -> INSERT quadPattern
+    : INSERT quadPattern -> ^(INSERT quadPattern)
     ;
 
 usingClause
