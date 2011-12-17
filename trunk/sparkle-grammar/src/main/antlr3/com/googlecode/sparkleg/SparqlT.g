@@ -179,7 +179,8 @@ insert
     ;
    
 delete 	  
-    : DELETE (deleteData | deleteWhere)
+    : ^(DELETE deleteData)
+    | ^(DELETE deleteWhere)
     ;
 
 deleteData
@@ -196,11 +197,11 @@ modify
     ;
   
 deleteClause
-    : DELETE quadPattern
+    : ^(DELETE quadPattern)
     ;
       
 insertClause
-    : INSERT quadPattern
+    : ^(INSERT quadPattern)
     ;
 
 usingClause

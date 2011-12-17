@@ -222,7 +222,8 @@ insert
     ;
    
 delete 	  
-    : DELETE (deleteData | deleteWhere)
+    : DELETE deleteData -> ^(DELETE deleteData)
+    | DELETE deleteWhere -> ^(DELETE deleteWhere)
     ;
 
 deleteData
@@ -238,11 +239,11 @@ modify
     ;
   
 deleteClause
-    : DELETE quadPattern -> DELETE quadPattern
+    : DELETE quadPattern -> ^(DELETE quadPattern)
     ;
       
 insertClause
-    : INSERT quadPattern -> INSERT quadPattern
+    : INSERT quadPattern -> ^(INSERT quadPattern)
     ;
 
 usingClause
@@ -428,7 +429,8 @@ pathPrimary
     ;
 
 pathNegatedPropertySet
-    : (pathOneInPropertySet | OPEN_BRACE (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? CLOSE_BRACE) -> ^(PATH_NEGATED pathOneInPropertySet+)
+    : pathOneInPropertySet -> ^(PATH_NEGATED pathOneInPropertySet)
+    | OPEN_BRACE (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? CLOSE_BRACE -> ^(PATH_NEGATED pathOneInPropertySet+)
     ;  	
 
 pathOneInPropertySet
