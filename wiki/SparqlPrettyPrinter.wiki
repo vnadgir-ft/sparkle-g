@@ -22,7 +22,7 @@ Here a brief description of the transformation pipeline which every query is und
 
 === Conversion of Unicode escape sequences ===
   
-The UnicodePreprocessorFileStream substitutes Unicode escape sequences (\uxxxx) by its UTF8 code.
+The {{{UnicodePreprocessorFileStream}}} substitutes Unicode escape sequences (\uxxxx) by its UTF8 code.
 
 The example SPARQL query has encoded the character S as Unicode escape sequence \u0053.
 
@@ -50,13 +50,13 @@ SELECT ?name WHERE {
 
 === Tokenizing of the SPARQL query ===
 
-The preprocessed query is passed on to the SparqlLexer. It splits the query into tokens which serve as input for the SparqlParser.
+The preprocessed query is passed on to the {{{SparqlLexer}}}. It splits the query into tokens which serve as input for the {{{SparqlParser}}}.
 
 <image to be embedded>
 
 === Parsing of the query ===
 
-The SparqlParser matches the query tokens delivered by the SparqlLexer against the SPARQL grammar defined by ANTLR rules. The Parse Tree below represents the sequence of rule invocations used to match the input query.
+The {{{SparqlParser}}} matches the query tokens delivered by the {{{SparqlLexer}}} against the SPARQL grammar defined by ANTLR rules. The Parse Tree below represents the sequence of rule invocations used to match the input query.
 
 <image to be embedded>
 
@@ -74,7 +74,7 @@ The AST is input for the Tree Grammar. The imaginary UP and DOWN nodes have been
 
 === Emitting the Formatted Query ===
 
-The Tree Grammar rules have been augmented with StringTemplate rewrite rules. The template rewrites for the pretty printer are defined in the Ident.stg StringTemplate group file. Traversing the Tree Grammar rules invokes the referenced template. The generated formatted output of the kanji query is shown below.
+The Tree Grammar rules have been augmented with {{{StringTemplate}}} rewrite rules. The template rewrites for the pretty printer are defined in the Ident.stg {{{StringTemplate}}} group file. Traversing the Tree Grammar rules invokes the referenced template. The generated formatted output of the kanji query is shown below.
 
 {{{
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
