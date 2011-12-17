@@ -4,7 +4,7 @@
 
 == SPARKLE-G ==
 
-===Pretty Printer and Syntactic Validator for the SPARQL 1.1 Query and Update Language ===
+=== Pretty Printer and Syntactic Validator for the SPARQL 1.1 Query and Update Language ===
 
 The sparkle-g project has released a pretty printer and syntactic validator for the [http://www.w3.org/TR/sparql11-query/ SPARQL 1.1 Query] and 
 [http://www.w3.org/TR/2011/WD-sparql11-update-20110512/ Update Language]. The pretty printer and syntactic validator is based on the [http://antlr.org/ ANTLR] framework for constructing recognizers, interpreters, compilers, and translators. The generation of the formatted output text relies on the [http://www.stringtemplate.org/ StringTemplate] template engine. [http://antlr.org/ ANTLR] and 
@@ -16,15 +16,77 @@ On developing the pretty printer emphasis had been placed on target language ind
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+== The transformation pipeline ==
 
+Here a brief description of the transformation pipeline which every query is undergoing.
 
-= Details =
+=== Conversion of Unicode escape sequences ===
+  
+The UnicodePreprocessorFileStream substitutes Unicode escape sequences (\uxxxx) by its UTF8 code.
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+The example SPARQL query has encoded the character S as Unicode escape sequence \u0053.
+
+{{{
+# $Id: kanji-02.rq,v 1.4 2005/11/06 08:27:50 eric Exp $
+# test wide spaces
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX 食: <http://www.w3.org/kanji.ttl#>
+\u0053ELECT ?name WHERE {
+  [ foaf:name ?name ;
+    食:食べる 食:海老 ] . }
+}}}
+
+After passing through the Unicode pre-processor the Unicode escape sequence is replaced by its UTF8 character code.
+
+{{{
+# $Id: kanji-02.rq,v 1.4 2005/11/06 08:27:50 eric Exp $
+# test wide spaces
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX 食: <http://www.w3.org/kanji.ttl#>
+SELECT ?name WHERE {
+  [ foaf:name ?name ;
+    食:食べる 食:海老 ] . }
+}}}
+
+=== Tokenizing of the SPARQL query ===
+
+The preprocessed query is passed on to the SparqlLexer. It splits the query into tokens which serve as input for the SparqlParser.
+
+<image to be embedded>
+
+=== Parsing of the query ===
+
+The SparqlParser matches the query tokens delivered by the SparqlLexer against the SPARQL grammar defined by ANTLR rules. The Parse Tree below represents the sequence of rule invocations used to match the input query.
+
+<image to be embedded>
+
+=== AST generation ===
+
+The Abstract Syntax Tree is defined by adding rewrite rules to the parser grammar. The AST nodes below have been generated from the input query invoking the sequence of affected rewrite rules attached to the parser grammar rules.
+
+<image to be embedded>
+
+=== Traversing the AST ===
+
+The AST is input for the Tree Grammar. The imaginary UP and DOWN nodes have been added by ANTLR. The two graphics display the AST generated for the kanji input query.
+
+<image to be embedded>
+
+=== Emitting the Formatted Query ===
+
+The Tree Grammar rules have been augmented with StringTemplate rewrite rules. The template rewrites for the pretty printer are defined in the Ident.stg StringTemplate group file. Traversing the Tree Grammar rules invokes the referenced template. The generated formatted output of the kanji query is shown below.
+
+{{{
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX 食: <http://www.w3.org/kanji.ttl#>
+
+SELECT ?name
+WHERE {
+   [ foaf:name ?name;
+   食:食べる 食:海老 ]
+}
+}}}
+
+=== How to get the SPARQL Pretty Printer to work ===
+
+- to be done -
