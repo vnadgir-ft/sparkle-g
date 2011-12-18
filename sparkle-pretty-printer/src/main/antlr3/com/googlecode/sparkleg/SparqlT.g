@@ -105,8 +105,8 @@ groupClause
 groupCondition
     : ^(GROUP_CONDITION b=builtInCall) -> groupCondition(builtInCall={$b.st})
     | ^(GROUP_CONDITION f=functionCall) -> groupCondition(functionCall={$f.st})
-    | ^(GROUP_CONDITION e=expression ^(AS (v=var)?) ) -> groupCondition(expression={$e.st}, var={$v.st})
-    | ^(GROUP_CONDITION var) -> groupCondition(var={$var.st})
+    | ^(GROUP_CONDITION e=expression  (v=var)? ) -> groupCondition(expression={$e.st}, var={$v.st})
+    | ^(GROUP_CONDITION v=var) -> groupCondition(var={$v.st})
     ;
 
 havingClause
