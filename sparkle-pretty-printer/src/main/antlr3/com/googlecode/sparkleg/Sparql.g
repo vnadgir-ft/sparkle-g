@@ -141,7 +141,7 @@ groupClause
 groupCondition
     : builtInCall -> ^(GROUP_CONDITION builtInCall)
     | functionCall -> ^(GROUP_CONDITION functionCall)
-    | OPEN_BRACE expression (AS var)? CLOSE_BRACE -> ^(GROUP_CONDITION expression ^(AS var)? )
+    | OPEN_BRACE expression (AS var)? CLOSE_BRACE -> ^(GROUP_CONDITION expression var?)
     | var -> ^(GROUP_CONDITION var)
     ;
     
