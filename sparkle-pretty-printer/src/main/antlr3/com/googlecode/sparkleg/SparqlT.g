@@ -195,8 +195,7 @@ deleteWhere
     ;
     
 modify
-    : ^(MODIFY ^(WITH iriRef) deleteClause* insertClause* usingClause* whereClause)
-    | ^(MODIFY deleteClause* insertClause* usingClause* whereClause)
+    : ^(MODIFY (WITH r=iriRef)? d=deleteClause* i=insertClause* u=usingClause* w=whereClause) -> modify(iriRef={$r.st}, deleteClause={$d.st}, insertClause={$i.st}, usingClause={$u.st}, whereClause={$w.st})
     ;
   
 deleteClause
@@ -232,7 +231,11 @@ quadPattern
     ;
     
 quads
-    : (t1=triplesTemplate)? (q+=quadsNotTriples (t2+=triplesTemplate)?)* -> quads(triplesTemplate1={$t1.st}, quadsNotTriples={$q}, triplesTemplate2={$t2})
+    : (t=triplesTemplate)?  (q+=quadsDetails)* -> quads(triplesTemplate={$t.st}, quadsDetails={$q})
+    ;
+    
+quadsDetails
+    : q=quadsNotTriples t=triplesTemplate? -> quadsDetails(quadsNotTriples={$q.st}, triplesTemplate={$t.st})
     ;
     
 quadsNotTriples
@@ -443,8 +446,8 @@ expression
     | ^(GREATER e1=expression e2=expression) -> expression(operator={">"}, expression1={$e1.st},  expression2={$e2.st})
     | ^(LESS_EQUAL e1=expression e2=expression) -> expression(operator={"<="}, expression1={$e1.st},  expression2={$e2.st})
     | ^(GREATER_EQUAL e1=expression e2=expression) -> expression(operator={">="}, expression1={$e1.st},  expression2={$e2.st})  
-    | ^(IN e1=expression e2=expression) -> expression(operator={$IN.text}, expression1={$e1.st},  expression2={$e2.st})
-    | ^(NOT IN e1=expression e2=expression) -> expression(operator={"NOT IN"}, expression1={$e1.st},  expression2={$e2.st})
+    | ^(IN l=expressionList) -> expression(operator={"IN"}, expressionList={$l.st})
+    | ^(NOT IN l=expressionList) -> expression(operator={"NOT IN"}, expressionList={$l.st})
     | ^(PLUS e1=expression e2=expression) -> expression(operator={"+"}, expression1={$e1.st},  expression2={$e2.st})
     | ^(MINUS e1=expression e2=expression) -> expression(operator={"-"}, expression1={$e1.st},  expression2={$e2.st}) 
     | ^(ASTERISK e1=expression e2=expression) -> expression(operator={"*"}, expression1={$e1.st},  expression2={$e2.st})

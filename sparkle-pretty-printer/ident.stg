@@ -41,7 +41,7 @@ query(prologue, selectQuery, constructQuery, describeQuery, askQuery, bindingsCl
 >>
 
 updateQuery(update) ::= <<
-<update; separator="\n">
+<update; separator=";\n">
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
@@ -197,6 +197,10 @@ deleteClause(quadPattern) ::= <<
 DELETE {
    <quadPattern>
 }
+>>
+
+modify(iriRef, deleteClause, insertClause, usingClause, whereClause) ::= <<
+<if(iriRef)>WITH <iriRef> <endif><if(deleteClause)><deleteClause><endif><if(insertClause)><if(deleteClause)><\n><endif><insertClause><elseif(usingClause)><usingClause><endif><whereClause>
 >>
 
 insertClause(quadPattern) ::= <<
@@ -410,8 +414,8 @@ nil() ::= <<
 ()
 >>
 
-expression(operator, expression1,  expression2, unaryExpression, numericLiteralPositive, numericLiteralNegative) ::= <<
-<if(expression1)><expression1> <operator> <expression2><elseif(unaryExpression)><unaryExpression><elseif(numericLiteralPositive)><numericLiteralPositive><elseif(numericLiteralNegative)><numericLiteralNegative><endif>
+expression(operator, expression1,  expression2, expressionList, unaryExpression, numericLiteralPositive, numericLiteralNegative) ::= <<
+<if(expression1)><expression1> <operator> <expression2><elseif(expressionList)><operator>(<expressionList; separator=" ,">)<elseif(unaryExpression)><unaryExpression><elseif(numericLiteralPositive)><numericLiteralPositive><elseif(numericLiteralNegative)><numericLiteralNegative><endif>
 >>
 
 unaryExpression(operator, primaryExpression) ::= <<
