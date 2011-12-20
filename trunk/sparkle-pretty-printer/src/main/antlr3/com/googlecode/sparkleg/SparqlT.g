@@ -446,14 +446,14 @@ expression
     | ^(GREATER e1=expression e2=expression) -> expression(operator={">"}, expression1={$e1.st},  expression2={$e2.st})
     | ^(LESS_EQUAL e1=expression e2=expression) -> expression(operator={"<="}, expression1={$e1.st},  expression2={$e2.st})
     | ^(GREATER_EQUAL e1=expression e2=expression) -> expression(operator={">="}, expression1={$e1.st},  expression2={$e2.st})  
-    | ^(IN l=expressionList) -> expression(operator={"IN"}, expressionList={$l.st})
-    | ^(NOT IN l=expressionList) -> expression(operator={"NOT IN"}, expressionList={$l.st})
+    | ^(IN e1=expression l=expressionList) -> expression(operator={"IN"}, expression1={$e1.st}, expressionList={$l.st})
+    | ^(NOT IN e1=expression l=expressionList) -> expression(operator={"NOT IN"}, expression1={$e1.st}, expressionList={$l.st})
     | ^(PLUS e1=expression e2=expression) -> expression(operator={"+"}, expression1={$e1.st},  expression2={$e2.st})
     | ^(MINUS e1=expression e2=expression) -> expression(operator={"-"}, expression1={$e1.st},  expression2={$e2.st}) 
     | ^(ASTERISK e1=expression e2=expression) -> expression(operator={"*"}, expression1={$e1.st},  expression2={$e2.st})
     | ^(DIVIDE e1=expression e2=expression) -> expression(operator={"/"}, expression1={$e1.st},  expression2={$e2.st})
-    | n=numericLiteralPositive -> expression(numericLiteralPositive={$n.st})
-    | m=numericLiteralNegative -> expression(numericLiteralNegative={$m.st})
+    | n1=numericLiteralPositive -> expression(numericLiteralPositive={$n1.st})
+    | n2=numericLiteralNegative -> expression(numericLiteralNegative={$n2.st})
     | u=unaryExpression -> expression(unaryExpression={$u.st})
     ;
     

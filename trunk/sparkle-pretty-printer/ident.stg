@@ -318,7 +318,7 @@ argList(attribute, expression, nil) ::= <<
 >>
 
 expressionList(expression, nil) ::= <<
-<if(expression)><expression; separator=", "><else><nil><endif>
+<if(expression)><expression; separator=", "><endif>
 >>
 
 constructTemplate(constructTriples) ::= <<
@@ -414,8 +414,8 @@ nil() ::= <<
 ()
 >>
 
-expression(operator, expression1,  expression2, expressionList, unaryExpression, numericLiteralPositive, numericLiteralNegative) ::= <<
-<if(expression1)><expression1> <operator> <expression2><elseif(expressionList)><operator>(<expressionList; separator=" ,">)<elseif(unaryExpression)><unaryExpression><elseif(numericLiteralPositive)><numericLiteralPositive><elseif(numericLiteralNegative)><numericLiteralNegative><endif>
+expression(operator, expression1,  expression2, expressionList, unaryExpression, numericLiteralPositive, numericLiteralNegative, numericLiteralUnsigned) ::= <<
+<if(expressionList)><expression1> <operator>(<expressionList; separator=" ,">)<elseif(expression1)><expression1> <operator> <expression2><elseif(unaryExpression)><unaryExpression><elseif(numericLiteralPositive)><numericLiteralPositive><elseif(numericLiteralNegative)><numericLiteralNegative><elseif(numericLiteralUnsigned)><numericLiteralUnsigned><endif>
 >>
 
 unaryExpression(operator, primaryExpression) ::= <<
