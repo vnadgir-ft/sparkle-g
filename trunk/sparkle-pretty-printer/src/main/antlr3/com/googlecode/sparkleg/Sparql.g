@@ -235,7 +235,7 @@ deleteWhere
     ;
     
 modify
-    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE_CLAUSE groupGraphPattern))
+    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY (WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE_CLAUSE groupGraphPattern))
     ;
   
 deleteClause
@@ -268,7 +268,11 @@ quadPattern
     ;
     
 quads
-    : triplesTemplate? (quadsNotTriples DOT? triplesTemplate?)* ->  triplesTemplate? (quadsNotTriples triplesTemplate?)* 
+    : triplesTemplate? quadsDetails* ->  triplesTemplate? quadsDetails* 
+    ;
+    
+quadsDetails
+    : quadsNotTriples DOT? triplesTemplate? -> quadsNotTriples triplesTemplate? 
     ;
     
 quadsNotTriples
