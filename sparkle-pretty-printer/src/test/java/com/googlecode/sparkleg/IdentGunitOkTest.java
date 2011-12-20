@@ -45,16 +45,16 @@ import java.util.Collection;
  * @author Jürgen
  * 
  * Select all queries from Sparql.testsuite with expected GUnit status OK.
- * The query is processed by the Sparkle Pretty Printer, The resulting
- * re-formatted query is stored in response1.
- * This response1 query is again sent through the Sparkle Printer transformation
- * pipeline. The resulting response2 query is compared to response1. In case
- * of equality the test case is evaluated as succesfull.
+ * The query is processed by the Sparkle Pretty Printer. The resulting
+ * re-formatted query is stored in response1.  * This response1 query is
+ * sent through the Sparkle Printer transformation pipeline, too.
+ * The resulting output response2 is compared to the response1. In case
+ * of equality the test case is evaluated as successfull.
  * A stable transformation algorithm should result in no changes when
  * repeatedly applied on the generated output.
- * This behaviour is neccessary but not sufficient, so the three input sequences
- * query, response1 and response2 are written for manual inspection in a log 
- * file.
+ * This behaviour is neccessary but not sufficient, for this reason
+ * the three data sequences: query, response1 and response2
+ * are written for manual inspection in a log file.
  */
 @RunWith(Parameterized.class)
 public class IdentGunitOkTest {
@@ -145,6 +145,9 @@ public class IdentGunitOkTest {
     public void formatter() {
         try {
             qcounter++;
+            
+            // System.err.println("\n---Query "+qcounter+" START");
+            
             w.write("\n#~~~Input " + qcounter + " :\n");
             w.write(query);
 
@@ -154,7 +157,7 @@ public class IdentGunitOkTest {
 
                 w.write("\n#+++Response 1:\n");
                 w.write(response1);
-                w.write("\n#---Response 2\n");
+                w.write("\n#---Response 2:\n");
                 w.write(response2);
 
                 assertEquals("+++++++++\nInput:\n" + query + "\nResponse:\n", response1, response2);
