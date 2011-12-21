@@ -177,7 +177,7 @@ public class IdentGunitOkTest {
          * step 1: Unicode pre-processing
          * step 2: Lexical analysis
          */
-        SparqlLexer lex = new SparqlLexer(new ANTLRUnicodePreprocessorStringStream(query));
+        SparqlLexer lex = new SparqlLexer(new SparkleUnicodePreprocessorStringStream(query));
         CommonTokenStream tokens = new CommonTokenStream(lex);
 
         /* transformation pipline

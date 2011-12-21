@@ -13,7 +13,7 @@ public class SparqlMain {
 
         System.out.println("Working on file " + args[0]);
 
-        SparqlLexer lex = new SparqlLexer(new ANTLRUnicodePreprocessorFileStream/*ANTLRFileStream*/(args[0], "UTF8"));
+        SparqlLexer lex = new SparqlLexer(new SparkleUnicodePreprocessorFileStream(args[0], "UTF8"));
         CommonTokenStream tokens = new CommonTokenStream(lex);
 
         SparqlParser parser = new SparqlParser(tokens);
