@@ -26,9 +26,9 @@ import static org.junit.Assert.*;
  *
  * @author Jürgen
  */
-public class ANTLRUnicodePreprocessorStringStreamTest {
+public class SparkleUnicodePreprocessorStringStreamTest {
 
-    public ANTLRUnicodePreprocessorStringStreamTest() {
+    public SparkleUnicodePreprocessorStringStreamTest() {
     }
 
     @BeforeClass
@@ -49,32 +49,32 @@ public class ANTLRUnicodePreprocessorStringStreamTest {
 
     @Test
     public void testNoSubstitution() {
-        ANTLRUnicodePreprocessorStringStream up = new ANTLRUnicodePreprocessorStringStream("No Unicode\nno substitution");
+        SparkleUnicodePreprocessorStringStream up = new SparkleUnicodePreprocessorStringStream("No Unicode\nno substitution");
         assertEquals("The strings should be equal - ", up.toString(), "No Unicode\nno substitution");
     }
 
     @Test
     public void testUnicodeSubstitution1() {
-        ANTLRUnicodePreprocessorStringStream up = new ANTLRUnicodePreprocessorStringStream("\u0055nicode\ns\u0075bstit\u0075tion");
+        SparkleUnicodePreprocessorStringStream up = new SparkleUnicodePreprocessorStringStream("\u0055nicode\ns\u0075bstit\u0075tion");
         assertEquals("The strings should be equal - ", up.toString(), "Unicode\nsubstitution");
     }
     
     @Test
     public void testUnicodeSubstitution2() {
-        ANTLRUnicodePreprocessorStringStream up = new ANTLRUnicodePreprocessorStringStream("Unicode\ns\u00A90ubstitution");
+        SparkleUnicodePreprocessorStringStream up = new SparkleUnicodePreprocessorStringStream("Unicode\ns\u00A90ubstitution");
         assertEquals("The strings should be equal - ", up.toString(), "Unicode\ns©0ubstitution");
     }
     
     @Test
     public void testUnicodeSubstitution3() {
-        ANTLRUnicodePreprocessorStringStream up = new ANTLRUnicodePreprocessorStringStream("Unicode\ns\u0001ubstitution");
+        SparkleUnicodePreprocessorStringStream up = new SparkleUnicodePreprocessorStringStream("Unicode\ns\u0001ubstitution");
         assertEquals("The strings should be equal  - ", up.toString(), "Unicode\nsubstitution");
     }
     
     @Test
     public void testUnicodeSubstitution4() {
         /* The transformation into the normalized form \\uxxxx is taken care of by the Java compiler */
-        ANTLRUnicodePreprocessorStringStream up = new ANTLRUnicodePreprocessorStringStream("Unicode\ns\uuu00A90ubstitu\uuu00a99tion");
+        SparkleUnicodePreprocessorStringStream up = new SparkleUnicodePreprocessorStringStream("Unicode\ns\uuu00A90ubstitu\uuu00a99tion");
         assertEquals("The strings should be equal", up.toString(), "Unicode\ns©0ubstitu©9tion");
     }
 }

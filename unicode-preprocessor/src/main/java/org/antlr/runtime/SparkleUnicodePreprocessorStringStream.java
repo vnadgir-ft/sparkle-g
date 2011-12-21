@@ -27,7 +27,7 @@ import java.io.*;
  * Part of the SPARQL 1.1 Update ANTLR grammar.
  * 
  */
-public class ANTLRUnicodePreprocessorStringStream extends ANTLRStringStream {
+public class SparkleUnicodePreprocessorStringStream extends ANTLRStringStream {
 
     static int[] map = {
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -45,7 +45,7 @@ public class ANTLRUnicodePreprocessorStringStream extends ANTLRStringStream {
      * @param fileName
      * @throws IOException
      */
-    public ANTLRUnicodePreprocessorStringStream(String input) {
+    public SparkleUnicodePreprocessorStringStream(String input) {
         super(input);
         super.n = convertUnicodeLiteralToChar(input.length());
     }
@@ -56,7 +56,7 @@ public class ANTLRUnicodePreprocessorStringStream extends ANTLRStringStream {
      * @param encoding
      * @throws IOException
      */
-    public ANTLRUnicodePreprocessorStringStream(char[] data, int numberOfActualCharsInArray) {  
+    public SparkleUnicodePreprocessorStringStream(char[] data, int numberOfActualCharsInArray) {  
         super(data, numberOfActualCharsInArray);
         super.n = convertUnicodeLiteralToChar(numberOfActualCharsInArray);
     }
