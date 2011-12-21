@@ -124,7 +124,7 @@ public class IdentGunitOkTest {
 
     @BeforeClass
     public static void setUpClass() throws FileNotFoundException {
-        String outFile = "./src/test/java/com/googlecode/sparkleg/formatter.log";
+        String outFile = "./src/test/java/com/googlecode/sparkleg/syntactic_validator1.log";
         try {
             w = new OutputStreamWriter(new FileOutputStream(outFile), "UTF8");
         } catch (IOException ex) {
@@ -142,11 +142,11 @@ public class IdentGunitOkTest {
     }
 
     @Test
-    public void formatter() {
+    public void validate() {
         try {
             qcounter++;
             
-            // System.err.println("\n---Query "+qcounter+" START");
+            System.err.println("\n---Query "+qcounter+" START");
             
             w.write("\n#~~~Input " + qcounter + " :\n");
             w.write(query);
