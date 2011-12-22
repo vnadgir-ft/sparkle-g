@@ -11,7 +11,7 @@
 === Pretty Printer and Syntactic Validator for the SPARQL 1.1 Query and Update Language ===
 
 The sparkle-g project has released a pretty printer and syntactic validator for the [http://www.w3.org/TR/sparql11-query/ SPARQL 1.1 Query] and 
-[http://www.w3.org/TR/2011/WD-sparql11-update-20110512/ Update Language]. The pretty printer and syntactic validator is based on the [http://antlr.org/ ANTLR] framework for constructing recognizers, interpreters, compilers, and translators. The generation of the formatted output text relies on the [http://www.stringtemplate.org/ StringTemplate] template engine. [http://antlr.org/ ANTLR] and 
+[http://www.w3.org/TR/2011/WD-sparql11-update-20110512/ Update Language] [http://www.w3.org/2001/sw/DataAccess/ http://sparkle-g.googlecode.com/svn/site/images/sw-sparql-green.png]. The pretty printer and syntactic validator is based on the [http://antlr.org/ ANTLR] framework for constructing recognizers, interpreters, compilers, and translators. The generation of the formatted output text relies on the [http://www.stringtemplate.org/ StringTemplate] template engine. [http://antlr.org/ ANTLR] and 
 [http://www.stringtemplate.org/ StringTemplate] have both been crafted by [http://www.cs.usfca.edu/~parrt/ Terence Parr], a professor of computer science at the [http://www.cs.usfca.edu/ University of San Francisco].  
 
 On developing the pretty printer emphasis had been placed on target language independence. Only a few Java constructs are embedded in the lexical and grammatical description of the [http://www.w3.org/TR/sparql11-query/ SPARQL 1.1 Query] and 
