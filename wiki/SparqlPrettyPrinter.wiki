@@ -52,25 +52,27 @@ SELECT ?name WHERE {
 
 The preprocessed query is passed on to the {{{SparqlLexer}}}. It splits the query into tokens which serve as input for the {{{SparqlParser}}}.
 
-<image to be embedded>
+http://sparkle-g.googlecode.com/svn/site/images/SPP_1_Tokenizer.png
 
 === Parsing of the query ===
 
 The {{{SparqlParser}}} matches the query tokens delivered by the {{{SparqlLexer}}} against the SPARQL grammar defined by ANTLR rules. The Parse Tree below represents the sequence of rule invocations used to match the input query.
 
-<image to be embedded>
+http://sparkle-g.googlecode.com/svn/site/images/SPP_2_ParseTree_Text.png
 
 === AST generation ===
 
 The Abstract Syntax Tree is defined by adding rewrite rules to the parser grammar. The AST nodes below have been generated from the input query invoking the sequence of affected rewrite rules attached to the parser grammar rules.
 
-<image to be embedded>
+http://sparkle-g.googlecode.com/svn/site/images/SPP_3_AST.png
 
 === Traversing the AST ===
 
 The AST is input for the Tree Grammar. The imaginary UP and DOWN nodes have been added by ANTLR. The two graphics display the AST generated for the kanji input query.
 
-<image to be embedded>
+http://sparkle-g.googlecode.com/svn/site/images/SPP_4_TreeWalker_Text1.png
+
+http://sparkle-g.googlecode.com/svn/site/images/SPP_5_TreeWalker_Text2.png
 
 === Emitting the Formatted Query ===
 
