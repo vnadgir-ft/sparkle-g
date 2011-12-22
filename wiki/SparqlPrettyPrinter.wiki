@@ -89,6 +89,51 @@ WHERE {
 }
 }}}
 
-=== How to get the SPARQL Pretty Printer to work ===
+=== How to Get the SPARQL Pretty Printer to Work ===
 
-- to be done -
+The transformation pipeline just described now cast into Java statements:
+
+{{{
+    private String sparklegPrettyPrinter(String query) throws Exception {
+
+        /* Path to StringTemplate Group File.
+         * Location of ident.stg can/should be modified to your needs.
+         * Fixed assignment just to keep all neccessary parts in one place.
+         */
+        String stringTemplate = "./src/main/antlr3/com/googlecode/sparkleg/ident.stg";
+
+        /* transformation pipline
+         * step 1: Unicode pre-processing
+         * step 2: Lexical analysis
+         */
+        SparqlLexer lex = new SparqlLexer(new SparkleUnicodePreprocessorStringStream(query));
+        CommonTokenStream tokens = new CommonTokenStream(lex);
+
+        /* transformation pipline
+         * step 3: build parse tree
+         * step 4: generate AST
+         */
+        SparqlParser parser = new SparqlParser(tokens);
+        SparqlParser.query_return r = parser.query();
+
+        /* transformation pipline
+         * step 5: read AST
+         * step 6: traverse AST, pass parameters to stringTemplate and write output to string
+         */
+        CommonTreeNodeStream nodes = new CommonTreeNodeStream(r.getTree());
+        SparqlT walker = new SparqlT(nodes);
+
+        StringTemplateGroup g = new StringTemplateGroup(new FileReader(stringTemplate), AngleBracketTemplateLexer.class);
+        walker.setTemplateLib(g);
+        
+        RuleReturnScope t = null;
+        try {
+            t = walker.query();
+        } catch (RecognitionException e) {
+            e.printStackTrace();
+        }
+
+        return t.toString();
+    }
+}}}
+- to be continued -
