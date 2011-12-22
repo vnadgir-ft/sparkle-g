@@ -1,5 +1,9 @@
 #SPARKLE-G Pretty Printer and Syntactic Validator for SPARQL
 
+==== Table of Content ====
+
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 == SPARKLE-G ==
@@ -89,9 +93,9 @@ WHERE {
 }
 }}}
 
-=== How to Get the SPARQL Pretty Printer to Work ===
+== How to Get the SPARQL Pretty Printer to Work ==
 
-The transformation pipeline just described now cast into Java statements:
+The transformation pipeline just described, now cast into Java statements:
 
 {{{
     private String sparklegPrettyPrinter(String query) throws Exception {
