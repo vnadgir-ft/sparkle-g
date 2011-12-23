@@ -1,3 +1,4 @@
+#labels Featured,Phase-Design
 #SPARKLE-G Pretty Printer and Syntactic Validator for SPARQL
 
 ==== Table of Content ====
@@ -20,11 +21,11 @@ On developing the pretty printer emphasis had been placed on target language ind
 
 = Details =
 
-== The transformation pipeline ==
+== The Transformation Pipeline ==
 
 Here a brief description of the transformation pipeline which every query is undergoing.
 
-=== Conversion of Unicode escape sequences ===
+=== Conversion of Unicode Escape Sequences ===
   
 The {{{UnicodePreprocessorFileStream}}} substitutes Unicode escape sequences (\uxxxx) by its UTF8 code.
 
@@ -52,13 +53,13 @@ SELECT ?name WHERE {
     食:食べる 食:海老 ] . }
 }}}
 
-=== Tokenizing of the SPARQL query ===
+=== Tokenizing of the SPARQL Query ===
 
 The preprocessed query is passed on to the {{{SparqlLexer}}}. It splits the query into tokens which serve as input for the {{{SparqlParser}}}.
 
 http://sparkle-g.googlecode.com/svn/site/images/SPP_1_Tokenizer.png
 
-=== Parsing of the query ===
+=== Parsing of the Query ===
 
 The {{{SparqlParser}}} matches the query tokens delivered by the {{{SparqlLexer}}} against the SPARQL grammar defined by ANTLR rules. The Parse Tree below represents the sequence of rule invocations used to match the input query.
 
