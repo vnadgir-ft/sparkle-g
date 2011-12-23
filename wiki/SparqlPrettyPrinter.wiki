@@ -1,5 +1,5 @@
+#summary SPARKLE-G Pretty Printer and Syntactic Validator for SPARQL
 #labels Featured,Phase-Design
-#SPARKLE-G Pretty Printer and Syntactic Validator for SPARQL
 
 ==== Table of Content ====
 
