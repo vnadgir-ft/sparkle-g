@@ -226,7 +226,11 @@ quadPattern
     ;
     
 quads
-    : triplesTemplate? (quadsNotTriples triplesTemplate?)*
+    : triplesTemplate? quadsDetails*
+    ;
+    
+quadsDetails
+    : quadsNotTriples triplesTemplate?
     ;
     
 quadsNotTriples
@@ -424,8 +428,8 @@ expression
     | ^(GREATER expression expression)
     | ^(LESS_EQUAL expression expression)
     | ^(GREATER_EQUAL expression expression)  
-    | ^(IN expression expression)
-    | ^(NOT IN expression expression)
+    | ^(IN expression expressionList)
+    | ^(NOT IN expression expressionList)
     | ^(PLUS expression expression)
     | ^(MINUS expression expression) 
     | ^(ASTERISK expression expression)

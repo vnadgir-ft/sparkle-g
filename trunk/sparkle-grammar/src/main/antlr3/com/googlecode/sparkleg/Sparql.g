@@ -268,7 +268,11 @@ quadPattern
     ;
     
 quads
-    : triplesTemplate? (quadsNotTriples DOT? triplesTemplate?)* ->  triplesTemplate? (quadsNotTriples triplesTemplate?)* 
+    : triplesTemplate? quadsDetails* ->  triplesTemplate? quadsDetails* 
+    ;
+    
+quadsDetails
+    : quadsNotTriples triplesTemplate?
     ;
     
 quadsNotTriples
