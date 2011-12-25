@@ -27,6 +27,7 @@
       <item name="Home" href="index.html" />
     </menu>
 
+    <menu ref="parent"/>
     <menu ref="reports"/>
   </body>
 
