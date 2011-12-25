@@ -30,14 +30,14 @@ import java.io.*;
 public class SparkleUnicodePreprocessorFileStream extends ANTLRFileStream {
 
     static int[] map = {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
-        0, 10, 11, 12, 13, 14, 15, 16, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 10, 11, 12, 13, 14, 15, 16, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -1, -1, -1, -1, -1,
+        0, 10, 11, 12, 13, 14, 15, 16, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        0, 10, 11, 12, 13, 14, 15, 16, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
     };
 
     /**
@@ -111,6 +111,8 @@ public class SparkleUnicodePreprocessorFileStream extends ANTLRFileStream {
         int state = START_STATE;
         boolean data_buffer_modified = false;
 
+        int ucount = 0;
+
         char u1 = 0, u2 = 0, u3 = 0, c = 0;
 
         int i = 0, j = 0;
@@ -140,6 +142,7 @@ public class SparkleUnicodePreprocessorFileStream extends ANTLRFileStream {
                             state = START_STATE;
                         }
                     } else {
+                        ucount = 1;
                         state = UNICODE_NIBBLE1;
                     }
                     break;
@@ -147,10 +150,14 @@ public class SparkleUnicodePreprocessorFileStream extends ANTLRFileStream {
                     if (isHexadecimalDigit(c)) {
                         u1 = c;
                         state = UNICODE_NIBBLE2;
+                    } else if (c == 'u') {
+                        ucount++;
                     } else {
                         if (data_buffer_modified) {
                             data[j++] = '\\';
-                            data[j++] = 'u';
+                            for (int k = 0; k < ucount; k++) {
+                                data[j++] = 'u';
+                            }
                             data[j++] = c;
                             state = MODIFIED_DATA_STATE;
                         } else {
@@ -165,7 +172,9 @@ public class SparkleUnicodePreprocessorFileStream extends ANTLRFileStream {
                     } else {
                         if (data_buffer_modified) {
                             data[j++] = '\\';
-                            data[j++] = 'u';
+                            for (int k = 0; k < ucount; k++) {
+                                data[j++] = 'u';
+                            }
                             data[j++] = u1;
                             data[j++] = c;
                             state = MODIFIED_DATA_STATE;
@@ -181,7 +190,9 @@ public class SparkleUnicodePreprocessorFileStream extends ANTLRFileStream {
                     } else {
                         if (data_buffer_modified) {
                             data[j++] = '\\';
-                            data[j++] = 'u';
+                            for (int k = 0; k < ucount; k++) {
+                                data[j++] = 'u';
+                            }
                             data[j++] = u1;
                             data[j++] = u2;
                             data[j++] = c;
@@ -201,7 +212,9 @@ public class SparkleUnicodePreprocessorFileStream extends ANTLRFileStream {
                     } else {
                         if (data_buffer_modified) {
                             data[j++] = '\\';
-                            data[j++] = 'u';
+                            for (int k = 0; k < ucount; k++) {
+                                data[j++] = 'u';
+                            }
                             data[j++] = u1;
                             data[j++] = u2;
                             data[j++] = u3;
@@ -222,22 +235,30 @@ public class SparkleUnicodePreprocessorFileStream extends ANTLRFileStream {
                     break;
                 case UNICODE_NIBBLE1:
                     data[j++] = '\\';
-                    data[j++] = 'u';
+                    for (int k = 0; k < ucount; k++) {
+                        data[j++] = 'u';
+                    }
                     break;
                 case UNICODE_NIBBLE2:
                     data[j++] = '\\';
-                    data[j++] = 'u';
+                    for (int k = 0; k < ucount; k++) {
+                        data[j++] = 'u';
+                    }
                     data[j++] = u1;
                     break;
                 case UNICODE_NIBBLE3:
                     data[j++] = '\\';
-                    data[j++] = 'u';
+                    for (int k = 0; k < ucount; k++) {
+                        data[j++] = 'u';
+                    }
                     data[j++] = u1;
                     data[j++] = u2;
                     break;
                 case UNICODE_NIBBLE4:
                     data[j++] = '\\';
-                    data[j++] = 'u';
+                    for (int k = 0; k < ucount; k++) {
+                        data[j++] = 'u';
+                    }
                     data[j++] = u1;
                     data[j++] = u2;
                     data[j++] = u3;
@@ -257,6 +278,6 @@ public class SparkleUnicodePreprocessorFileStream extends ANTLRFileStream {
      * @return true if c is a hexadecimal digit else false
      */
     private boolean isHexadecimalDigit(final char c) {
-        return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+        return (c <= 'f' && map[c] >= 0);
     }
 }
