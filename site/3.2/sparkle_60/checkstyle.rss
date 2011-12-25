@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<rss version="0.91">
+  <channel>
+    <title>sparkle-g :: parent - Checkstyle report</title>
+    <link>http://code.google.com/p/sparkle-g/</link>
+    <description>sparkle-g :: parent - Checkstyle report</description>
+    <language>en-us</language>
+    <copyright>&#169;2007 - 2011</copyright>
+    <item>
+      <title>File: 8,
+             Errors: 336,
+             Warnings: 11,
+             Infos: 0
+      </title>
+            <link>http://code.google.com/p/sparkle-g//checkstyle.html</link>
+      <description>
+        <p>Click <a href="http://code.google.com/p/sparkle-g//checkstyle.html">here</a> for the full Checkstyle report.</p>
+
+        <table summary="Files" boder="1">
+          <thead>
+            <tr>
+              <th>Files</th>
+              <th style="width:30px;"><abbr title="Info">I</abbr></th>
+              <th style="width:30px;"><abbr title="Warning">W</abbr></th>
+              <th style="width:30px;"><abbr title="Error">E</abbr></th>
+            </tr>
+          </thead>
+          <tbody>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g//checkstyle.html#org.antlr.runtime.SparkleUnicodePreprocessorStringStream.java">org/antlr/runtime/SparkleUnicodePreprocessorStringStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g//checkstyle.html#java.org.antlr.runtime.SparkleUnicodePreprocessorStringStream.java">java/org/antlr/runtime/SparkleUnicodePreprocessorStringStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g//checkstyle.html#java.org.antlr.runtime.SparkleUnicodePreprocessorFileStream.java">java/org/antlr/runtime/SparkleUnicodePreprocessorFileStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g//checkstyle.html#org.antlr.runtime.SparkleUnicodePreprocessorFileStream.java">org/antlr/runtime/SparkleUnicodePreprocessorFileStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g//checkstyle.html#cessor.src.main.java.org.antlr.runtime.SparkleUnicodePreprocessorFileStream.java">cessor/src/main/java/org/antlr/runtime/SparkleUnicodePreprocessorFileStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g//checkstyle.html#g.antlr.runtime.SparkleUnicodePreprocessorStringStream.java">g/antlr/runtime/SparkleUnicodePreprocessorStringStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  157
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g//checkstyle.html#g.antlr.runtime.SparkleUnicodePreprocessorFileStream.java">g/antlr/runtime/SparkleUnicodePreprocessorFileStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  8
+                </td>
+                <td>
+                  179
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g//checkstyle.html#cessor.src.main.java.org.antlr.runtime.SparkleUnicodePreprocessorStringStream.java">cessor/src/main/java/org/antlr/runtime/SparkleUnicodePreprocessorStringStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                      </tbody>
+        </table>
+        
+      </description>
+    </item>
+  </channel>
+</rss>
+
