@@ -17,29 +17,39 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>sparkle-g.unicode-preprocessor</groupId>
+    <artifactId>unicode-preprocessor</artifactId>
+    <packaging>jar</packaging>
+    <version>3.2</version>
+ 
+    <name>sparkle-g :: Unicode Preprocessor</name>
+    <description>A Unicode Preprocessor for the SPARQL Query and Update Language</description>
+    <inceptionYear>2011</inceptionYear>
+    
+    <parent>
+        <groupId>sparkle-g</groupId>
+        <artifactId>sparkle-g-parent</artifactId>
+        <version>3.2</version>
+    </parent>
 
-  <parent>
-    <groupId>sparkle-g</groupId>
-    <artifactId>sparkle-g-parent</artifactId>
-    <version>3.2-SNAPSHOT</version>
-    <relativePath>../</relativePath>
-  </parent>
-
-  <artifactId>unicode-preprocessor</artifactId>
-  <version>1.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
-
-  <name>sparkle-g :: Unicode Preprocessor</name>
-  <inceptionYear>2011</inceptionYear>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>antlr</artifactId>
-      <version>3.4</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <version>3.4</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>    
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.11</version>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
