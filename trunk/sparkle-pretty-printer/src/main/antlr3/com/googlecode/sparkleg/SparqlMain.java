@@ -1,3 +1,4 @@
+
 import java.io.*;
 
 import org.antlr.runtime.*;
@@ -8,8 +9,8 @@ import org.antlr.stringtemplate.language.*;
 import com.googlecode.sparkleg.*;
 
 public class SparqlMain {
-	
-	    public static void main(String args[]) throws Exception {
+
+    public static void main(String args[]) throws Exception {
 
         System.out.println("Working on file " + args[0]);
 
@@ -30,7 +31,7 @@ public class SparqlMain {
 
         CommonTree n = null;
         while ((n = ((CommonTree) nodes.nextElement())) != null) {
-            System.out.print(" "+n.toString());
+            System.out.print(" " + n.toString());
             if ((n.toString()).compareTo("EOF") == 0) {
                 break;
             }
@@ -45,7 +46,7 @@ public class SparqlMain {
         System.out.flush();
 
         SparqlT walker = new SparqlT(nodes);
-        
+
         StringTemplateGroup g = new StringTemplateGroup(new FileReader("ident.stg"), AngleBracketTemplateLexer.class);
         walker.setTemplateLib(g);
 
