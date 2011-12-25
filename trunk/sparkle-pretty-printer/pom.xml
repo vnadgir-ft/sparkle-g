@@ -19,125 +19,132 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
       http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>sparkle-g.sparkle-pretty-printer</groupId>
+    <artifactId>sparkle-pretty-printer</artifactId>
+    <packaging>jar</packaging>
+    <version>3.2</version>
+    
+    <name>sparkle-g :: pretty-printer</name>
+    <description>A Pretty Printer and Syntactic Validator for the SPARQL Query and Update Language</description>
+    <inceptionYear>2011</inceptionYear>
+    
+    <parent>
+        <groupId>sparkle-g</groupId>
+        <artifactId>sparkle-g-parent</artifactId>
+        <version>3.2</version>
+    </parent>
 
-  <parent>
-    <groupId>sparkle-g</groupId>
-    <artifactId>sparkle-g-parent</artifactId>
-    <version>3.2-SNAPSHOT</version>
-    <relativePath>../</relativePath>
-  </parent>
+    <dependencies>
+        <dependency>
+            <groupId>sparkle-g.unicode-preprocessor</groupId>
+            <artifactId>unicode-preprocessor</artifactId>
+            <version>3.2</version>
+            <scope>compile</scope>
+        </dependency>
 
-  <artifactId>sparkle-pretty-printer</artifactId>
-  <packaging>jar</packaging>
-  <version>1.1-SNAPSHOT</version>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <version>3.4</version>
+            <scope>provided</scope>
+        </dependency>
 
-  <name>sparkle-g :: pretty-printer</name>
-  <inceptionYear>2011</inceptionYear>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr-runtime</artifactId>
+            <version>3.4</version>
+            <scope>compile</scope>
+        </dependency>
 
-  <dependencies>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>unicode-preprocessor</artifactId>
-      <version>1.1-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>gunit</artifactId>
+            <version>3.4</version>
+            <scope>test</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>antlr</artifactId>
-      <version>3.4</version>
-      <scope>provided</scope>
-    </dependency>
+        <dependency>
+            <groupId>com.googlecode.java-diff-utils</groupId>
+            <artifactId>diffutils</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+    </dependencies>
 
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>antlr-runtime</artifactId>
-      <version>3.4</version>
-      <scope>compile</scope>
-    </dependency>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr3-maven-plugin</artifactId>
+                <version>3.4</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>antlr</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>gunit</artifactId>
-      <version>3.4</version>
-      <scope>test</scope>
-    </dependency>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>add-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${basedir}/src/main/antlr3</source>
+                                <source>${project.build.directory}/target/generated-sources/antlr3</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-    <dependency>
-      <groupId>com.googlecode.java-diff-utils</groupId>
-      <artifactId>diffutils</artifactId>
-      <version>1.2.1</version>
-    </dependency>
-  </dependencies>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>maven-gunit-plugin</artifactId>
+                <version>3.4</version>
+                <executions>
+                    <execution>
+                        <id>maven-gunit-plugin</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>gunit</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+                  
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.11</version>
+            </plugin>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr3-maven-plugin</artifactId>
-        <version>3.4</version>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>antlr</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+        </plugins>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <id>add-sources</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${basedir}/src/main/antlr3</source>
-                <source>${project.build.directory}/target/generated-sources/antlr3</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/antlr3</directory>
+                <targetPath>META-INF</targetPath>
+            </resource>
 
-      <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>maven-gunit-plugin</artifactId>
-        <version>3.4</version>
-        <executions>
-          <execution>
-            <id>maven-gunit-plugin</id>
-            <phase>test</phase>
-            <goals>
-              <goal>gunit</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-
-    <resources>
-      <resource>
-        <directory>${basedir}/src/main/antlr3</directory>
-        <targetPath>META-INF</targetPath>
-      </resource>
-
-      <resource>
-        <directory>.</directory>
-        <targetPath>META-INF</targetPath>
-        <includes>
-          <include>LICENSE</include>
-        </includes>
-      </resource>
-    </resources>
-  </build>
+            <resource>
+                <directory>.</directory>
+                <targetPath>META-INF</targetPath>
+                <includes>
+                    <include>LICENSE</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 
 </project>
