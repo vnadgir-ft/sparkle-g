@@ -25,7 +25,7 @@ The www.w3.org states in chapter 19 for a SPARQL Query String:
 
 === Sparkle Unicode preprocessor ===
 
-The implemented preprocessor for the conversion of Unicode escape sequences extends the ANTLRStringStream respectively the ANTLRFileStream.
+The implemented preprocessor for the conversion of Unicode escape sequences extends the {{{ANTLRStringStream}}} respectively the {{{ANTLRFileStream}}}.
 
 It is implemented as a Finite State Automaton. It replaces Unicode escape sequences '\\u{1,n}xxxx', where {1,n} describes the multitude of occurences of u, by its character byte codes. 
 
