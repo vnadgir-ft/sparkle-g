@@ -53,5 +53,5 @@ Some notes:
 
 Two routines are available to be invoked for substitution of Unicode escape sequences:
 
- * {{{SparkleUnicodePreprocessorStringStream}}}
- * {{{SparkleUnicodePreprocessorFileStream}}}
+ * [http://sparkle-g.googlecode.com/svn/site/3.2/unicode-preprocessor/apidocs/index.html SparkleUnicodePreprocessorStringStream]
+ * [http://sparkle-g.googlecode.com/svn/site/3.2/unicode-preprocessor/apidocs/index.html SparkleUnicodePreprocessorFileStream]
