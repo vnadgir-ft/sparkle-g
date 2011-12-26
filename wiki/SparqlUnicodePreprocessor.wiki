@@ -45,13 +45,13 @@ Some notes:
 
  * At the time of writing this documentation the ANTLR version 3.4 is used for parsing a SPARQL query. This ANLTR version 3.4 supports UTF-8 only. Therefore UTF-16 Unicode escape sequences, signaled by a capital \U are left untouched and emitted unchanged.
 
- * No checking with respect to Unicode categories is done, e.g. if a Unicode code point has a character representation assigned (Cn - Other, not Assigned)
-
- * No checking regarding character direction (Left-to-Right or Right-to-Left or embedded reverse character direction) is done 
-
  * The character position in a line reported by ANTLR will most probably not reflect the correct position, when one or more Unicode substitutions have taken place. Take the character position issued not as an absolute value but think of it as 'in the vicinity'. 
 
-Two routines are available to be invoked for substitution of Unicode Escape sequences:
+ * No checking with respect to Unicode categories is done, e.g. wether a Unicode code point has a character representation assigned (Cn - Other, not Assigned) at all
+
+ * No evaluation regarding character direction (Left-to-Right or Right-to-Left or embedded reverse character direction) is done 
+
+Two routines are available to be invoked for substitution of Unicode escape sequences:
 
  * SparkleUnicodePreprocessorStringStream
  * SparkleUnicodePreprocessorFileStream
