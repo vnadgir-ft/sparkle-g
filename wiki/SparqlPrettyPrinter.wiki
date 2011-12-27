@@ -96,6 +96,8 @@ WHERE {
 
 == How to Get the SPARQL Pretty Printer to Work ==
 
+=== A Sample Routine Showing the Transformation Pipeline === 
+
 The transformation pipeline just described, now cast into Java statements:
 
 {{{
@@ -141,4 +143,37 @@ The transformation pipeline just described, now cast into Java statements:
         return t.toString();
     }
 }}}
+
+== Executing the Provided Tiny Example Program ==
+
+Assemble the following jar-files in a directory of your choice:
+
+ * antlr-3.4-complete.jar
+ * sparkle-pretty-printer-3.2.jar
+ * unicode-preprocessor-3.2.jar
+
+Copy the {{{ident.stg}}} file and the query file {{{input-01.rq}}} into the directory, too.
+
+Execute the following command:
+
+{{{
+java -cp antlr-3.4-complete.jar;sparkle-pretty-printer-3.2.jar;unicode-preprocessor-3.2.jar SparqlMain input-01.rq
+}}}
+
+You should receive the following output:
+
+{{{
+Working on file input-01.rq
+Sparql parser tree=(QUERY PROLOGUE (SELECT (SELECT_CLAUSE *) (WHERE_CLAUSE (GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN))))
+-------------------------------
+List of CommonTreeNodes
+ QUERY DOWN PROLOGUE SELECT DOWN SELECT_CLAUSE DOWN * UP WHERE_CLAUSE DOWN GROUP_GRAPH_PATTERN DOWN GROUP_GRAPH_PATTERN UP UP UP UP EOF
+-------------------------------
+CommonTreeNodes tree=(QUERY PROLOGUE (SELECT (SELECT_CLAUSE *) (WHERE_CLAUSE (GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN))))
+-------------------------------
+SELECT *
+WHERE {
+}
+}}}
+
 - to be continued -
