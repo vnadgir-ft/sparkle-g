@@ -21,23 +21,43 @@
 <document xmlns="http://maven.apache.org/changes/1.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/changes/1.0.0 http://maven.apache.org/plugins/maven-changes-plugin/xsd/changes-1.0.0.xsd">
-  <properties>
-    <title>Sparkle grammar - Changes list</title>
-  </properties>
+    <properties>
+        <title>Sparkle grammar - Changes list</title>
+    </properties>
 
-  <body>
-    <release version="3.0" date="2011-06-08" description="upgrade release">
-      <action dev="Juergen.Pfundt" type="add">
+    <body>
+        <release version="3.2" date="2011-12-25" description="upgrade release">
+            <action dev="Simone,Tripodi" type="add">
+        Reorganizing/Restructering of the multi module project, to better fit maven 3 requirements.
+        Removed redundancies from POMs, improved performance, switched to maven version of fluido-skin.
+        An incomplete list of the modifications: 
+        - Clean up of resources
+        - added target dir to ignore list
+        - fixed relative links
+        - reorganized changelist
+        - added site schema
+        - added missing reports in each module
+        - moved external links to links section 
+        - corrected dependencies
+        - ...
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
+        Synchronized changes from SPARQL Pretty Printer with SPARQL Grammar.
+            </action> 
+        </release>
+        
+        <release version="3.0" date="2011-06-08" description="upgrade release">
+            <action dev="Juergen.Pfundt" type="add">
         Update of grammar to current definition of Sparql 1.1 at http://www.w3.org/TR/sparql11-query, 
         which includes Sparql Update. This refers to the version of 1th of May 2011.
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         AST generation added.
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         Tree grammar added.
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         The Sparql.g lexer rule for PN_LOCAL had to be refined, as it did not cope with trailing '.'.
         Syntactic predicates and/or greedy=false did not solve the problem of recognizing properly
         the input e.g.  A.b.  as two tokens PN_LOCAL A.b and DOT 
@@ -47,19 +67,19 @@
         Example:
 
            ASK {person:John_Q_Public rdf:type foaf:Person.}
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         I18n test cases have been successfully evaluated with AntlrWorks. GUnit seems to have
         a problem with these test cases and evalutes them as failed.
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         A preprocessor for Unicode escape sequences has been successfully tested
         with the Unicode test cases. GUnit will evaluate these test cases as failed.
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         Added AST creation.
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         Added finite state automaton for replacing Unicode escape sequences '\\uxxxx' 
         with character values. Incomplete Unicode escape sequences are written
         back unchanged in the file stream.
@@ -69,8 +89,8 @@
         In the usual case of no Unicode escape sequences in the data stream 
         the maxime is to do (nearly) nothing, just loop in the START_STATE.
         Incomplete Unicode escape sequences are left as found in the file stream. 
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         Update of grammar to current definition of Sparql 1.1 at http://www.w3.org/TR/sparql11-query, 
         which includes Sparql Update. This refers to the version of 14th of October 2010.
         Codepoint escape sequences are not accounted in this grammar. As mentioned in the 
@@ -78,64 +98,64 @@
         "...Codepoint escape sequences can appear anywhere in the query string. 
         They are processed before parsing based on the grammar rules and so may be replaced
         by codepoints with significance in the grammar, such as ":" marking a prefixed name...."
-      </action>
-      <action dev="simone.tripodi" type="add">
+            </action>
+            <action dev="simone.tripodi" type="add">
         Improved Maven2 build
-      </action>
-    </release>
+            </action>
+        </release>
 
-    <release version="2.0" date="2009-11-28" description="upgrade release">
-      <action dev="simone.tripodi" type="fix">
+        <release version="2.0" date="2009-11-28" description="upgrade release">
+            <action dev="simone.tripodi" type="fix">
         Switched to commercial friendly Apache 2.0 License
-      </action>
-      <action dev="simone.tripodi" type="add">
+            </action>
+            <action dev="simone.tripodi" type="add">
         Switched to Maven2 build
-      </action>
-    </release>
+            </action>
+        </release>
 
-    <release version="1.1" date="2008-01-21" description="Bugfix release">
-      <action dev="Juergen.Pfundt" type="fix">
+        <release version="1.1" date="2008-01-21" description="Bugfix release">
+            <action dev="Juergen.Pfundt" type="fix">
         Fixed antlr3 warnings emitted when compiling the Sparql.g file
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         Added lexical rule "ANY" as fallback, in case no lexical rule matches
-      </action>
-      <action dev="Juergen.Pfundt" type="fix" issue="1">
+            </action>
+            <action dev="Juergen.Pfundt" type="fix" issue="1">
         Recognition of keywords (including "true" and "false") is case insensitive now
-      </action>
-      <action dev="Juergen.Pfundt" type="add">
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
         Implemented lexical rule for comments
-      </action>
-      <action dev="Juergen.Pfundt" type="fix">
+            </action>
+            <action dev="Juergen.Pfundt" type="fix">
         Solved problem with graphterm and blankNode which implicitely
         referenced WS via lexical rules NIL and ANON. As WS sends its content
         to channel hidden this resulted in problems with WS before and after
         braces
-      </action>
-      <action dev="Juergen.Pfundt" type="add" issue="2">
+            </action>
+            <action dev="Juergen.Pfundt" type="add" issue="2">
         Added a few test cases to the test suite referenced in W3C SPARQL specifications.
         Modified one test case to test "comments".
         Test cases still have to be enhanced!
-      </action>
-      <action dev="Juergen.Pfundt" type="add" issue="3">
+            </action>
+            <action dev="Juergen.Pfundt" type="add" issue="3">
         Replaced parser literals by lexer tokens as preparation for AST generation
-      </action>
-      <action dev="simone.tripodi" type="add" issue="3">
+            </action>
+            <action dev="simone.tripodi" type="add" issue="3">
         Replaced parser literal IRI_REF by lexer tokens as preparation for AST generation
-      </action>
-      <action dev="Juergen.Pfundt" type="add" issue="1">
+            </action>
+            <action dev="Juergen.Pfundt" type="add" issue="1">
         The A token is case insensitive now as requested by the w3.org rdf-sparql-query document
-      </action>
-      <action dev="Juergen.Pfundt" type="add" issue="2">
+            </action>
+            <action dev="Juergen.Pfundt" type="add" issue="2">
         Added DAWG Testcases
-      </action>
-    </release>
+            </action>
+        </release>
 
-    <release version="1.0" date="2007-10-30" description="First release">
-      <action dev="michele.mostarda, simone.tripodi" type="update">
+        <release version="1.0" date="2007-10-30" description="First release">
+            <action dev="michele.mostarda, simone.tripodi" type="update">
         First version of the cross platform SPARQL Grammar.
-      </action>
-    </release>
-  </body>
+            </action>
+        </release>
+    </body>
 
 </document>
