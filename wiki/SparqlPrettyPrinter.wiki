@@ -180,6 +180,8 @@ WHERE {
 
 GUnit is used for testing the SPARQL syntax as defined in the Sparql.g grammar file.
 
+=== DAWG Test Data ===
+
 One part of the GUnit test cases is based on the DAWG {{{data-r2}}} and {{{data-sparql11}}} testsuites. The start of the DAWG test cases is marked in the {{{Sparql.testsuite}}} file and the {{{Sparql.gunit}}} file with the following disclaimer:
  
  W3C(R) SOFTWARE NOTICE AND LICENSE
@@ -201,5 +203,35 @@ One part of the GUnit test cases is based on the DAWG {{{data-r2}}} and {{{data-
  COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR DOCUMENTATION.
  
  The name and trademarks of copyright holders may NOT be used in advertising or publicity pertaining to the software without specific, written prior permission. Title to copyright in this software and any associated documentation will at all times remain with copyright holders
+
+=== SPARQL 1.1 Example Queries ===
+
+Another part of the test queries origin from the SPARQL 1.1 Query Language W3C Working Draft 12 May 2011 [http://www.w3.org/TR/sparql11-query/].
+The chapter from which the queries had been taken is noted on top of the first query of a chapter. The example shows two queries from chapter {{{5.2.3 Group Graph Pattern Examples}}} followed by queries contained in chapter {{{6.1 Optional Pattern Matching}}}
+
+{{{
+// 5.2.3 Group Graph Pattern Examples
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox 
+  {
+    ?x foaf:name ?name . FILTER regex(?name, "Smith")
+    ?x foaf:mbox ?mbox .
+  }
+>> OK
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox 
+  {
+    ?x foaf:name ?name .
+    {}
+    ?x foaf:mbox ?mbox .
+  }
+>> OK
+
+// 6.1 Optional Pattern Matching
+...
+}}}   
 
 - to be continued -
