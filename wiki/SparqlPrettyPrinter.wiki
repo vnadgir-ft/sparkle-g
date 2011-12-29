@@ -176,12 +176,11 @@ WHERE {
 }
 }}}
 
-== Automated Testing ==
+= Automated Testing =
 
 GUnit is used for testing the SPARQL syntax as defined in Sparql.g grammar file.
 
-One part of the GUnit test cases is based on the DAWG data-r2 and data-sparql11 testsuites.
-The beginning of the DAWG test cases is marked in the {{{Sparql.testsuite}}} file and the {{{Sparql.gunit}}} file by the following disclaimer:
+One part of the GUnit test cases is based on the DAWG data-r2 and data-sparql11 testsuites. The start of the DAWG test cases is marked in the {{{Sparql.testsuite}}} file and the {{{Sparql.gunit}}} file with the following disclaimer:
  
  W3C(R) SOFTWARE NOTICE AND LICENSE
  [http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231 http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231]
@@ -195,14 +194,12 @@ The beginning of the DAWG test cases is marked in the {{{Sparql.testsuite}}} fil
 
    2. Any pre-existing intellectual property disclaimers, notices, or terms and conditions. If none exist, the W3C Software Short Notice should be included (hypertext is preferred, text is permitted) within the body of any redistributed or derivative code.
 
-   3. Notice of any changes or modifications to the files, including the
-   date changes were made. (We recommend you provide URIs to the  location from which the code is derived.)
+   3. Notice of any changes or modifications to the files, including  changes were made. (We recommend you provide URIs to the  location from which the code is derived.)
 
  THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE OR DOCUMENTATION WILL NOT INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.
 
  COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR DOCUMENTATION.
  
  The name and trademarks of copyright holders may NOT be used in advertising or publicity pertaining to the software without specific, written prior permission. Title to copyright in this software and any associated documentation will at all times remain with copyright holders
-
 
 - to be continued -
