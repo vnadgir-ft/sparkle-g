@@ -178,9 +178,9 @@ WHERE {
 
 = Automated Testing =
 
-GUnit is used for testing the SPARQL syntax as defined in Sparql.g grammar file.
+GUnit is used for testing the SPARQL syntax as defined in the Sparql.g grammar file.
 
-One part of the GUnit test cases is based on the DAWG data-r2 and data-sparql11 testsuites. The start of the DAWG test cases is marked in the {{{Sparql.testsuite}}} file and the {{{Sparql.gunit}}} file with the following disclaimer:
+One part of the GUnit test cases is based on the DAWG {{{data-r2}}} and {{{data-sparql11}}} testsuites. The start of the DAWG test cases is marked in the {{{Sparql.testsuite}}} file and the {{{Sparql.gunit}}} file with the following disclaimer:
  
  W3C(R) SOFTWARE NOTICE AND LICENSE
  [http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231 http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231]
