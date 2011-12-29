@@ -178,6 +178,8 @@ WHERE {
 
 = Automated Testing =
 
+== Syntax Testing Using GUnit ==
+
 GUnit is used for testing the SPARQL syntax as defined in the Sparql.g grammar file. At the moment about 950 test queries are part of the testsuite.
 
 === DAWG Test Data ===
@@ -241,7 +243,7 @@ SELECT ?name ?mbox
 ...
 }}}   
 
-=== Tree Grammar Testing ===
+== Tree Grammar Testing ==
 
 JUnit is being used for testing the Tree Grammar, respectively the reformatted query emitted.  
 
