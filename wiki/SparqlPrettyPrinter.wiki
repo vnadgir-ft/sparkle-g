@@ -207,6 +207,13 @@ One part of the GUnit test cases is based on the DAWG {{{data-r2}}} and {{{data-
 === SPARQL 1.1 Example Queries ===
 
 Another part of the test queries origin from the SPARQL 1.1 Query Language W3C Working Draft 12 May 2011 [http://www.w3.org/TR/sparql11-query/].
+
+The following note signals the start of those queries:
+{{{
+/* 
+ * The following testcases are taken from the w3.org (http://www.w3.org/TR/sparql11-query/#grammar) SPARQL examples
+ */
+}}}
 The chapter from which the queries had been taken is noted on top of the first query of a chapter. The example shows two queries from chapter {{{5.2.3 Group Graph Pattern Examples}}} followed by queries contained in chapter {{{6.1 Optional Pattern Matching}}}
 
 {{{
