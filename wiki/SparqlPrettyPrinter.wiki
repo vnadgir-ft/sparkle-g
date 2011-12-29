@@ -178,7 +178,7 @@ WHERE {
 
 = Automated Testing =
 
-GUnit is used for testing the SPARQL syntax as defined in the Sparql.g grammar file.
+GUnit is used for testing the SPARQL syntax as defined in the Sparql.g grammar file. At the moment about 950 test queries are part of the testsuite.
 
 === DAWG Test Data ===
 
@@ -240,5 +240,23 @@ SELECT ?name ?mbox
 // 6.1 Optional Pattern Matching
 ...
 }}}   
+
+=== Tree Grammar Testing ===
+
+JUnit is being used for testing the Tree Grammar, respectively the reformatted query emitted.  
+
+A parameterized JUnit test is dynamically set up, which includes all queries from the Sparql.testsuite file with expected GUnit status OK.
+{{{
+final String REGEX = "(^\\s*<<)(.*?)(>>\\s*(OK|FAIL)\\s*$)";
+}}}
+All queries extracted from the GUnit file are treated as described below:
+
+ # a test query is processed by the Sparkle Pretty Printer
+ # the output of the transformation process, the re-formatted query is saved as response1
+ # this response1 query is sent through the Sparkle Printer transformation pipeline, too
+ # the resulting output response2 is compared to response1. In case of equality the test case is evaluated as successfull
+
+A stable transformation algorithm should result in no changes when
+repeatedly applied on the generated output. This behaviour is neccessary but not sufficient to yield a well formed reformatted query. For this reason the three data sequences: original query, response1 and response2 are written for manual inspection in a log file.
 
 - to be continued -
