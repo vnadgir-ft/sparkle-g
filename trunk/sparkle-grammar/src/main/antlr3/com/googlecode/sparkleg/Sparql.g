@@ -918,11 +918,11 @@ PNAME_NS : p=PN_PREFIX? ':';
 
 PNAME_LN : PNAME_NS PN_LOCAL;
     
-BLANK_NODE_LABEL : '_:' t=PN_LOCAL { setText($t.text); };
+BLANK_NODE_LABEL : '_:' PN_LOCAL;
 
-VAR1 : QUESTION_MARK v=VARNAME { setText($v.text); };
+VAR1 : '?' VARNAME;
 
-VAR2 : '$' v=VARNAME { setText($v.text); };
+VAR2 : '$' VARNAME;
 
 LANGTAG : '@' ('A'..'Z'|'a'..'z')+ (MINUS ('A'..'Z'|'a'..'z'|DIGIT)+)*;
 
@@ -966,13 +966,13 @@ fragment
 ECHAR : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'');
     		
 IRI_REF
-    :(LESS (options{greedy=false;}: IRI_REF_CHARACTERS)* GREATER) =>  LESS (options{greedy=false;}: IRI_REF_CHARACTERS)* GREATER { setText($text.substring(1, $text.length()-1)); }
+    :('<' (options{greedy=false;}: IRI_REF_CHARACTERS)* '>') =>  '<' (options{greedy=false;}: IRI_REF_CHARACTERS)* '>'
     | LESS { $type = LESS; }
     ;
     
 fragment
 IRI_REF_CHARACTERS
-    : ~(LESS | GREATER | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | PIPE | INVERSE | '`' | '\\' | ('\u0000'..'\u0020'))
+    :  ~('<' | '>' | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | PIPE | INVERSE | '`' | '\\' | '\u0000' | '\u0001'| '\u0002' | '\u0003' | '\u0004'| '\u0005' | '\u0006'| '\u0007' | '\u0008' | '\u0009'| '\u000A' | '\u000B'| '\u000C' | '\u000D' | '\u000E'| '\u000F'| '\u0010' | '\u0011'| '\u0012' | '\u0013' | '\u0014'| '\u0015' | '\u0016'| '\u0017' | '\u0018' | '\u0019'| '\u001A' | '\u001B'| '\u001C' | '\u001D' | '\u001E'| '\u001F' | '\u0020')
     ;
 
 fragment
