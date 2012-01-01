@@ -49,11 +49,11 @@ prologue(baseDecl, prefixDecl) ::= <<
 >>
 
 baseDecl(iriRef) ::= <<
-BASE \<<iriRef>\>
+BASE <iriRef>
 >>
 
 prefixDecl(pname, iriRef) ::= <<
-PREFIX <pname> \<<iriRef>\>
+PREFIX <pname> <iriRef>
 >>
 
 selectQuery(selectClause, datasetClause, whereClause, solutionModifier) ::= <<
@@ -412,7 +412,7 @@ varOrIRIref(var, iriRef) ::= <<
 >>
 
 var(v) ::= <<
-?<v>
+<v>
 >>
 
 graphTerm(iriRef, rdfLiteral, numericLiteral, booleanLiteral, blankNode, value) ::= <<
@@ -496,7 +496,7 @@ string(value) ::= <<
 >>
 
 iriRef(value, prefixedName) ::= <<
-<if(value)>\<<value>\><else><prefixedName><endif>
+<if(value)><value><else><prefixedName><endif>
 >>
 
 prefixedName(name) ::= <<
@@ -504,7 +504,7 @@ prefixedName(name) ::= <<
 >>
 
 blankNode(value, anon) ::= <<
-<if(value)>_:<value><else><anon><endif>
+<if(value)><value><else><anon><endif>
 >>
 
 anon() ::= <<
