@@ -966,7 +966,7 @@ fragment
 ECHAR : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'');
     		
 IRI_REF
-    :(LESS (options{greedy=false;}: IRI_REF_CHARACTERS)* GREATER) =>  LESS (options{greedy=false;}: IRI_REF_CHARACTERS)* GREATER
+    :('<' (options{greedy=false;}: IRI_REF_CHARACTERS)* '>') =>  '<' (options{greedy=false;}: IRI_REF_CHARACTERS)* '>'
     | LESS { $type = LESS; }
     ;
     
