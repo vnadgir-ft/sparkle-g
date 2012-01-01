@@ -49,11 +49,11 @@ prologue(baseDecl, prefixDecl) ::= <<
 >>
 
 baseDecl(iriRef) ::= <<
-BASE \<<iriRef>\>
+BASE <iriRef>
 >>
 
 prefixDecl(pname, iriRef) ::= <<
-PREFIX <pname> \<<iriRef>\>
+PREFIX <pname> <iriRef>
 >>
 
 selectQuery(selectClause, datasetClause, whereClause, solutionModifier) ::= <<
@@ -107,7 +107,7 @@ GROUP BY <groupCondition; separator="\n">
 >>
 
 groupCondition(builtInCall, functionCall, expression, var) ::= <<
-<if(builtInCall)><builtInCall><elseif(functionCall)><functionCall><elseif(expression)>(<expression> AS <var; separator=", ">)<elseif(var)><var><endif>
+<if(builtInCall)><builtInCall><elseif(functionCall)><functionCall><elseif(expression)>(<expression><if(var)> AS <var><endif>)<elseif(var)><var><endif>
 >>
 
 havingClause(constraint) ::= <<
@@ -174,7 +174,9 @@ COPY <if(attribute)><attribute> <endif><graphOrDefault1> <graphOrDefault2>
 >>
 
 insert(quadPattern) ::= <<
-INSERT <quadPattern>
+INSERT DATA {
+   <quadPattern>
+}
 >>
 
 delete(deleteData, deleteWhere) ::= <<
@@ -204,7 +206,10 @@ modify(iriRef, deleteClause, insertClause, usingClause, whereClause) ::= <<
 >>
 
 insertClause(quadPattern) ::= <<
-INSERT <quadPattern>
+INSERT 
+{
+   <quadPattern>
+}
 >>
 
 usingClause(attribute1, attribute2, iriRef) ::= <<
@@ -227,14 +232,18 @@ quadPattern(quads) ::= <<
    <quads>
 >>
 
-quads(triplesTemplate1, quadsNotTriples, triplesTemplate2) ::= <<
-<triplesTemplate1><quadsNotTriples, triplesTemplate2:{q, t|<q> <t>}; separator=";\n">
+quads(triplesTemplate, quadsDetails) ::= <<
+<if(triplesTemplate)><triplesTemplate><endif><if(quadsDetails)><quadsDetails; separator="\n"><endif>
+>>
+
+quadsDetails(quadsNotTriples, triplesTemplate) ::= <<
+<quadsNotTriples><if(triplesTemplate)><triplesTemplate><endif>
 >>
 
 quadsNotTriples(varOrIRIref, triplesTemplate) ::= <<
-GRAPH <varOrIRIref> {
+GRAPH <varOrIRIref><if(triplesTemplate)> {
    <triplesTemplate>
-}
+}<else>{ }<endif>
 >>
 
 triplesTemplate(triplesSameSubject) ::= <<
@@ -403,7 +412,7 @@ varOrIRIref(var, iriRef) ::= <<
 >>
 
 var(v) ::= <<
-?<v>
+<v>
 >>
 
 graphTerm(iriRef, rdfLiteral, numericLiteral, booleanLiteral, blankNode, value) ::= <<
@@ -431,7 +440,7 @@ brackettedExpression(expression) ::= <<
 >>
 
 builtInCall(type, expression, expressions, var, expressionList, expression1, expression2, expression3, regexExpression, existsFunction, notExistsFunction, subStringExpression) ::= <<
-<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)><expression3><endif><endif>)<elseif(regexExpression)><regexExpression><elseif(existsFunction)>EXISTS {<\n>   <existsFunction>}<elseif(notExistsFunction)>NOT EXISTS {<\n>   <notExistsFunction>}<elseif(subStringExpression)><subStringExpression><endif>
+<if(type)><type>(<if(expression)><expression><elseif(expressions)><expressions; separator=", "><elseif(var)><var><elseif(expressionList)><expressionList; separator=", "><elseif(expression1)><expression1>, <expression2><if(expression3)>, <expression3><endif><endif>)<elseif(regexExpression)><regexExpression><elseif(existsFunction)>EXISTS {<\n>   <existsFunction>}<elseif(notExistsFunction)>NOT EXISTS {<\n>   <notExistsFunction>}<elseif(subStringExpression)><subStringExpression><endif>
 >>
 
 regexExpression(expression) ::= <<
@@ -450,8 +459,8 @@ notExistsFunction(groupGraphPattern) ::= <<
 <groupGraphPattern>
 >>
 
-aggregate(operation, attribute, whatever, expression) ::= <<
-<operation><if(attribute)> <attribute><endif><if(whatever)> <whatever><endif>(<expression>)
+aggregate(operation, attribute, whatever, expression, string) ::= <<
+<operation>(<if(attribute)><attribute><endif><if(whatever)> <whatever><endif><if(expression)><expression><endif><if(string)>; SEPARATOR=<string><endif>)
 >>
 
 iriRefOrFunction(iriRef, argList) ::= <<
@@ -459,7 +468,7 @@ iriRefOrFunction(iriRef, argList) ::= <<
 >>
 
 rdfLiteral(string, langTag, iriRef) ::= <<
-<string><if(langTag)><langTag><else><if(iriRef)>^^<iriRef><endif><endif>
+<string><if(langTag)><langTag><elseif(iriRef)>^^<iriRef><endif>
 >>
 
 numericLiteral(numericLiteralUnsigned, numericLiteralPositive, numericLiteralNegative) ::= <<
@@ -487,7 +496,7 @@ string(value) ::= <<
 >>
 
 iriRef(value, prefixedName) ::= <<
-<if(value)>\<<value>\><else><prefixedName><endif>
+<if(value)><value><else><prefixedName><endif>
 >>
 
 prefixedName(name) ::= <<
@@ -495,7 +504,7 @@ prefixedName(name) ::= <<
 >>
 
 blankNode(value, anon) ::= <<
-<if(value)>_:<value><else><anon><endif>
+<if(value)><value><else><anon><endif>
 >>
 
 anon() ::= <<
