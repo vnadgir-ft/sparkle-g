@@ -23,6 +23,7 @@
 grammar Sparql;
 
 options{
+    language = C;
 		output = AST;
 		ASTLabelType=pANTLR3_BASE_TREE;
 		backtrack = false;
