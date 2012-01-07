@@ -26,6 +26,14 @@
     </properties>
 
     <body>
+        <release version="3.3" date="2011-12-25" description="fixes release">
+            <action dev="Juergen.Pfundt" type="add">
+               The w3c SPARQL definition has some slight modifications, which are adapted by the following changes:
+               - separate strReplaceExpression rule for REPLACE command
+               - solutionModifier added to askQuery rule
+            </action>
+        </release>
+        
         <release version="3.2" date="2011-12-25" description="upgrade release">
             <action dev="Simone,Tripodi" type="add">
                 Reorganizing/Restructering of the multi module project, to better fit maven 3 requirements.
