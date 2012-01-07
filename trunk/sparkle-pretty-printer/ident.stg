@@ -83,9 +83,9 @@ describeQuery(varOrIRIref, attribute, datasetClause, whereClause, solutionModifi
 DESCRIBE <varOrIRIref; separator=" "><if(attribute)><attribute><endif><if(datasetClause)><\n><datasetClause; separator=", "><endif><if(whereClause)><\n><whereClause><endif><solutionModifier>
 >>
 
-askQuery(datasetClause, whereClause) ::= <<
+askQuery(datasetClause, whereClause, solutionModifier) ::= <<
 ASK<if(datasetClause)><\n><datasetClause; separator=", "><endif>
-<whereClause>
+<whereClause><solutionModifier>
 >>
 
 datasetClause(attribute, iriRef) ::= <<

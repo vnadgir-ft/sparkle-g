@@ -83,7 +83,7 @@ describeQuery
     ;
 
 askQuery
-    : ^(ASK (d+=datasetClause)* w=whereClause) -> askQuery(datasetClause={$d}, whereClause={$w.st})
+    : ^(ASK (d+=datasetClause)* w=whereClause s=solutionModifier) -> askQuery(datasetClause={$d}, whereClause={$w.st}, solutionModifier={$s.st})
     ;
 
 datasetClause
