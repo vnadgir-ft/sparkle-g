@@ -119,7 +119,7 @@ describeQuery
     ;
 
 askQuery
-    : ASK datasetClause* whereClause -> ^(ASK datasetClause* whereClause)
+    : ASK datasetClause* whereClause solutionModifier -> ^(ASK datasetClause* whereClause solutionModifier*)
     ;
 
 datasetClause
