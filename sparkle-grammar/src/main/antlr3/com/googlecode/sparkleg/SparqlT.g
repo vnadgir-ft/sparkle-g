@@ -83,7 +83,7 @@ describeQuery
     ;
 
 askQuery
-    : ^(ASK datasetClause* whereClause)
+    : ^(ASK datasetClause* whereClause solutionModifier)
     ;
 
 datasetClause
@@ -471,6 +471,7 @@ builtInCall
     | ^(ROUND expression)
     | ^(CONCAT expressionList)
     | subStringExpression
+    | strReplaceExpression
     | ^(STRLEN expression)
     | ^(UCASE expression)
     | ^(LCASE expression)
@@ -480,7 +481,6 @@ builtInCall
     | ^(STRENDS expression expression)
     | ^(STRBEFORE expression expression)
     | ^(STRAFTER expression expression)
-    | ^(REPLACE expression expression expression)
     | ^(YEAR expression)
     | ^(MONTH expression)
     | ^(DAY expression)
@@ -517,6 +517,10 @@ regexExpression
     
 subStringExpression
     : ^(SUBSTR expression+)
+    ;
+
+strReplaceExpression
+    : ^(REPLACE expression+)
     ;
     
 existsFunction

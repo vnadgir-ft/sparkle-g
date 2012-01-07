@@ -558,6 +558,7 @@ builtInCall
     | ROUND OPEN_BRACE expression CLOSE_BRACE -> ^(ROUND expression)
     | CONCAT expressionList -> ^(CONCAT expressionList)
     | subStringExpression -> subStringExpression
+    | strReplaceExpression -> strReplaceExpression
     | STRLEN OPEN_BRACE expression CLOSE_BRACE -> ^(STRLEN expression)
     | UCASE OPEN_BRACE expression CLOSE_BRACE -> ^(UCASE expression)
     | LCASE OPEN_BRACE expression CLOSE_BRACE -> ^(LCASE expression)
@@ -567,7 +568,6 @@ builtInCall
     | STRENDS OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRENDS expression expression)
     | STRBEFORE OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRBEFORE expression expression)
     | STRAFTER OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRAFTER expression expression)
-    | REPLACE OPEN_BRACE expression COMMA expression COMMA expression CLOSE_BRACE -> ^(REPLACE expression expression expression)
     | YEAR OPEN_BRACE expression CLOSE_BRACE -> ^(YEAR expression)
     | MONTH OPEN_BRACE expression CLOSE_BRACE -> ^(MONTH expression)
     | DAY OPEN_BRACE expression CLOSE_BRACE -> ^(DAY expression)
@@ -605,7 +605,11 @@ regexExpression
 subStringExpression
     : SUBSTR OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE -> ^(SUBSTR expression*)
     ;
-    
+        
+strReplaceExpression
+    : REPLACE OPEN_BRACE expression COMMA expression COMMA expression (COMMA expression)? CLOSE_BRACE -> ^(REPLACE expression*)
+    ;
+
 existsFunction
     : EXISTS groupGraphPattern -> ^(EXISTS groupGraphPattern)
     ;
