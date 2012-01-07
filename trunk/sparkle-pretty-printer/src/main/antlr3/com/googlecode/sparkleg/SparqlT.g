@@ -496,7 +496,8 @@ builtInCall
     | ^(FLOOR e=expression) -> builtInCall(type={$FLOOR.text}, expression={$e.st})
     | ^(ROUND e=expression) -> builtInCall(type={$ROUND.text}, expression={$e.st})
     | ^(CONCAT l=expressionList) -> builtInCall(type={$CONCAT.text}, expressionList={$l.st})
-    | s=subStringExpression -> builtInCall(subStringExpression={$s.st})
+    | subString=subStringExpression -> builtInCall(subStringExpression={$subString.st})
+    | replace=strReplaceExpression -> builtInCall(strReplaceExpression={$replace.st})
     | ^(STRLEN e=expression) -> builtInCall(type={$STRLEN.text}, expression={$e.st})
     | ^(UCASE e=expression) -> builtInCall(type={$UCASE.text}, expression={$e.st})
     | ^(LCASE e=expression) -> builtInCall(type={$LCASE.text}, expression={$e.st})
@@ -506,7 +507,6 @@ builtInCall
     | ^(STRENDS e1=expression e2=expression) -> builtInCall(type={$STRENDS.text}, expression1={$e1.st}, expression2={$e2.st})
     | ^(STRBEFORE e1=expression e2=expression) -> builtInCall(type={$STRBEFORE.text}, expression1={$e1.st}, expression2={$e2.st})
     | ^(STRAFTER e1=expression e2=expression) -> builtInCall(type={$STRAFTER.text}, expression1={$e1.st}, expression2={$e2.st})
-    | ^(REPLACE e1=expression e2=expression e3=expression) -> builtInCall(type={$REPLACE.text}, expression1={$e1.st}, expression2={$e2.st}, expression3={$e3.st})
     | ^(YEAR e=expression) -> builtInCall(type={$YEAR.text}, expression={$e.st})
     | ^(MONTH e=expression) -> builtInCall(type={$MONTH.text}, expression={$e.st})
     | ^(DAY e=expression) -> builtInCall(type={$DAY.text}, expression={$e.st})
@@ -543,6 +543,10 @@ regexExpression
     
 subStringExpression
     : ^(SUBSTR (e+=expression)+) -> subStringExpression(expression={$e})
+    ;
+       
+strReplaceExpression
+    : ^(REPLACE e+=expression+) -> strReplaceExpression(expression={$e})
     ;
     
 existsFunction
