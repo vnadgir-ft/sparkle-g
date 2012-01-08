@@ -258,7 +258,7 @@ groupGraphPatternSub
     ;
 
 groupGraphPatternSubDetail
-    : g=graphPatternNotTriples DOT? t=triplesBlock? -> groupGraphPatternSubDetail(graphPatternNotTriples={$g.st}, triplesBlock={$t.st})
+    : g=graphPatternNotTriples t=triplesBlock? -> groupGraphPatternSubDetail(graphPatternNotTriples={$g.st}, triplesBlock={$t.st})
     ;    
 
 triplesBlock
@@ -369,7 +369,7 @@ pathSequence
     ;
     
 pathEltOrInverse
-    : INVERSE? p=pathElt -> pathEltOrInverse(inverse={$INVERSE.text}, pathElt={$p.st})
+    : ^(PATH_ELT_OR_INVERSE INVERSE? p=pathElt) -> pathEltOrInverse(inverse={$INVERSE.text}, pathElt={$p.st})
     ;
     	  	
 pathElt
@@ -377,16 +377,19 @@ pathElt
     ;
     
 pathMod
-    : ASTERISK -> pathMod(value={$ASTERISK.text})
-    | QUESTION_MARK -> pathMod(value={$QUESTION_MARK.text})
-    | PLUS -> pathMod(value={$PLUS.text})
-    | OPEN_CURLY_BRACE (i1=INTEGER (c1=COMMA (CLOSE_CURLY_BRACE | i2=INTEGER CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | c2=COMMA i3=INTEGER CLOSE_CURLY_BRACE) -> pathMod(i1={$i1.text}, comma1={$c1.text}, i2={$i2.text}, comma2={$c2.text}, i3={$i3.text})
+    : PATH_MOD ASTERISK -> pathMod(value={$ASTERISK.text})
+    | PATH_MOD QUESTION_MARK -> pathMod(value={$QUESTION_MARK.text})
+    | PATH_MOD PLUS -> pathMod(value={$PLUS.text})
+    | PATH_MOD i1=INTEGER -> pathMod(i1={$i1.text})
+    | PATH_MOD i1=INTEGER c=',' -> pathMod(i1={$i1.text}, c={$c.text})
+    | PATH_MOD i1=INTEGER i2=INTEGER -> pathMod(i1={$i1.text}, i2={$i2.text})
+    | PATH_MOD c=',' i2=INTEGER -> pathMod(c={$c.text}, i2={$i2.text})
     ;
 
 pathPrimary
     : ^(PATH_PRIMARY i=iriRef) -> pathPrimary(iriRef={$i.st})
     | ^(PATH_PRIMARY A) -> pathPrimary(value={$A.text})
-    | ^(PATH_PRIMARY NEGATION n=pathNegatedPropertySet) -> pathPrimary(value={$NEGATION.text}, pathNegatedPropertySet={$n.st})
+    | ^(PATH_PRIMARY n=pathNegatedPropertySet) -> pathPrimary(pathNegatedPropertySet={$n.st})
     | ^(PATH_PRIMARY p=path) -> pathPrimary(path={$p.st})
     ;
 
@@ -434,7 +437,7 @@ graphTerm
     ;
     
 nil
-    : OPEN_BRACE CLOSE_BRACE -> nil()
+    : NIL -> nil()
     ;
 
 expression
@@ -573,7 +576,7 @@ iriRefOrFunction
     ;
 
 rdfLiteral
-    : s=string (LANGTAG | (REFERENCE i=iriRef))? -> rdfLiteral(string={$s.st}, langTag={$LANGTAG.text}, iriRef={$i.st})
+    : ^(RDFLITERAL s=string LANGTAG? (i=iriRef)?) -> rdfLiteral(string={$s.st}, langTag={$LANGTAG.text}, iriRef={$i.st})
     ;
 
 numericLiteral
@@ -628,6 +631,6 @@ blankNode
     ;
 
 anon
-    : OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET -> anon()
+    : ANON -> anon()
     ;	
 // $>
