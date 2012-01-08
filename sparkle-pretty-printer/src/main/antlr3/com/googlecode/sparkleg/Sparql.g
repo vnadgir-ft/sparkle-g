@@ -27,6 +27,25 @@ output = AST;
 }
 
 tokens{
+AND='&&';
+ANON;
+ASTERISK='*';
+DIVIDE='/';
+DOT='.';
+EQUAL='=';
+GREATER='>';
+GREATER_EQUAL='>=';
+INVERSE='^';
+LESS='<';
+LESS_EQUAL='<=';
+MINUS='-';
+NEGATION='!';
+NOT_EQUAL='!=';
+NIL;
+OR='||';
+PLUS='+';
+QUESTION_MARK='?';
+
 QUERY;
 UPDATE;
 PROLOGUE;
@@ -54,7 +73,10 @@ PREDICATE;
 OBJECT;
 NOT_EXISTS;
 FUNCTION;
+RDFLITERAL;
 PATH;
+PATH_ELT_OR_INVERSE;
+PATH_MOD;
 PATH_SEQUENCE;
 PATH_PRIMARY;
 PATH_NEGATED;
@@ -75,7 +97,7 @@ BLANK_NODE;
 
 query
     : prologue (selectQuery | constructQuery | describeQuery | askQuery) bindingsClause EOF -> ^(QUERY prologue selectQuery* constructQuery* describeQuery* askQuery*) bindingsClause*
-    | update (SEMICOLON update?)* EOF -> ^(UPDATE update+)
+    | update (';' update?)* EOF -> ^(UPDATE update+)
     ;
 
 prologue
@@ -100,13 +122,13 @@ subSelect
     ;
     	
 selectClause
-    : SELECT (DISTINCT | REDUCED)? ASTERISK -> ^(SELECT_CLAUSE DISTINCT* REDUCED* ASTERISK)
+    : SELECT (DISTINCT | REDUCED)? '*' -> ^(SELECT_CLAUSE DISTINCT* REDUCED* '*')
     | SELECT (DISTINCT | REDUCED)? (v+=selectVariables)+ -> ^(SELECT_CLAUSE DISTINCT* REDUCED* $v*)
     ;
 
 selectVariables
     : var -> ^(VAR var) 
-    | OPEN_BRACE expression AS var CLOSE_BRACE -> ^(AS expression var)
+    | '(' expression AS var ')' -> ^(AS expression var)
     ;
 
 constructQuery
@@ -115,7 +137,7 @@ constructQuery
     ;
 
 describeQuery
-    : DESCRIBE ((v+=varOrIRIref)+ | ASTERISK) datasetClause* whereClause? solutionModifier -> ^(DESCRIBE $v* ASTERISK* datasetClause* whereClause? solutionModifier*)
+    : DESCRIBE ((v+=varOrIRIref)+ | '*') datasetClause* whereClause? solutionModifier -> ^(DESCRIBE $v* '*'* datasetClause* whereClause? solutionModifier*)
     ;
 
 askQuery
@@ -141,7 +163,7 @@ groupClause
 groupCondition
     : builtInCall -> ^(GROUP_CONDITION builtInCall)
     | functionCall -> ^(GROUP_CONDITION functionCall)
-    | OPEN_BRACE expression (AS var)? CLOSE_BRACE -> ^(GROUP_CONDITION expression var?)
+    | '(' expression (AS var)? ')' -> ^(GROUP_CONDITION expression var?)
     | var -> ^(GROUP_CONDITION var)
     ;
     
@@ -174,11 +196,11 @@ offsetClause
     ;
 
 bindingsClause
-    : (BINDINGS var* OPEN_CURLY_BRACE bindingValueList* CLOSE_CURLY_BRACE)? -> ^(BINDINGS var* bindingValueList*)?
+    : (BINDINGS var* '{' bindingValueList* '}')? -> ^(BINDINGS var* bindingValueList*)?
     ;
     
 bindingValueList
-    : OPEN_BRACE bindingValue* CLOSE_BRACE -> ^(BINDING_VALUE bindingValue*)
+    : '(' bindingValue* ')' -> ^(BINDING_VALUE bindingValue*)
     ;
     	
 bindingValue
@@ -264,7 +286,7 @@ graphRefAll
     ;
 
 quadPattern
-    : OPEN_CURLY_BRACE quads CLOSE_CURLY_BRACE -> quads
+    : '{' quads '}' -> quads
     ;
     
 quads
@@ -272,21 +294,21 @@ quads
     ;
     
 quadsDetails
-    : quadsNotTriples DOT? triplesTemplate? -> quadsNotTriples triplesTemplate? 
+    : quadsNotTriples '.'? triplesTemplate? -> quadsNotTriples triplesTemplate? 
     ;
     
 quadsNotTriples
-    : GRAPH varOrIRIref OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE -> ^(GRAPH varOrIRIref triplesTemplate?)
+    : GRAPH varOrIRIref '{' triplesTemplate? '}' -> ^(GRAPH varOrIRIref triplesTemplate?)
     ;
     
 triplesTemplate
-    : triplesSameSubject (DOT triplesSameSubject)* DOT? -> ^(TRIPLES_TEMPLATE triplesSameSubject*)
+    : triplesSameSubject ('.' triplesSameSubject)* '.'? -> ^(TRIPLES_TEMPLATE triplesSameSubject*)
     ;
     	
 groupGraphPattern
-    : OPEN_CURLY_BRACE subSelect CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN subSelect)
-    | OPEN_CURLY_BRACE groupGraphPatternSub CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN groupGraphPatternSub)
-    | OPEN_CURLY_BRACE CLOSE_CURLY_BRACE -> ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN)
+    : '{' subSelect '}' -> ^(GROUP_GRAPH_PATTERN subSelect)
+    | '{' groupGraphPatternSub '}' -> ^(GROUP_GRAPH_PATTERN groupGraphPatternSub)
+    | '{' '}' -> ^(GROUP_GRAPH_PATTERN GROUP_GRAPH_PATTERN)
     ;
     
 groupGraphPatternSub
@@ -295,11 +317,11 @@ groupGraphPatternSub
     ;
 
 groupGraphPatternSubDetail
-    : graphPatternNotTriples DOT? triplesBlock? -> graphPatternNotTriples triplesBlock?
+    : graphPatternNotTriples '.'? triplesBlock? -> graphPatternNotTriples triplesBlock?
     ;
 
 triplesBlock
-    : triplesSameSubjectPath (DOT triplesSameSubjectPath)* DOT? -> triplesSameSubjectPath+
+    : triplesSameSubjectPath ('.' triplesSameSubjectPath)* '.'? -> triplesSameSubjectPath+
     ;
 
 graphPatternNotTriples
@@ -319,7 +341,7 @@ serviceGraphPattern
     ;
     
 bind
-    : BIND OPEN_BRACE expression AS var CLOSE_BRACE -> ^(BIND expression ^(AS var))	
+    : BIND '(' expression AS var ')' -> ^(BIND expression ^(AS var))	
     ;
     	
 minusGraphPattern
@@ -346,19 +368,19 @@ functionCall
 
 argList
     : nil -> nil
-    | OPEN_BRACE DISTINCT? expression (COMMA expression)* CLOSE_BRACE -> DISTINCT? expression*
+    | '(' DISTINCT? expression (',' expression)* ')' -> DISTINCT? expression*
     ;
 
 expressionList
-    : (nil | OPEN_BRACE expression (COMMA expression)* CLOSE_BRACE) -> ^(EXPRESSION_LIST nil* expression*)
+    : (nil | '(' expression (',' expression)* ')') -> ^(EXPRESSION_LIST nil* expression*)
     ;	
 
 constructTemplate
-    : OPEN_CURLY_BRACE constructTriples? CLOSE_CURLY_BRACE -> ^(CONSTRUCT_TRIPLES constructTriples?)
+    : '{' constructTriples? '}' -> ^(CONSTRUCT_TRIPLES constructTriples?)
     ;
 
 constructTriples
-    : triplesSameSubject (DOT triplesSameSubject)* DOT? -> triplesSameSubject+
+    : triplesSameSubject ('.' triplesSameSubject)* '.'? -> triplesSameSubject+
     ;
 
 triplesSameSubject
@@ -367,11 +389,11 @@ triplesSameSubject
     ;
 
 propertyListNotEmpty
-    : propertyListNotEmptyDetails (SEMICOLON propertyListNotEmptyDetails?)* -> propertyListNotEmptyDetails+ 
+    : propertyListNotEmptyDetails (';' propertyListNotEmptyDetails?)* -> propertyListNotEmptyDetails+ 
     ;
 
 objectList
-    : graphNode (COMMA graphNode)* -> ^(OBJECT graphNode)+
+    : graphNode (',' graphNode)* -> ^(OBJECT graphNode)+
     ;
 
 verb
@@ -385,7 +407,7 @@ triplesSameSubjectPath
     ;
   
 propertyListNotEmptyPath
-    : propertyListNotEmptyDetails (SEMICOLON propertyListNotEmptyDetails?)* -> propertyListNotEmptyDetails+
+    : propertyListNotEmptyDetails (';' propertyListNotEmptyDetails?)* -> propertyListNotEmptyDetails+
     ;
   
 propertyListNotEmptyDetails
@@ -406,15 +428,15 @@ verbSimple
     ;
     	
 path
-    : pathSequence (PIPE pathSequence)* -> ^(PATH pathSequence+)
+    : pathSequence ('|' pathSequence)* -> ^(PATH pathSequence+)
     ; 
 
 pathSequence
-    : pathEltOrInverse (DIVIDE pathEltOrInverse)* -> ^(PATH_SEQUENCE pathEltOrInverse+)
+    : pathEltOrInverse ('/' pathEltOrInverse)* -> ^(PATH_SEQUENCE pathEltOrInverse+)
     ;
 
 pathEltOrInverse
-    : INVERSE? pathElt
+    : (i='^')? pathElt -> ^(PATH_ELT_OR_INVERSE $i? pathElt)
     ;
        	  	
 pathElt
@@ -422,28 +444,34 @@ pathElt
     ;
 
 pathMod
-    : (ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE (INTEGER (COMMA (CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | COMMA INTEGER CLOSE_CURLY_BRACE))
+    : '*' -> PATH_MOD '*'
+    | '?' -> PATH_MOD '?' 
+    | '+' -> PATH_MOD '+' 
+    | '{' i1=INTEGER '}' -> PATH_MOD $i1
+    | '{' i1=INTEGER c=',' '}' -> PATH_MOD $i1 $c
+    | '{' i1=INTEGER ',' i2=INTEGER '}'  -> PATH_MOD $i1 $i2
+    | '{' c=',' i2=INTEGER '}' -> PATH_MOD $c $i2
     ;
 
 pathPrimary
     : iriRef -> ^(PATH_PRIMARY iriRef)
     | A -> ^(PATH_PRIMARY A)
-    | NEGATION pathNegatedPropertySet -> ^(PATH_PRIMARY NEGATION pathNegatedPropertySet)
-    | OPEN_BRACE path CLOSE_BRACE -> ^(PATH_PRIMARY path)
+    | '!' pathNegatedPropertySet -> ^(PATH_PRIMARY pathNegatedPropertySet)
+    | '(' path ')' -> ^(PATH_PRIMARY path)
     ;
 
 pathNegatedPropertySet
     : pathOneInPropertySet -> ^(PATH_NEGATED pathOneInPropertySet)
-    | OPEN_BRACE (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? CLOSE_BRACE -> ^(PATH_NEGATED pathOneInPropertySet+)
+    | '(' (pathOneInPropertySet ('|' pathOneInPropertySet)*)? ')' -> ^(PATH_NEGATED pathOneInPropertySet+)
     ;  	
 
 pathOneInPropertySet
-    : INVERSE? (iriRef | A)
+    : '^'? (iriRef | A)
     ;
 	
 triplesNode
-    : OPEN_BRACE graphNode+ CLOSE_BRACE -> ^(COLLECTION graphNode+)
-    | OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET -> ^(TRIPLES_NODE propertyListNotEmpty)
+    : '(' graphNode+ ')' -> ^(COLLECTION graphNode+)
+    | '[' propertyListNotEmpty ']' -> ^(TRIPLES_NODE propertyListNotEmpty)
     ;
 
 graphNode
@@ -473,7 +501,7 @@ graphTerm
     ;
     
 nil
-    : OPEN_BRACE CLOSE_BRACE
+    : '(' ')' -> NIL
     ;
 
 expression
@@ -481,11 +509,11 @@ expression
     ;
 
 conditionalOrExpression
-    : (c1=conditionalAndExpression -> $c1) (OR c2=conditionalAndExpression -> ^(OR $conditionalOrExpression $c2))*
+    : (c1=conditionalAndExpression -> $c1) ('||' c2=conditionalAndExpression -> ^('||' $conditionalOrExpression $c2))*
     ;
 
 conditionalAndExpression
-    : (v1=valueLogical -> $v1) (AND v2=valueLogical -> ^(AND $conditionalAndExpression $v2))*
+    : (v1=valueLogical -> $v1) ('&&' v2=valueLogical -> ^('&&' $conditionalAndExpression $v2))*
     ;
 
 valueLogical
@@ -493,12 +521,12 @@ valueLogical
     ;
 
 relationalExpression
-    : (n1=numericExpression -> $n1) ((EQUAL n2=numericExpression -> ^(EQUAL $relationalExpression $n2))   
-                                    | (NOT_EQUAL n3=numericExpression -> ^(NOT_EQUAL $relationalExpression $n3)) 
-                                    | (LESS n4=numericExpression -> ^(LESS $relationalExpression $n4)) 
-                                    | (GREATER n5=numericExpression -> ^(GREATER $relationalExpression $n5))
-                                    | (LESS_EQUAL n6=numericExpression -> ^(LESS_EQUAL $relationalExpression $n6))
-                                    | (GREATER_EQUAL n7=numericExpression -> ^(GREATER_EQUAL $relationalExpression $n7))  
+    : (n1=numericExpression -> $n1) (('=' n2=numericExpression -> ^('=' $relationalExpression $n2))   
+                                    | ('!=' n3=numericExpression -> ^('!=' $relationalExpression $n3)) 
+                                    | ('<' n4=numericExpression -> ^('<' $relationalExpression $n4)) 
+                                    | ('>' n5=numericExpression -> ^('>' $relationalExpression $n5))
+                                    | ('<=' n6=numericExpression -> ^('<=' $relationalExpression $n6))
+                                    | ('>=' n7=numericExpression -> ^('>=' $relationalExpression $n7))  
                                     | (IN l2=expressionList -> ^(IN $relationalExpression $l2))
                                     | (NOT IN l3=expressionList -> ^(NOT IN $relationalExpression $l3)))?
     ;
@@ -509,13 +537,13 @@ numericExpression
 
 additiveExpression
     : (m1=multiplicativeExpression -> $m1) ((additiveOperator m2=multiplicativeExpression -> ^(additiveOperator $additiveExpression $m2))  
-                                             | (n1=numericLiteralPositive -> ^(PLUS $additiveExpression $n1) | n2=numericLiteralNegative -> ^(PLUS $additiveExpression $n2)) 
-                                             (((ASTERISK u2=unaryExpression -> ^(ASTERISK $additiveExpression $u2))) 
-                                             | ((DIVIDE u2=unaryExpression -> ^(DIVIDE $additiveExpression $u2))))?)*
+                                             | (n1=numericLiteralPositive -> ^('+' $additiveExpression $n1) | n2=numericLiteralNegative -> ^('+' $additiveExpression $n2)) 
+                                             ((('*' u2=unaryExpression -> ^('*' $additiveExpression $u2))) 
+                                             | (('/' u2=unaryExpression -> ^('/' $additiveExpression $u2))))?)*
     ; 
     
 additiveOperator
-    : PLUS|MINUS
+    : '+'|'-'
     ;
     
 multiplicativeExpression
@@ -523,13 +551,13 @@ multiplicativeExpression
     ;
     
 multiplicativeOperator
-    : ASTERISK | DIVIDE
+    : '*'| '/'
     ;
 
 unaryExpression
-    : NEGATION primaryExpression -> ^(UNARY NEGATION primaryExpression)
-    | PLUS primaryExpression -> ^(UNARY PLUS primaryExpression)
-    | MINUS primaryExpression -> ^(UNARY MINUS primaryExpression)
+    : '!' primaryExpression -> ^(UNARY '!' primaryExpression)
+    | '+' primaryExpression -> ^(UNARY '+' primaryExpression)
+    | '-' primaryExpression -> ^(UNARY '-' primaryExpression)
     | primaryExpression -> ^(UNARY primaryExpression)
     ;
 
@@ -538,76 +566,76 @@ primaryExpression
     ;
 
 brackettedExpression
-    : OPEN_BRACE expression CLOSE_BRACE -> ^(BRACKETTED_EXPRESSION expression)
+    : '(' expression ')' -> ^(BRACKETTED_EXPRESSION expression)
     ;
 
 builtInCall
-    : STR OPEN_BRACE expression CLOSE_BRACE -> ^(STR expression)
-    | LANG OPEN_BRACE expression CLOSE_BRACE -> ^(LANG expression)
-    | LANGMATCHES OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(LANGMATCHES expression+)
-    | DATATYPE OPEN_BRACE expression CLOSE_BRACE -> ^(DATATYPE expression)
-    | BOUND OPEN_BRACE var CLOSE_BRACE -> ^(BOUND var)
-    | IRI OPEN_BRACE expression CLOSE_BRACE -> ^(IRI expression)
-    | URI OPEN_BRACE expression CLOSE_BRACE -> ^(URI expression)
-    | BNODE (OPEN_BRACE expression CLOSE_BRACE) -> ^(BNODE expression)
+    : STR '(' expression ')' -> ^(STR expression)
+    | LANG '(' expression ')' -> ^(LANG expression)
+    | LANGMATCHES '(' expression ',' expression ')' -> ^(LANGMATCHES expression+)
+    | DATATYPE '(' expression ')' -> ^(DATATYPE expression)
+    | BOUND '(' var ')' -> ^(BOUND var)
+    | IRI '(' expression ')' -> ^(IRI expression)
+    | URI '(' expression ')' -> ^(URI expression)
+    | BNODE ('(' expression ')') -> ^(BNODE expression)
     | BNODE nil -> BNODE
     | RAND nil -> RAND
-    | ABS OPEN_BRACE expression CLOSE_BRACE -> ^(ABS expression)
-    | CEIL OPEN_BRACE expression CLOSE_BRACE -> ^(CEIL expression)
-    | FLOOR OPEN_BRACE expression CLOSE_BRACE -> ^(FLOOR expression)
-    | ROUND OPEN_BRACE expression CLOSE_BRACE -> ^(ROUND expression)
+    | ABS '(' expression ')' -> ^(ABS expression)
+    | CEIL '(' expression ')' -> ^(CEIL expression)
+    | FLOOR '(' expression ')' -> ^(FLOOR expression)
+    | ROUND '(' expression ')' -> ^(ROUND expression)
     | CONCAT expressionList -> ^(CONCAT expressionList)
     | subStringExpression -> subStringExpression
     | strReplaceExpression -> strReplaceExpression
-    | STRLEN OPEN_BRACE expression CLOSE_BRACE -> ^(STRLEN expression)
-    | UCASE OPEN_BRACE expression CLOSE_BRACE -> ^(UCASE expression)
-    | LCASE OPEN_BRACE expression CLOSE_BRACE -> ^(LCASE expression)
-    | ENCODE_FOR_URI OPEN_BRACE expression CLOSE_BRACE -> ^(ENCODE_FOR_URI expression)
-    | CONTAINS OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(CONTAINS expression expression)
-    | STRSTARTS OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRSTARTS expression expression)
-    | STRENDS OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRENDS expression expression)
-    | STRBEFORE OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRBEFORE expression expression)
-    | STRAFTER OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRAFTER expression expression)
-    | YEAR OPEN_BRACE expression CLOSE_BRACE -> ^(YEAR expression)
-    | MONTH OPEN_BRACE expression CLOSE_BRACE -> ^(MONTH expression)
-    | DAY OPEN_BRACE expression CLOSE_BRACE -> ^(DAY expression)
-    | HOURS OPEN_BRACE expression CLOSE_BRACE -> ^(HOURS expression)
-    | MINUTES OPEN_BRACE expression CLOSE_BRACE -> ^(MINUTES expression)
-    | SECONDS OPEN_BRACE expression CLOSE_BRACE -> ^(SECONDS expression)
-    | TIMEZONE OPEN_BRACE expression CLOSE_BRACE -> ^(TIMEZONE expression)
-    | TZ OPEN_BRACE expression CLOSE_BRACE -> ^(TZ expression)
+    | STRLEN '(' expression ')' -> ^(STRLEN expression)
+    | UCASE '(' expression ')' -> ^(UCASE expression)
+    | LCASE '(' expression ')' -> ^(LCASE expression)
+    | ENCODE_FOR_URI '(' expression ')' -> ^(ENCODE_FOR_URI expression)
+    | CONTAINS '(' expression ',' expression ')' -> ^(CONTAINS expression expression)
+    | STRSTARTS '(' expression ',' expression ')' -> ^(STRSTARTS expression expression)
+    | STRENDS '(' expression ',' expression ')' -> ^(STRENDS expression expression)
+    | STRBEFORE '(' expression ',' expression ')' -> ^(STRBEFORE expression expression)
+    | STRAFTER '(' expression ',' expression ')' -> ^(STRAFTER expression expression)
+    | YEAR '(' expression ')' -> ^(YEAR expression)
+    | MONTH '(' expression ')' -> ^(MONTH expression)
+    | DAY '(' expression ')' -> ^(DAY expression)
+    | HOURS '(' expression ')' -> ^(HOURS expression)
+    | MINUTES '(' expression ')' -> ^(MINUTES expression)
+    | SECONDS '(' expression ')' -> ^(SECONDS expression)
+    | TIMEZONE '(' expression ')' -> ^(TIMEZONE expression)
+    | TZ '(' expression ')' -> ^(TZ expression)
     | NOW nil -> NOW
-    | MD5 OPEN_BRACE expression CLOSE_BRACE -> ^(MD5 expression)
-    | SHA1 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA1 expression)
-    | SHA224 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA224 expression)
-    | SHA256 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA256 expression)
-    | SHA384 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA384 expression)
-    | SHA512 OPEN_BRACE expression CLOSE_BRACE -> ^(SHA512 expression)
+    | MD5 '(' expression ')' -> ^(MD5 expression)
+    | SHA1 '(' expression ')' -> ^(SHA1 expression)
+    | SHA224 '(' expression ')' -> ^(SHA224 expression)
+    | SHA256 '(' expression ')' -> ^(SHA256 expression)
+    | SHA384 '(' expression ')' -> ^(SHA384 expression)
+    | SHA512 '(' expression ')' -> ^(SHA512 expression)
     | COALESCE expressionList -> ^(COALESCE expressionList)
-    | IF OPEN_BRACE e1=expression COMMA e2=expression COMMA e3=expression CLOSE_BRACE -> ^(IF $e1 $e2 $e3)
-    | STRLANG OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRLANG expression expression)
-    | STRDT OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(STRDT expression expression)
-    | SAMETERM OPEN_BRACE expression COMMA expression CLOSE_BRACE -> ^(SAMETERM expression expression)
-    | ISIRI OPEN_BRACE expression CLOSE_BRACE -> ^(ISIRI expression)
-    | ISURI OPEN_BRACE expression CLOSE_BRACE -> ^(ISURI expression)
-    | ISBLANK OPEN_BRACE expression CLOSE_BRACE -> ^(ISBLANK expression) 
-    | ISLITERAL OPEN_BRACE expression CLOSE_BRACE -> ^(ISLITERAL expression)
-    | ISNUMERIC OPEN_BRACE expression CLOSE_BRACE -> ^(ISNUMERIC expression)
+    | IF '(' e1=expression ',' e2=expression ',' e3=expression ')' -> ^(IF $e1 $e2 $e3)
+    | STRLANG '(' expression ',' expression ')' -> ^(STRLANG expression expression)
+    | STRDT '(' expression ',' expression ')' -> ^(STRDT expression expression)
+    | SAMETERM '(' expression ',' expression ')' -> ^(SAMETERM expression expression)
+    | ISIRI '(' expression ')' -> ^(ISIRI expression)
+    | ISURI '(' expression ')' -> ^(ISURI expression)
+    | ISBLANK '(' expression ')' -> ^(ISBLANK expression) 
+    | ISLITERAL '(' expression ')' -> ^(ISLITERAL expression)
+    | ISNUMERIC '(' expression ')' -> ^(ISNUMERIC expression)
     | regexExpression -> regexExpression
     | existsFunction -> existsFunction
     | notExistsFunction -> notExistsFunction
     ;
 
 regexExpression
-    : REGEX OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE -> ^(REGEX expression*)
+    : REGEX '(' expression ',' expression (',' expression)? ')' -> ^(REGEX expression*)
     ;
     
 subStringExpression
-    : SUBSTR OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE -> ^(SUBSTR expression*)
+    : SUBSTR '(' expression ',' expression (',' expression)? ')' -> ^(SUBSTR expression*)
     ;
         
 strReplaceExpression
-    : REPLACE OPEN_BRACE expression COMMA expression COMMA expression (COMMA expression)? CLOSE_BRACE -> ^(REPLACE expression*)
+    : REPLACE '(' expression ',' expression ',' expression (',' expression)? ')' -> ^(REPLACE expression*)
     ;
 
 existsFunction
@@ -619,13 +647,13 @@ notExistsFunction
     ;
 
 aggregate
-    : COUNT OPEN_BRACE DISTINCT? (ASTERISK | expression) CLOSE_BRACE -> ^(COUNT DISTINCT* ASTERISK* expression*)
-    | SUM OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(SUM DISTINCT* expression)
-    | MIN OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(MIN DISTINCT* expression)
-    | MAX OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(MAX DISTINCT* expression)
-    | AVG OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(AVG DISTINCT* expression)
-    | SAMPLE OPEN_BRACE DISTINCT? expression CLOSE_BRACE -> ^(SAMPLE DISTINCT? expression)
-    | GROUP_CONCAT OPEN_BRACE DISTINCT? expression (SEMICOLON SEPARATOR EQUAL string)? CLOSE_BRACE -> ^(GROUP_CONCAT DISTINCT* expression string*)
+    : COUNT '(' DISTINCT? ('*' | expression) ')' -> ^(COUNT DISTINCT* '*'* expression*)
+    | SUM '(' DISTINCT? expression ')' -> ^(SUM DISTINCT* expression)
+    | MIN '(' DISTINCT? expression ')' -> ^(MIN DISTINCT* expression)
+    | MAX '(' DISTINCT? expression ')' -> ^(MAX DISTINCT* expression)
+    | AVG '(' DISTINCT? expression ')' -> ^(AVG DISTINCT* expression)
+    | SAMPLE '(' DISTINCT? expression ')' -> ^(SAMPLE DISTINCT? expression)
+    | GROUP_CONCAT '(' DISTINCT? expression (';' SEPARATOR '=' string)? ')' -> ^(GROUP_CONCAT DISTINCT* expression string*)
     ;
     
 iriRefOrFunction
@@ -633,7 +661,7 @@ iriRefOrFunction
     ;
 
 rdfLiteral
-    : string (LANGTAG | (REFERENCE iriRef))?
+    : string (LANGTAG | ('^^' iriRef))? -> ^(RDFLITERAL string LANGTAG* iriRef*)
     ;
 
 numericLiteral
@@ -688,7 +716,7 @@ blankNode
     ;
 
 anon
-    : OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
+    : '[' ']' -> ANON
     ;
 // $>
 
@@ -928,35 +956,34 @@ VAR1 : '?' v=VARNAME;
 
 VAR2 : '$' VARNAME;
 
-LANGTAG : '@' ('A'..'Z'|'a'..'z')+ (MINUS ('A'..'Z'|'a'..'z'|DIGIT)+)*;
+LANGTAG : '@' ('A'..'Z'|'a'..'z')+ ('-' ('A'..'Z'|'a'..'z'|DIGIT)+)*;
 
 INTEGER : DIGIT+;
 
 DECIMAL
-    : DIGIT+ DOT DIGIT*
-    | DOT DIGIT+
+    : DIGIT+ '.' DIGIT*
+    | '.' DIGIT+
     ;
 
 DOUBLE
-    : DIGIT+ DOT DIGIT* EXPONENT
-    | DOT DIGIT+ EXPONENT
+    : DIGIT+ '.' DIGIT* EXPONENT
+    | '.' DIGIT+ EXPONENT
     | DIGIT+ EXPONENT
     ;
 
-INTEGER_POSITIVE : PLUS INTEGER;
+INTEGER_POSITIVE : '+' INTEGER;
 
-DECIMAL_POSITIVE : PLUS DECIMAL;
+DECIMAL_POSITIVE : '+' DECIMAL;
 
-DOUBLE_POSITIVE : PLUS DOUBLE;
+DOUBLE_POSITIVE : '+' DOUBLE;
 
-INTEGER_NEGATIVE : MINUS INTEGER;
+INTEGER_NEGATIVE : '-' INTEGER;
 
-DECIMAL_NEGATIVE : MINUS DECIMAL;
+DECIMAL_NEGATIVE : '-' DECIMAL;
 
-DOUBLE_NEGATIVE : MINUS DOUBLE;
+DOUBLE_NEGATIVE : '-' DOUBLE;
     
-fragment
-EXPONENT : ('e'|'E') SIGN? DIGIT+;
+fragment EXPONENT : ('e'|'E') SIGN? DIGIT+;
 
 STRING_LITERAL1 : '\'' (options {greedy=false;} : ~('\'' | '\\' | EOL) | ECHAR)* '\'';
 
@@ -966,50 +993,42 @@ STRING_LITERAL_LONG1 : '\'\'\'' (options {greedy=false;} : ('\'' | '\'\'')? (~('
 
 STRING_LITERAL_LONG2 : '"""' (options {greedy=false;} : ('"' | '""')? (~('"'|'\\') | ECHAR))* '"""';
 
-fragment
-ECHAR : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'');
+fragment ECHAR : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'');
     		
 IRI_REF
     :('<' (options{greedy=false;}: IRI_REF_CHARACTERS)* '>') =>  '<' (options{greedy=false;}: IRI_REF_CHARACTERS)* '>'
-    | LESS { $type = LESS; }
+    | '<' { $type = LESS; }
     ;
     
-fragment
-IRI_REF_CHARACTERS
-    :  ~('<' | '>' | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | PIPE | INVERSE | '`' | '\\' | '\u0000' | '\u0001'| '\u0002' | '\u0003' | '\u0004'| '\u0005' | '\u0006'| '\u0007' | '\u0008' | '\u0009'| '\u000A' | '\u000B'| '\u000C' | '\u000D' | '\u000E'| '\u000F'| '\u0010' | '\u0011'| '\u0012' | '\u0013' | '\u0014'| '\u0015' | '\u0016'| '\u0017' | '\u0018' | '\u0019'| '\u001A' | '\u001B'| '\u001C' | '\u001D' | '\u001E'| '\u001F' | '\u0020')
+fragment IRI_REF_CHARACTERS
+    :  ~('<' | '>' | '"' | '{' | '}' | '|' | '^' | '`' | '\\' | '\u0000' | '\u0001'| '\u0002' | '\u0003' | '\u0004'| '\u0005' | '\u0006'| '\u0007' | '\u0008' | '\u0009'| '\u000A' | '\u000B'| '\u000C' | '\u000D' | '\u000E'| '\u000F'| '\u0010' | '\u0011'| '\u0012' | '\u0013' | '\u0014'| '\u0015' | '\u0016'| '\u0017' | '\u0018' | '\u0019'| '\u001A' | '\u001B'| '\u001C' | '\u001D' | '\u001E'| '\u001F' | '\u0020')
     ;
 
-fragment
-PN_CHARS_U : PN_CHARS_BASE | '_';
+fragment PN_CHARS_U : PN_CHARS_BASE | '_';
 
-fragment
-VARNAME : (PN_CHARS_U | DIGIT) (PN_CHARS_U | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040')*;
+fragment VARNAME : (PN_CHARS_U | DIGIT) (PN_CHARS_U | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040')*;
 
-fragment
-PN_CHARS
+fragment PN_CHARS
     : PN_CHARS_U
-    | MINUS
+    | '-'
     | DIGIT
     | '\u00B7' 
     | '\u0300'..'\u036F'
     | '\u203F'..'\u2040'
     ;
 
-fragment
-PN_PREFIX : PN_CHARS_BASE ((PN_CHARS|DOT)* PN_CHARS)?;
+fragment PN_PREFIX : PN_CHARS_BASE ((PN_CHARS|'.')* PN_CHARS)?;
 
-fragment
-PN_LOCAL : (PN_CHARS_U|DIGIT)  ((PN_CHARS|{    
+fragment PN_LOCAL : (PN_CHARS_U|DIGIT)  ((PN_CHARS|{    
                     	                       if (input.LA(1)=='.') {
                     	                          int LA2 = input.LA(2);
                     	       	                  if (!((LA2>='-' && LA2<='.')||(LA2>='0' && LA2<='9')||(LA2>='A' && LA2<='Z')||LA2=='_'||(LA2>='a' && LA2<='z')||LA2=='\u00B7'||(LA2>='\u00C0' && LA2<='\u00D6')||(LA2>='\u00D8' && LA2<='\u00F6')||(LA2>='\u00F8' && LA2<='\u037D')||(LA2>='\u037F' && LA2<='\u1FFF')||(LA2>='\u200C' && LA2<='\u200D')||(LA2>='\u203F' && LA2<='\u2040')||(LA2>='\u2070' && LA2<='\u218F')||(LA2>='\u2C00' && LA2<='\u2FEF')||(LA2>='\u3001' && LA2<='\uD7FF')||(LA2>='\uF900' && LA2<='\uFDCF')||(LA2>='\uFDF0' && LA2<='\uFFFD'))) {
                     	       	                     return;
                     	       	                  }
                     	                       }
-                                           } DOT)* PN_CHARS)?;
+                                           } '.')* PN_CHARS)?;
 
-fragment
-PN_CHARS_BASE
+fragment PN_CHARS_BASE
     : 'A'..'Z'
     | 'a'..'z'
     | '\u00C0'..'\u00D6'
@@ -1025,70 +1044,14 @@ PN_CHARS_BASE
     | '\uFDF0'..'\uFFFD'
     ;
     	
-fragment
-DIGIT : '0'..'9';
+fragment DIGIT : '0'..'9';
+
+fragment SIGN : ('+'|'-');	
+
+fragment EOL : '\n' | '\r';
 
 COMMENT : '#' (options{greedy=false;} : .)* EOL { $channel=HIDDEN; };
-
-fragment
-EOL : '\n' | '\r';
-
-REFERENCE : '^^';
-
-LESS_EQUAL : '<=';
-
-GREATER_EQUAL : '>=';
-
-NOT_EQUAL : '!=';
-
-AND : '&&';
-
-OR : '||';
-    
-INVERSE : '^';
-
-OPEN_BRACE : '(';
-
-CLOSE_BRACE : ')';
-
-OPEN_CURLY_BRACE : '{';
-
-CLOSE_CURLY_BRACE : '}';
-
-OPEN_SQUARE_BRACKET : '[';
-
-CLOSE_SQUARE_BRACKET : ']';
-
-SEMICOLON : ';';
-
-DOT : '.';
-
-PLUS : '+';
-
-MINUS : '-';
-
-fragment
-SIGN : (PLUS|MINUS);
-	
-ASTERISK : '*';
-
-QUESTION_MARK : '?';
-    	
-COMMA : ',';
-
-NEGATION : '!';
-
-DIVIDE : '/';
-
-EQUAL : '=';
-
-fragment
-LESS : '<';
-
-GREATER : '>';
-
-PIPE : '|';
-    	
+        	
 ANY : .;
 
 // $>

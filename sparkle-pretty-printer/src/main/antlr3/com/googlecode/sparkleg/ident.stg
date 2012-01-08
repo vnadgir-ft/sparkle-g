@@ -358,12 +358,12 @@ pathElt(pathPrimary, pathMod) ::= <<
 <pathPrimary><if(pathMod)><pathMod><endif>
 >>
 
-pathMod(value, i1, comma1, i2, comma2, i3) ::= <<
-<if(value)><value><else>{<if(i1)><i1><if(comma1)>,<if(i2)> <i2><endif><endif>}<elseif(comma2)>, <i3>}<endif><endif>
+pathMod(value, i1, c, i2) ::= <<
+<if(value)><value><else>{<if(i1)><i1><if(i2)>,<i2><elseif(c)><c><endif><else><if(c)><c><endif><i2><endif>}<endif>
 >>
 
 pathPrimary(iriRef, value, pathNegatedPropertySet, path) ::= <<
-<if(iriRef)><iriRef><elseif(value)><value><endif><if(pathNegatedPropertySet)><pathNegatedPropertySet><endif><if(path)>(<path>)<endif>
+<if(iriRef)><iriRef><elseif(value)><value><endif><if(pathNegatedPropertySet)>!<pathNegatedPropertySet><endif><if(path)>(<path>)<endif>
 >>
 
 pathNegatedPropertySet(pathOneInPropertySet) ::= <<
