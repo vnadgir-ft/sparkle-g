@@ -261,4 +261,20 @@ All queries extracted from the GUnit file are treated as described below:
 A stable transformation algorithm should result in no changes when
 repeatedly applied on the generated output. This behaviour is neccessary but not sufficient to yield a well formed reformatted query. For this reason the three data sequences: original query, response1 and response2 are written for manual inspection in a log file.
 
+== Example Usages of ANTLR generated SPARQL Lexer and Parser ==
+
+A prototype of a netbeans platform based application has been built. This prototype uses the ANTLR generated SPARQL lexer for syntax colouring. The implementation of this feature had been made more than easy by the nice step by step guidance which can be found here: 
+
+[http://wiki.netbeans.org/SyntaxColoringANTLR Using an ANTLR Lexer For Syntax Coloring Tutorial]
+
+A sample image of a coloured query from the DAWG testsuite looks like this:
+
+http://sparkle-g.googlecode.com/svn/site/images/Syntax-Coloring.png
+
+The SPARQL grammar is being used for syntax checking. How to integrate an ANTLR grammar in a netbeans platform based application is explained in the [http://wiki.netbeans.org/New_Language_Support_Tutorial_Antlr New Language Support Tutorial Antlr].
+
+Depicted below a error message emitted by the SPARQL grammar:  
+
+http://sparkle-g.googlecode.com/svn/site/images/LanguageIntegration.png
+
 - to be continued -
