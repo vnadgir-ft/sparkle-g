@@ -492,7 +492,6 @@ builtInCall
     | NOW
     | ^(MD5 expression)
     | ^(SHA1 expression)
-    | ^(SHA224 expression)
     | ^(SHA256 expression)
     | ^(SHA384 expression)
     | ^(SHA512 expression)
