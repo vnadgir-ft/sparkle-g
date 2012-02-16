@@ -272,7 +272,7 @@ quads
     ;
     
 quadsDetails
-    : quadsNotTriples triplesTemplate?
+    : quadsNotTriples DOT? triplesTemplate? -> quadsNotTriples triplesTemplate?
     ;
     
 quadsNotTriples
