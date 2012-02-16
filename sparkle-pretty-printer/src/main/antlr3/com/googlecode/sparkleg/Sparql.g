@@ -607,7 +607,6 @@ builtInCall
     | NOW nil -> NOW
     | MD5 '(' expression ')' -> ^(MD5 expression)
     | SHA1 '(' expression ')' -> ^(SHA1 expression)
-    | SHA224 '(' expression ')' -> ^(SHA224 expression)
     | SHA256 '(' expression ')' -> ^(SHA256 expression)
     | SHA384 '(' expression ')' -> ^(SHA384 expression)
     | SHA512 '(' expression ')' -> ^(SHA512 expression)
@@ -936,7 +935,7 @@ AVG : ('A'|'a')('V'|'v')('G'|'g');
 
 SAMPLE : ('S'|'s')('A'|'a')('M'|'m')('P'|'p')('L'|'l')('E'|'e');    
  
-GROUP_CONCAT  :	 ('G'|'g')('R'|'r')('O'|'o')('U'|'u')('P'|'p') '_' ('C'|'c')('O'|'o')('N'|'n')('C'|'c')('A'|'a')('T'|'t');
+GROUP_CONCAT  :	('G'|'g')('R'|'r')('O'|'o')('U'|'u')('P'|'p') '_' ('C'|'c')('O'|'o')('N'|'n')('C'|'c')('A'|'a')('T'|'t');
 
 NOT : ('N'|'n')('O'|'o')('T'|'t');
     
@@ -1018,15 +1017,15 @@ fragment PN_CHARS
     ;
 
 fragment PN_PREFIX : PN_CHARS_BASE ((PN_CHARS|'.')* PN_CHARS)?;
-
-fragment PN_LOCAL : (PN_CHARS_U|DIGIT)  ((PN_CHARS|{    
+                                         
+fragment PN_LOCAL : (PN_CHARS_U|DIGIT|PLX)  ((PN_CHARS|{    
                     	                       if (input.LA(1)=='.') {
                     	                          int LA2 = input.LA(2);
                     	       	                  if (!((LA2>='-' && LA2<='.')||(LA2>='0' && LA2<='9')||(LA2>='A' && LA2<='Z')||LA2=='_'||(LA2>='a' && LA2<='z')||LA2=='\u00B7'||(LA2>='\u00C0' && LA2<='\u00D6')||(LA2>='\u00D8' && LA2<='\u00F6')||(LA2>='\u00F8' && LA2<='\u037D')||(LA2>='\u037F' && LA2<='\u1FFF')||(LA2>='\u200C' && LA2<='\u200D')||(LA2>='\u203F' && LA2<='\u2040')||(LA2>='\u2070' && LA2<='\u218F')||(LA2>='\u2C00' && LA2<='\u2FEF')||(LA2>='\u3001' && LA2<='\uD7FF')||(LA2>='\uF900' && LA2<='\uFDCF')||(LA2>='\uFDF0' && LA2<='\uFFFD'))) {
                     	       	                     return;
                     	       	                  }
                     	                       }
-                                           } '.')* PN_CHARS)?;
+                                           } '.'| PLX)* (PN_CHARS|PLX))?;
 
 fragment PN_CHARS_BASE
     : 'A'..'Z'
@@ -1043,7 +1042,15 @@ fragment PN_CHARS_BASE
     | '\uF900'..'\uFDCF'
     | '\uFDF0'..'\uFFFD'
     ;
-    	
+
+fragment PLX : PERCENT | PN_LOCAL_ESC;
+
+fragment PERCENT : '%' HEX HEX;
+
+fragment HEX : DIGIT | 'A'..'F' | 'a'..'z';
+
+fragment PN_LOCAL_ESC : '\\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | ';' | '=' | ':' | '/' | '?' | '#' | '@' | '%' );    	
+
 fragment DIGIT : '0'..'9';
 
 fragment SIGN : ('+'|'-');	

@@ -521,7 +521,6 @@ builtInCall
     | NOW -> builtInCall(type={$NOW.text})
     | ^(MD5 e=expression) -> builtInCall(type={$MD5.text}, expression={$e.st})
     | ^(SHA1 e=expression) -> builtInCall(type={$SHA1.text}, expression={$e.st})
-    | ^(SHA224 e=expression) -> builtInCall(type={$SHA224.text}, expression={$e.st})
     | ^(SHA256 e=expression) -> builtInCall(type={$SHA256.text}, expression={$e.st})
     | ^(SHA384 e=expression) -> builtInCall(type={$SHA384.text}, expression={$e.st})
     | ^(SHA512 e=expression) -> builtInCall(type={$SHA512.text}, expression={$e.st})
