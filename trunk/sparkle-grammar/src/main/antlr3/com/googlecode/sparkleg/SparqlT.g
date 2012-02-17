@@ -75,7 +75,7 @@ selectVariables
   
 constructQuery
     : ^(CONSTRUCT constructTemplate datasetClause* whereClause? solutionModifier)
-    | ^(CONSTRUCT datasetClause* whereClause? solutionModifier)
+    | ^(CONSTRUCT datasetClause* ^(WHERE_CLAUSE triplesTemplate*) solutionModifier)
     ;
 
 describeQuery
