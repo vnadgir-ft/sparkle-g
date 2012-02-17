@@ -111,7 +111,7 @@ selectVariables
 
 constructQuery
     : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate datasetClause* whereClause* solutionModifier*)
-    | CONSTRUCT datasetClause* WHERE groupGraphPattern solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE_CLAUSE groupGraphPattern*) solutionModifier*)
+    | CONSTRUCT datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE_CLAUSE triplesTemplate*) solutionModifier*)
     ;
 
 describeQuery
@@ -362,7 +362,7 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty?)
+    : varOrTerm propertyListNotEmpty -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty)
     | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT triplesNode propertyListNotEmpty?) 
     ;
 
