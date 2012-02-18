@@ -132,8 +132,8 @@ selectVariables
     ;
 
 constructQuery
-    : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate datasetClause* whereClause* solutionModifier*)
-    | CONSTRUCT datasetClause* WHERE groupGraphPattern solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE_CLAUSE groupGraphPattern*) solutionModifier*)
+    : CONSTRUCT constructTemplate datasetClause* whereClause solutionModifier -> ^(CONSTRUCT constructTemplate datasetClause* whereClause* solutionModifier*)   
+    | CONSTRUCT datasetClause* WHERE '{' triplesTemplate? '}' solutionModifier -> ^(CONSTRUCT datasetClause* ^(WHERE_CLAUSE triplesTemplate*) solutionModifier*)
     ;
 
 describeQuery

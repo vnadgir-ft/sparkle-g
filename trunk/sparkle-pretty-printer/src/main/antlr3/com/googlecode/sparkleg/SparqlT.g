@@ -75,7 +75,7 @@ selectVariables
   
 constructQuery
     : ^(CONSTRUCT c=constructTemplate (d+=datasetClause)* (w=whereClause)? s=solutionModifier) -> constructQuery(constructTemplate={$c.st}, datasetClause={$d}, whereClause={$w.st}, solutionModifier={$s.st})
-    | ^(CONSTRUCT (d+=datasetClause)* (w=whereClause)? s=solutionModifier) -> constructQuery(datasetClause={$d}, whereClause={$w.st}, solutionModifier={$s.st})
+    | ^(CONSTRUCT (d+=datasetClause)* ^(WHERE_CLAUSE (t+=triplesTemplate)*) s=solutionModifier) -> constructQuery(datasetClause={$d}, triplesTemplate={$t}, solutionModifier={$s.st})
     ;
 
 describeQuery
