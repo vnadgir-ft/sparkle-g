@@ -6379,10 +6379,10 @@ WHERE { ?s ?p ?o }>> OK
 <<PREFIX : <http://example.org/>
 
 CONSTRUCT 
-WHERE { ?s ?p ?o FILTER ( ?o = :o1) }>> OK
+WHERE { ?s ?p ?o FILTER ( ?o = :o1) }>> FAIL
 // constructwhere06.rq 
 <<CONSTRUCT 
-WHERE { GRAPH <data.ttl> { ?s ?p ?o } }>> OK
+WHERE { GRAPH <data.ttl> { ?s ?p ?o } }>> FAIL
 
 /* +++ Testset csv-tsv-res +++ */
 
