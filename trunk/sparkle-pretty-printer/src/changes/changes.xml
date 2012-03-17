@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2007-2011 The sparkle-g Team
+  Copyright 2007-2012 The sparkle-g Team
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,11 +26,22 @@
     </properties>
 
     <body>
-        <release version="3.3" date="2011-12-25" description="fixes release">
+        <release version="3.3" date="2012-03-17" description="fixes release">
             <action dev="Juergen.Pfundt" type="add">
                The w3c SPARQL definition has some slight modifications, which are adapted by the following changes:
                - separate strReplaceExpression rule for REPLACE command
                - solutionModifier added to askQuery rule
+            </action>
+            <action dev="Juergen.Pfundt" type="add">
+               Updated the grammar to the W3C Working Draft 05 January 2012.
+               1) Backslash character escapes in prefixed names
+               2) Remove SHA224 from hash function choices
+            </action>
+            <action dev="Juergen.Pfundt" type="fix">
+               - Added optional DOT token to quads rule.
+               - Restrictions for short form of CONSTRUCT corrected as defined in the w3.org SPARQL 1.1 definition:
+                 A short form for the CONSTRUCT query form is provided for the case where the template and the pattern are the same and the pattern is just a basic graph pattern (no FILTERs and no complex graph patterns are allowed in the short form). The keyword WHERE is required in the short form.
+                 The affected testcases from the DAWG test set have been switched to FAILED.
             </action>
         </release>
         

@@ -23,7 +23,7 @@
     <groupId>sparkle-g.sparkle-grammar</groupId>
     <artifactId>sparkle-grammar</artifactId>
     <packaging>jar</packaging>
-    <version>3.2</version>
+    <version>3.3</version>
 
     <name>sparkle-g :: grammar</name>
     <description>The SPARQL (pron: sparkle) query language Grammar for ANTLR3</description>
@@ -31,14 +31,14 @@
     <parent>
         <groupId>sparkle-g</groupId>
         <artifactId>sparkle-g-parent</artifactId>
-        <version>3.2</version>
+        <version>3.3</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>sparkle-g.unicode-preprocessor</groupId>
             <artifactId>unicode-preprocessor</artifactId>
-            <version>3.2</version>
+            <version>3.3</version>
             <scope>compile</scope>
         </dependency>
 
