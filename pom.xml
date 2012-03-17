@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Copyright 2007-2011 The sparkle-g Team
+    Copyright 2007-2012 The sparkle-g Team
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
     <groupId>sparkle-g</groupId>
     <artifactId>sparkle-g-parent</artifactId>
-    <version>3.2</version>
+    <version>3.3</version>
     <packaging>pom</packaging>
 
     <name>sparkle-g :: parent</name>
@@ -567,6 +567,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.8</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>

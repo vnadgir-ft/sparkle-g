@@ -21,7 +21,7 @@
     <groupId>sparkle-g.unicode-preprocessor</groupId>
     <artifactId>unicode-preprocessor</artifactId>
     <packaging>jar</packaging>
-    <version>3.2</version>
+    <version>3.3</version>
  
     <name>sparkle-g :: Unicode Preprocessor</name>
     <description>A Unicode Preprocessor for the SPARQL Query and Update Language</description>
@@ -30,7 +30,7 @@
     <parent>
         <groupId>sparkle-g</groupId>
         <artifactId>sparkle-g-parent</artifactId>
-        <version>3.2</version>
+        <version>3.3</version>
     </parent>
 
     <dependencies>

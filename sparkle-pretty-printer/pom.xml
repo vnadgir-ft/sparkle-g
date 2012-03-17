@@ -23,7 +23,7 @@
     <groupId>sparkle-g.sparkle-pretty-printer</groupId>
     <artifactId>sparkle-pretty-printer</artifactId>
     <packaging>jar</packaging>
-    <version>3.2</version>
+    <version>3.3</version>
     
     <name>sparkle-g :: pretty-printer</name>
     <description>A Pretty Printer and Syntactic Validator for the SPARQL Query and Update Language</description>
@@ -32,14 +32,14 @@
     <parent>
         <groupId>sparkle-g</groupId>
         <artifactId>sparkle-g-parent</artifactId>
-        <version>3.2</version>
+        <version>3.3</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>sparkle-g.unicode-preprocessor</groupId>
             <artifactId>unicode-preprocessor</artifactId>
-            <version>3.2</version>
+            <version>3.3</version>
             <scope>compile</scope>
         </dependency>
 

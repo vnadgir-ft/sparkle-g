@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2007-2011 The sparkle-g Team
+  Copyright 2007-2012 The sparkle-g Team
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,6 +26,12 @@
     </properties>
 
     <body>
+         <release version="3.3" date="2012-03-17" description="fixes release">
+            <action dev="Juergen.Pfundt" type="add">
+               No modifications of the pre-processor.
+            </action>
+        </release>
+        
         <release version="3.2" date="2011-12-25" description="upgrade release">
             <action dev="Simone,Tripodi" type="add">
                 Reorganizing/Restructering of the multi module project, to better fit maven 3 requirements.
