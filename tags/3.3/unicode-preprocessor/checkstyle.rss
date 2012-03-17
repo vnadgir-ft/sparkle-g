@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<rss version="0.91">
+  <channel>
+    <title>sparkle-g :: Unicode Preprocessor - Checkstyle report</title>
+    <link>http://code.google.com/p/sparkle-g/unicode-preprocessor/</link>
+    <description>sparkle-g :: Unicode Preprocessor - Checkstyle report</description>
+    <language>en-us</language>
+    <copyright>&#169;2011 - 2012</copyright>
+    <item>
+      <title>File: 3,
+             Errors: 374,
+             Warnings: 21,
+             Infos: 0
+      </title>
+            <link>http://code.google.com/p/sparkle-g/unicode-preprocessor//checkstyle.html</link>
+      <description>
+        <p>Click <a href="http://code.google.com/p/sparkle-g/unicode-preprocessor//checkstyle.html">here</a> for the full Checkstyle report.</p>
+
+        <table summary="Files" boder="1">
+          <thead>
+            <tr>
+              <th>Files</th>
+              <th style="width:30px;"><abbr title="Info">I</abbr></th>
+              <th style="width:30px;"><abbr title="Warning">W</abbr></th>
+              <th style="width:30px;"><abbr title="Error">E</abbr></th>
+            </tr>
+          </thead>
+          <tbody>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g/unicode-preprocessor//checkstyle.html#org.antlr.runtime.SparkleUnicodePreprocessorStringStream.java">org/antlr/runtime/SparkleUnicodePreprocessorStringStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  157
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g/unicode-preprocessor//checkstyle.html#org.antlr.runtime.SparkleUnicodePreprocessorFileStream.java">org/antlr/runtime/SparkleUnicodePreprocessorFileStream.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  8
+                </td>
+                <td>
+                  179
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="http://code.google.com/p/sparkle-g/unicode-preprocessor//checkstyle.html#org.antlr.runtime.SparkleUnicodePreprocessorStringStreamTest.java">org/antlr/runtime/SparkleUnicodePreprocessorStringStreamTest.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  10
+                </td>
+                <td>
+                  38
+                </td>
+              </tr>
+                      </tbody>
+        </table>
+        
+      </description>
+    </item>
+  </channel>
+</rss>
+
