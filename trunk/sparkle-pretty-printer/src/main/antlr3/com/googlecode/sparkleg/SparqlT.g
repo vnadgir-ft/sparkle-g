@@ -571,7 +571,7 @@ aggregate
     
 iriRefOrFunction
     : ^(FUNCTION f=iriRef ^(ARG_LIST (a=argList))) -> iriRefOrFunction(iriRef={$f.st}, argList={$a.st})
-    | ^(FUNCTION f=iriRef) -> iriRefOrFunction(iriRef={$f.st}, argList={""})
+    | ^(FUNCTION f=iriRef) -> iriRefOrFunction(iriRef={$f.st})
     ;
 
 rdfLiteral
