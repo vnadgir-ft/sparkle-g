@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright 2007-2011 The sparkle-g Team
 
@@ -23,7 +23,7 @@
     <groupId>sparkle-g.sparkle-pretty-printer</groupId>
     <artifactId>sparkle-pretty-printer</artifactId>
     <packaging>jar</packaging>
-    <version>3.3</version>
+    <version>3.3.1</version>
     
     <name>sparkle-g :: pretty-printer</name>
     <description>A Pretty Printer and Syntactic Validator for the SPARQL Query and Update Language</description>
@@ -32,14 +32,14 @@
     <parent>
         <groupId>sparkle-g</groupId>
         <artifactId>sparkle-g-parent</artifactId>
-        <version>3.3</version>
+        <version>3.3.1</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>sparkle-g.unicode-preprocessor</groupId>
             <artifactId>unicode-preprocessor</artifactId>
-            <version>3.3</version>
+            <version>3.3.1</version>
             <scope>compile</scope>
         </dependency>
 
@@ -126,7 +126,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.11</version>
+                <version>2.12</version>
             </plugin>
 
         </plugins>
