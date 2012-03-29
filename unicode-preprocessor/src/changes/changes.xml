@@ -26,6 +26,12 @@
     </properties>
 
     <body>
+        <release version="3.3.1" date="2012-03-28" description="fixes release">
+             <action dev="Juergen.Pfundt" type="update">
+               Update to maven 3.0.4.
+            </action>
+        </release>
+        
          <release version="3.3" date="2012-03-17" description="fixes release">
             <action dev="Juergen.Pfundt" type="add">
                No modifications of the pre-processor.

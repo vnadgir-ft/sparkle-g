@@ -31,6 +31,9 @@
                 Problem reported by Thomas Francart. Rewrite of argList in iriRefOrFunction rule corrected.
                 Braces are omitted now, when no function is specified.
             </action>
+            <action dev="Juergen.Pfundt" type="update">
+               Update to maven 3.0.4.
+            </action>
         </release>
         
         <release version="3.3" date="2012-03-17" description="Bugfix release">
