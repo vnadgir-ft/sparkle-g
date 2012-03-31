@@ -26,7 +26,14 @@
     </properties>
 
     <body>
-        <release version="3.3.1" date="2012-03-28" description="fixes release">
+        <release version="3.3.1" date="2012-03-28" description="Bugfix release">
+            <action dev="Juergen.Pfundt" type="fix">
+               Several fixes in ident.g in the update rules area, due to new test cases added.
+            </action>             
+             <action dev="Juergen.Pfundt" type="add">
+               Added queries from http://www.w3.org/TR/sparql11-update/#updateLanguage as testcases.
+               Added queries with respect to problem reported by Thomas Francart to test suite.
+            </action>
              <action dev="Juergen.Pfundt" type="update">
                Update to maven 3.0.4.
             </action>

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2007-2010 The sparkle-g Team
+ *    Copyright 2007-2012 The sparkle-g Team
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 tree grammar SparqlT; 
 
 options {
-tokenVocab=Sparql; // reuse token types
+tokenVocab=SparqlParser; // reuse token types
 ASTLabelType=CommonTree; // $label will have type CommonTree
 output=template; //template;
 }
@@ -381,9 +381,9 @@ pathMod
     | PATH_MOD QUESTION_MARK -> pathMod(value={$QUESTION_MARK.text})
     | PATH_MOD PLUS -> pathMod(value={$PLUS.text})
     | PATH_MOD i1=INTEGER -> pathMod(i1={$i1.text})
-    | PATH_MOD i1=INTEGER c=',' -> pathMod(i1={$i1.text}, c={$c.text})
+    | PATH_MOD i1=INTEGER c=COMMA -> pathMod(i1={$i1.text}, c={$c.text})
     | PATH_MOD i1=INTEGER i2=INTEGER -> pathMod(i1={$i1.text}, i2={$i2.text})
-    | PATH_MOD c=',' i2=INTEGER -> pathMod(c={$c.text}, i2={$i2.text})
+    | PATH_MOD c=COMMA i2=INTEGER -> pathMod(c={$c.text}, i2={$i2.text})
     ;
 
 pathPrimary
