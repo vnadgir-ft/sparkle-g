@@ -26,7 +26,19 @@
     </properties>
 
     <body>
-        <release version="3.3.1" date="2012-03-28" description="fixes release">
+        <release version="3.3.1" date="2012-03-28" description="Bugfix release">
+             <action dev="Juergen.Pfundt" type="fix">
+               Several fixes in ident.g in the update rules area, due to new test cases added.
+            </action>  
+             <action dev="Juergen.Pfundt" type="add">
+               Split of Sparql.g (combined lexer and parser grammar) in two distinct files SparlLexer.g (lexer grammar) and
+               SparqlParser.g (parser grammar). The generated files remain the same! 
+               This might ease the construction of composite grammars (see: http://www.antlr.org/wiki/display/ANTLR3/Composite+Grammars)
+            </action>            
+             <action dev="Juergen.Pfundt" type="add">
+               Added queries from http://www.w3.org/TR/sparql11-update/#updateLanguage as testcases.
+               Added queries with respect to problem reported by Thomas Francart to test suite.
+            </action>
              <action dev="Juergen.Pfundt" type="fix">
                 Problem reported by Thomas Francart. Rewrite of argList in iriRefOrFunction rule corrected.
                 Braces are omitted now, when no function is specified.

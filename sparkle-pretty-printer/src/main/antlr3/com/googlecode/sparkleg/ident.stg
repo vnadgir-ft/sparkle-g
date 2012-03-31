@@ -1,5 +1,5 @@
 /*
-* Copyright 2011 the original author or authors.
+* Copyright 2012 the original author or authors.
 *
 * All rights reserved.
 *
@@ -37,7 +37,7 @@
 group ident;
 
 query(prologue, selectQuery, constructQuery, describeQuery, askQuery, bindingsClause, updateQuery) ::= <<
-<prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif>
+<if(prologue)><prologue><endif><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif>
 >>
 
 updateQuery(update) ::= <<
@@ -144,8 +144,7 @@ bindingValue(iriRef, rdfLiteral, numericLiteral, booleanLiteral, value) ::= <<
 >>
 
 update(prologue, load, clear, drop, add, move, copy, create, insert, delete, modify) ::= <<
-<if(prologue)><prologue><\n><endif>
-<if(load)><load><elseif(clear)><clear><elseif(drop)><drop><elseif(add)><add><elseif(move)><move><elseif(copy)><copy><elseif(create)><create><elseif(insert)><insert><elseif(delete)><delete><elseif(modify)><modify><endif>
+<if(prologue)><prologue><endif><if(load)><load><elseif(clear)><clear><elseif(drop)><drop><elseif(add)><add><elseif(move)><move><elseif(copy)><copy><elseif(create)><create><elseif(insert)><insert><elseif(delete)><delete><elseif(modify)><modify><endif>
 >>
 
 load(attribute, iriRef, graphRef) ::= <<
@@ -165,20 +164,20 @@ CREATE <if(attribute)><attribute> <endif><graphRef>
 >>
 
 add(attribute, graphOrDefault1, graphOrDefault2) ::= <<
-ADD <if(attribute)><attribute> <endif><graphOrDefault1> <graphOrDefault2>
+ADD <if(attribute)><attribute> <endif><graphOrDefault1> TO <graphOrDefault2>
 >>
 
 move(attribute, graphOrDefault1, graphOrDefault2) ::= <<
-MOVE <if(attribute)><attribute> <endif><graphOrDefault1> <graphOrDefault2>
+MOVE <if(attribute)><attribute> <endif><graphOrDefault1> TO <graphOrDefault2>
 >>
 
 copy(attribute, graphOrDefault1, graphOrDefault2) ::= <<
-COPY <if(attribute)><attribute> <endif><graphOrDefault1> <graphOrDefault2>
+COPY <if(attribute)><attribute> <endif><graphOrDefault1> TO <graphOrDefault2>
 >>
 
 insert(quadPattern) ::= <<
 INSERT DATA {
-   <quadPattern>
+<quadPattern>
 }
 >>
 
@@ -188,30 +187,30 @@ delete(deleteData, deleteWhere) ::= <<
 
 deleteData(quadPattern) ::= <<
 DELETE DATA {
-   <quadPattern>
+<quadPattern>
 }
 >>
 
 deleteWhere(quadPattern) ::= <<
 DELETE WHERE {
-   <quadPattern>
+<quadPattern>
 }
 >>
 
 deleteClause(quadPattern) ::= <<
 DELETE {
-   <quadPattern>
+<quadPattern>
 }
 >>
 
 modify(iriRef, deleteClause, insertClause, usingClause, whereClause) ::= <<
-<if(iriRef)>WITH <iriRef> <endif><if(deleteClause)><deleteClause><endif><if(insertClause)><if(deleteClause)><\n><endif><insertClause><elseif(usingClause)><usingClause><endif><whereClause>
+<if(iriRef)>WITH <iriRef><\n><endif><if(deleteClause)><deleteClause><endif><if(insertClause)><if(deleteClause)><\n><endif><insertClause><elseif(usingClause)><usingClause><endif><if(whereClause)><\n><whereClause><endif>
 >>
 
 insertClause(quadPattern) ::= <<
 INSERT 
 {
-   <quadPattern>
+<quadPattern>
 }
 >>
 
@@ -220,7 +219,7 @@ usingClause(attribute1, attribute2, iriRef) ::= <<
 >>
 
 graphOrDefault(attribute, iriRef) ::= <<
-<if(attribute)><attribute><elseif(iriRef)>GRAPH <iriRef><endif>
+<if(attribute)><attribute><elseif(iriRef)><iriRef><endif>
 >>
 
 graphRef(iriRef) ::= <<
