@@ -27,6 +27,9 @@ output = AST;
 }
 
 tokens{
+ANON;
+NIL;
+
 QUERY;
 UPDATE;
 PROLOGUE;
@@ -54,7 +57,10 @@ PREDICATE;
 OBJECT;
 NOT_EXISTS;
 FUNCTION;
+RDFLITERAL;
 PATH;
+PATH_ELT_OR_INVERSE;
+PATH_MOD;
 PATH_SEQUENCE;
 PATH_PRIMARY;
 PATH_NEGATED;
@@ -141,7 +147,7 @@ groupClause
 groupCondition
     : builtInCall -> ^(GROUP_CONDITION builtInCall)
     | functionCall -> ^(GROUP_CONDITION functionCall)
-    | OPEN_BRACE expression (AS var)? CLOSE_BRACE -> ^(GROUP_CONDITION expression ^(AS var)? )
+    | OPEN_BRACE expression (AS var)? CLOSE_BRACE -> ^(GROUP_CONDITION expression var?)
     | var -> ^(GROUP_CONDITION var)
     ;
     
@@ -235,7 +241,7 @@ deleteWhere
     ;
     
 modify
-    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY ^(WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE_CLAUSE groupGraphPattern))
+    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern -> ^(MODIFY (WITH iriRef)? deleteClause* insertClause* usingClause* ^(WHERE_CLAUSE groupGraphPattern))
     ;
   
 deleteClause
@@ -362,7 +368,7 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty)
+    : varOrTerm propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty?)
     | triplesNode propertyListNotEmpty? -> ^(TRIPLES_SAME_SUBJECT triplesNode propertyListNotEmpty?) 
     ;
 
@@ -414,7 +420,7 @@ pathSequence
     ;
 
 pathEltOrInverse
-    : INVERSE? pathElt
+    : (i=INVERSE)? pathElt -> ^(PATH_ELT_OR_INVERSE $i? pathElt)
     ;
        	  	
 pathElt
@@ -422,13 +428,19 @@ pathElt
     ;
 
 pathMod
-    : (ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE (INTEGER (COMMA (CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | COMMA INTEGER CLOSE_CURLY_BRACE))
+    : ASTERISK -> PATH_MOD ASTERISK
+    | QUESTION_MARK -> PATH_MOD QUESTION_MARK 
+    | PLUS -> PATH_MOD PLUS 
+    | OPEN_CURLY_BRACE i1=INTEGER CLOSE_CURLY_BRACE -> PATH_MOD $i1
+    | OPEN_CURLY_BRACE i1=INTEGER c=COMMA CLOSE_CURLY_BRACE -> PATH_MOD $i1 $c
+    | OPEN_CURLY_BRACE i1=INTEGER COMMA i2=INTEGER CLOSE_CURLY_BRACE  -> PATH_MOD $i1 $i2
+    | OPEN_CURLY_BRACE c=COMMA i2=INTEGER CLOSE_CURLY_BRACE -> PATH_MOD $c $i2
     ;
 
 pathPrimary
     : iriRef -> ^(PATH_PRIMARY iriRef)
     | A -> ^(PATH_PRIMARY A)
-    | NEGATION pathNegatedPropertySet -> ^(PATH_PRIMARY NEGATION pathNegatedPropertySet)
+    | NEGATION pathNegatedPropertySet -> ^(PATH_PRIMARY pathNegatedPropertySet)
     | OPEN_BRACE path CLOSE_BRACE -> ^(PATH_PRIMARY path)
     ;
 
@@ -473,7 +485,7 @@ graphTerm
     ;
     
 nil
-    : OPEN_BRACE CLOSE_BRACE
+    : OPEN_BRACE CLOSE_BRACE -> NIL
     ;
 
 expression
@@ -609,7 +621,6 @@ strReplaceExpression
     : REPLACE OPEN_BRACE expression COMMA expression COMMA expression (COMMA expression)? CLOSE_BRACE -> ^(REPLACE expression*)
     ;
     
-    
 existsFunction
     : EXISTS groupGraphPattern -> ^(EXISTS groupGraphPattern)
     ;
@@ -633,7 +644,7 @@ iriRefOrFunction
     ;
 
 rdfLiteral
-    : string (LANGTAG | (REFERENCE iriRef))?
+    : string (LANGTAG | (REFERENCE iriRef))? -> ^(RDFLITERAL string LANGTAG* iriRef*)
     ;
 
 numericLiteral
@@ -688,7 +699,7 @@ blankNode
     ;
 
 anon
-    : OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
+    : OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET -> ANON
     ;
 // $>
 
