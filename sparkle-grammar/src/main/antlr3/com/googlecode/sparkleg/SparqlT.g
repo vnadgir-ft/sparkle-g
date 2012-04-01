@@ -105,7 +105,7 @@ groupClause
 groupCondition
     : ^(GROUP_CONDITION builtInCall)
     | ^(GROUP_CONDITION functionCall)
-    | ^(GROUP_CONDITION expression ^(AS var?) )
+    | ^(GROUP_CONDITION expression var?)
     | ^(GROUP_CONDITION var)
     ;
 
@@ -192,8 +192,7 @@ deleteWhere
     ;
     
 modify
-    : ^(MODIFY ^(WITH iriRef) deleteClause* insertClause* usingClause* whereClause)
-    | ^(MODIFY deleteClause* insertClause* usingClause* whereClause)
+    : ^(MODIFY (WITH r=iriRef)? d=deleteClause* i=insertClause* u=usingClause* w=whereClause)
     ;
   
 deleteClause
@@ -325,8 +324,7 @@ triplesSameSubject
     : ^(TRIPLES_SAME_SUBJECT ^(SUBJECT varOrTerm) propertyListNotEmpty)
     | ^(TRIPLES_SAME_SUBJECT triplesNode propertyListNotEmpty?)
     ;
-    
-        
+
 propertyListNotEmpty
     : propertyListNotEmptyDetails+
     ;
@@ -359,7 +357,7 @@ pathSequence
     ;
     
 pathEltOrInverse
-    : INVERSE? pathElt
+    : ^(PATH_ELT_OR_INVERSE INVERSE? pathElt)
     ;
     	  	
 pathElt
@@ -367,7 +365,13 @@ pathElt
     ;
     
 pathMod
-    : (ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE (INTEGER (COMMA (CLOSE_CURLY_BRACE | INTEGER CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | COMMA INTEGER CLOSE_CURLY_BRACE))
+    : PATH_MOD ASTERISK
+    | PATH_MOD QUESTION_MARK
+    | PATH_MOD PLUS
+    | PATH_MOD INTEGER
+    | PATH_MOD INTEGER COMMA
+    | PATH_MOD INTEGER INTEGER
+    | PATH_MOD COMMA INTEGER
     ;
 
 pathPrimary
@@ -416,7 +420,7 @@ graphTerm
     ;
     
 nil
-    : OPEN_BRACE CLOSE_BRACE
+    : NIL
     ;
 
 expression
@@ -546,7 +550,7 @@ iriRefOrFunction
     ;
 
 rdfLiteral
-    : string (LANGTAG | (REFERENCE iriRef))?
+    : ^(RDFLITERAL s=string LANGTAG? iriRef?)
     ;
 
 numericLiteral
@@ -601,6 +605,6 @@ blankNode
     ;
 
 anon
-    : OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
+    : ANON
     ;	
 // $>
