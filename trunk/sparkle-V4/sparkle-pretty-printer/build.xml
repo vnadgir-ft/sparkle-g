@@ -1,0 +1,261 @@
+
+<project name="Sparql4" default="dist" basedir=".">
+    <description>
+            Sparql Pretty Printer based on Antlr V4
+    </description>
+        
+    <property name="project.name" value="Sparql4" />
+
+    <!-- program version -->
+    <property name="version" value="0.5" />
+
+    <!-- set global properties for this build -->
+    <property name="build" location="."/>
+
+    <!-- directory layout for this build:
+
+       +-sparkle-pretty-printer
+         +- lib
+            +- antlr4
+            +- junit
+            +- junit_4
+         +- src
+            +- changes
+            +- main
+               +- antlr4
+            +- site
+               +- apt
+               +- resources
+                  +- images
+            +- test
+               +- gunit
+               +- java
+         +- target
+            +- classes
+            +- dist
+               +- javadoc
+            +- src
+               +- test
+                  +- gunit
+                  +- java
+            +- test-classes
+
+         the following properties reflect this hierarchy
+    -->
+
+    <!-- the lib directory -->
+    <property name="lib" location="lib"/>
+    
+    <!-- the src directory in this example -->
+    <property name="src" location="src/main/antlr4"/>
+    
+    <!-- the test src directory -->
+    <property name="test-src" location="src/test"/>
+
+    <!-- name of the package -->
+    <property name="package" value="com/googlecode/sparkleg"/>
+
+    <!-- where to write/find token files -->
+    <property name="token.lib" location="${src}/${package}" />
+
+    <!-- where to find the grammar files
+         In this project the grammar file is placed in the same
+         directory as the generated sources.
+    -->
+    <property name="grammar" location="${src}"/>
+
+    <!-- where to write compiled files -->
+    <property name="classes" location="target/classes"/>
+    
+    <!-- where to write compiled test files -->
+    <property name="test-classes" location="target/test-classes"/>
+
+    <!-- distribution directory -->
+    <property name="dist" location="target/dist" />
+
+    <!-- where to write java doc files -->
+    <property name="doc" location="${dist}/javadoc"/>
+
+    <!-- Inquire environment variables -->
+    <property environment="envList"/>
+
+    <!-- where to find the Antlr libraries -->
+    <property name="antlrHome" location="${lib}/antlr4"/>
+    
+    <!-- Use wildcards in pattern definition -->
+    <!-- to be independent of antlr versions -->
+    <patternset id="antlr.libs">
+        <include name="antlr-*.jar" />
+        <include name="ST-*.jar" />
+    </patternset>
+
+    <!-- Looking for archives in antlrHome -->
+    <path id="antlr.path">
+        <fileset dir="${antlrHome}" casesensitive="yes">
+            <patternset refid="antlr.libs" />
+        </fileset>
+    </path>
+    
+    <!-- Make sure Antlr V4 is in reach -->
+    <target name="antlr_home">
+        <whichresource property="antlr.jar.location" class="org.antlr.Tool" classpathref="antlr.path"/>
+        <fail message="Antlr library not found in '${antlrHome}'">
+            <condition>
+                <not>
+                    <isset property="antlr.jar.location"/>
+                </not>
+            </condition>
+        </fail>
+        <echo>Anltr found via at: ${antlr.jar.location}</echo>
+    </target>
+
+    <!-- A convenience macro which invokes antlr
+         Be aware that JVM arguments can be specified via the jvmarg directive
+    -->
+    
+    <macrodef name="antlr4">
+       <attribute name="grammar.name"/>
+       <attribute name="outputdirectory" default="${src}/${package}"/>
+       <attribute name="libdirectory" default="${src}/${package}"/>
+        <sequential>
+           <java classname="org.antlr.v4.Tool" fork="true" failonerror="true">
+              <arg value="-o"/>
+              <arg path="@{outputdirectory}"/>
+              <arg value="-lib"/>
+              <arg path="@{libdirectory}"/>
+              <arg value="-visitor"/>
+              <arg path="@{grammar.name}"/>
+              <classpath>
+                  <path refid="antlr.path"/>
+              </classpath>
+              <jvmarg value="-Xmx512M"/>
+           </java>
+        </sequential>
+    </macrodef>
+
+    <target name="init" depends="antlr_home">
+        <!-- Create the time stamp -->
+        <tstamp />
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${lib}/antlr4" />
+        <mkdir dir="${lib}/junit_4" />
+        <mkdir dir="${src}/${package}" />
+        <mkdir dir="${test-src}/gunit/${package}" />
+        <mkdir dir="${test-src}/java/${package}" />
+        <mkdir dir="${classes}/${package}" />
+        <mkdir dir="${classes}/META-INF" />
+        <mkdir dir="${dist}" />
+        <mkdir dir="${doc}/${package}" />
+        <mkdir dir="${test-classes}/${package}" />
+    </target>
+
+    <!-- Antlr is called here -->
+    <!-- The antlr4 macro is doing the work -->
+    <target name="antlr" depends="init">
+        <antlr4 grammar.name="${src}/${package}/Sparql.g4" />
+    </target>
+
+    <target name="compile" depends="init, antlr" description="compile">
+        <!-- Compile the java code from ${src} into ${classes} -->
+        <javac debug="true" srcdir="${src}" destdir="${classes}"
+               listfiles="Yes" deprecation="Yes" includeantruntime="false">
+            <compilerarg value="-Xlint:unchecked"/>
+            <classpath>
+                <path refid="antlr.path"/>
+            </classpath>
+        </javac>
+    </target>
+    
+    <!-- Define the classpath which includes the junit.jar and the classes after compiling-->
+	  <path id="junit.class.path">
+		   <pathelement location="${lib}/junit_4/junit-4.10.jar" />
+		   <pathelement location="${test-classes}" />
+		   <pathelement location="${classes}" />
+	  </path>
+
+    <target name="test-compile" depends="init, compile" description="test_compile">
+        <!-- Compile the java code from ${src} into ${classes} -->
+        <javac debug="true" srcdir="${test-src}" destdir="${test-classes}"
+               listfiles="Yes" deprecation="Yes" includeantruntime="false">
+            <compilerarg value="-Xlint:unchecked"/>
+            <classpath>
+                <path refid="antlr.path"/>
+                <path refid="junit.class.path"/>
+            </classpath>
+        </javac>
+        <copy todir="${test-classes}/../src/test">
+           <fileset dir="${test-src}"/>
+        </copy>
+        <!--copy todir="${test-classes}/../src/test/gunit">
+           <fileset dir="${test-src}/../gunit"/>
+        </copy-->
+    </target>
+
+    <target name="manifest">
+        <manifest file="${classes}/META-INF/MANIFEST.MF">
+            <attribute name="Main-Class" value="${package}.Main" />
+        </manifest>
+    </target>
+
+    <target name="dist" depends="compile, manifest"
+            description="generate for distribution">
+        <jar jarfile="${dist}/${project.name}.jar" basedir="${classes}"
+             manifest="${classes}/META-INF/MANIFEST.MF"/>
+    </target>
+
+    <target name="doc" depends="init" description="generate documentation">
+        <javadoc destdir="${doc}"
+                 author="true"
+                 version="true"
+                 use="true"
+                 windowtitle="${project.name}"
+                 sourcepath="${src}"
+                 Protected="All" Private="All"
+                 Public="All"
+                 linksource="yes"
+                 breakiterator="Yes">
+            <classpath>
+                <path refid="antlr.path"/>
+            </classpath>
+        </javadoc>
+    </target>
+
+    <target name="run" depends="dist" description="run Sparql">
+        <echo message="running com.googlecode.sparkleg.Main with testfile input-01.rq" />
+        <java classname="SparqlMain"
+              output="${build}/tmp.lis"
+              fork="true"
+              failonerror="true"
+              maxmemory="128m">
+            <arg value="${build}/input-01.rq"/>
+            <classpath>
+                <path refid="antlr.path"/>
+                <pathelement location="${dist}/${project.name}.jar"/>
+            </classpath>
+        </java>
+    </target>
+    
+    <target name="junit" depends="test-compile" description="compile junit test">
+       <junit printsummary="yes" fork="yes" haltonfailure="yes">
+          <formatter type="plain"/>
+          <test name="com.googlecode.sparkleg.IdentGunitOkTest"/>
+            <classpath>
+                <path refid="antlr.path"/>
+                <path refid="junit.class.path"/>
+            </classpath>
+       </junit>
+    </target>
+
+    <target name="clean" description="clean up">
+        <delete>
+            <fileset dir="${src}" includes="**/*.class,**/*.tokens" />
+            <fileset dir="${classes}" />
+            <fileset dir="${dist}" includes="**/*.jar" />
+            <fileset dir="${doc}" />
+        </delete>
+    </target>
+
+    <target name="all" depends="init, clean, compile, dist, doc, run" description="do all"/>
+  
+</project>
+
