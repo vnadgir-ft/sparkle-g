@@ -267,7 +267,7 @@ groupGraphPattern
     ;
     
 groupGraphPatternSub
-    : triplesBlock?  groupGraphPatternSubList* //(f+=graphPatternNotTriples DOT? triplesBlock?)*
+    : triplesBlock?  groupGraphPatternSubList*
     ;
     
 groupGraphPatternSubList
@@ -275,7 +275,6 @@ groupGraphPatternSubList
     ;
     
 triplesBlock
-    //: triplesSameSubjectPath (DOT triplesSameSubjectPath)* DOT? 
     : triplesSameSubjectPath (DOT triplesBlock?)?
     ;
 
@@ -872,7 +871,6 @@ SEPARATOR : ('S'|'s')('E'|'e')('P'|'p')('A'|'a')('R'|'r')('A'|'a')('T'|'t')('O'|
 
 IRI_REF
     : '<' (~('<' | '>' | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | PIPE | INVERSE | '`' | '\\' | '\u0000'..'\u0020'))* '>'
-//    | LESS { $type = LESS; }
     ;
 
 PNAME_NS : PN_PREFIX? ':';
