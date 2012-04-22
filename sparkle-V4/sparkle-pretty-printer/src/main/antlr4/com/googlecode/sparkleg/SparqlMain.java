@@ -46,7 +46,7 @@ public class SparqlMain {
         List tokenList = tokens.getTokens();
 
         System.out.println("TokenList: -------------------------------");
-        Iterator<CommonToken> it = tokenList.iterator();
+        Iterator<CommonToken> it = (Iterator)(tokenList.iterator());
         while (it.hasNext()) {
             Token t = it.next();
             System.out.println(t.toString());
