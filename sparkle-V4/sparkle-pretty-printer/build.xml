@@ -221,13 +221,13 @@
     </target>
 
     <target name="run" depends="dist" description="run Sparql">
-        <echo message="running com.googlecode.sparkleg.Main with testfile input-01.rq" />
+        <echo message="running com.googlecode.sparkleg.Main with testfile input.rq" />
         <java classname="SparqlMain"
               output="${build}/tmp.lis"
               fork="true"
               failonerror="true"
               maxmemory="128m">
-            <arg value="${build}/input-01.rq"/>
+            <arg value="${build}/input.rq"/>
             <classpath>
                 <path refid="antlr.path"/>
                 <pathelement location="${dist}/${project.name}.jar"/>
