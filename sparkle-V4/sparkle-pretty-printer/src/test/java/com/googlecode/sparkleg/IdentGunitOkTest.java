@@ -89,7 +89,7 @@ public class IdentGunitOkTest {
     @Parameterized.Parameters
     public static Collection<Object[]> generateParams() {
 
-        final String inFile = "./sparkle-grammar/target/src/test/gunit/com/googlecode/sparkleg/Sparql.testsuite";
+        final String inFile = "./target/src/test/gunit/com/googlecode/sparkleg/Sparql.testsuite";
             System.out.println("Pfad: "+new File(inFile).getAbsolutePath());
         try {
             loadTestData(inFile);
@@ -124,7 +124,7 @@ public class IdentGunitOkTest {
 
     @BeforeClass
     public static void setUpClass() throws FileNotFoundException {
-        String outFile = "./sparkle-grammar/target/src/test/java/com/googlecode/sparkleg/syntactic_validator1.log";
+        String outFile = "./target/src/test/java/com/googlecode/sparkleg/syntactic_validator1.log";
         try {
             w = new OutputStreamWriter(new FileOutputStream(outFile), "UTF8");
         } catch (IOException ex) {
@@ -182,7 +182,7 @@ public class IdentGunitOkTest {
          * Location of ident.stg can/should be modified to your needs.
          * Fixed assignment just to keep all neccessary parts in one place.
          */
-        String stringTemplate = "./sparkle-grammar/target/src/main/antlr3/com/googlecode/sparkleg/ident.stg";
+        String stringTemplate = "./target/src/main/antlr3/com/googlecode/sparkleg/ident.stg";
 
         /* transformation pipline
          * step 1: Unicode pre-processing
