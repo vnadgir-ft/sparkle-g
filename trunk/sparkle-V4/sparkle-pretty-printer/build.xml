@@ -1,10 +1,10 @@
 
-<project name="Sparql4" default="dist" basedir=".">
+<project name="sparql4" default="dist" basedir=".">
     <description>
             Sparql Pretty Printer based on Antlr V4
     </description>
         
-    <property name="project.name" value="Sparql4" />
+    <property name="project.name" value="sparql4" />
 
     <!-- program version -->
     <property name="version" value="0.5" />
@@ -106,7 +106,7 @@
                 </not>
             </condition>
         </fail>
-        <echo>Anltr found via at: ${antlr.jar.location}</echo>
+        <echo>Anltr found at: ${antlr.jar.location}</echo>
     </target>
 
     <!-- A convenience macro which invokes antlr
