@@ -38,7 +38,7 @@ You should see the following build progress information:
 Buildfile: C:\tmp\sparqlv4\sparkle-pretty-printer\build.xml
 
 antlr_home:
-     [echo] Anltr found via at: jar:file:/C:/tmp/sparqlv4/sparkle-pretty-printer/lib/antlr4/antlr-.4-complete.jar!/org/antlr/Tool.class
+     [echo] Anltr found at: jar:file:/C:/tmp/sparqlv4/sparkle-pretty-printer/lib/antlr4/antlr-.4-complete.jar!/org/antlr/Tool.class
 
 init:
     [mkdir] Created dir: C:\tmp\sparqlv4\sparkle-pretty-printer\target\classes\com\googlecode\sparkleg
@@ -62,7 +62,9 @@ compile:
     [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlParser.java
     [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlVisitor.java
     [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlMain.java
+
 manifest:
+
 dist:
       [jar] Building jar: C:\tmp\sparqlv4\sparkle-pretty-printer\target\dist\Sparql4.jar
 
