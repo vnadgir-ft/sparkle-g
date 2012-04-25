@@ -184,7 +184,7 @@ selectVariables(expression, var) ::= <<
 >>
 
 constructQuery(constructTemplate, datasetClause, whereClause, triplesTemplate, solutionModifier) ::= <<
-<keywordMap.CONSTRUCT> <if(constructTemplate)>{<\n><constructTemplate:indent()><\n>}<if(datasetClause)><\n><datasetClause; separator="\n"><endif><\n><whereClause><if(solutionModifier)><\n><solutionModifier><endif><else><if(datasetClause)><\n><datasetClause; separator="\n"><endif><\n><keywordMap.WHERE> { <if(triplesTemplate)><\n><triplesTemplate:indent()><endif><\n>}<if(solutionModifier)><\n><solutionModifier><endif><endif>
+<keywordMap.CONSTRUCT> <if(constructTemplate)>{<\n><constructTemplate><\n>}<if(datasetClause)><\n><datasetClause; separator="\n"><endif><\n><whereClause><if(solutionModifier)><\n><solutionModifier><endif><else><if(datasetClause)><\n><datasetClause; separator="\n"><endif><\n><keywordMap.WHERE> { <if(triplesTemplate)><\n><triplesTemplate:indent()><endif><\n>}<if(solutionModifier)><\n><solutionModifier><endif><endif>
 >>
 
 describeQuery(ASTERISK, varOrIRIref, datasetClause, whereClause, solutionModifier) ::= <<
@@ -469,7 +469,7 @@ triplesSameSubjectPath(varOrTerm, propertyListNotEmptyPath, triplesNode, propert
 >>
 
 propertyListNotEmptyPath(verb, objectList) ::= <<
-<verb, objectList : {v, o |<v> <o>}; wrap, separator=";\n">
+<verb, objectList : {v, o |<v> <o>}; wrap, separator=";\n   ">
 >>
 
 propertyListPath(propertyListNotEmpty) ::= <<
