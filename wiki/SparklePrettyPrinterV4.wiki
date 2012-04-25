@@ -1,0 +1,123 @@
+#summary SPARKLE-G Pretty Printer and Syntactic Validator for SPARQL built on ANTLR V4
+
+==== Table of Content ====
+
+<wiki:toc max_depth="3" />
+
+= Introduction =
+
+== SPARKLE-G built on ANLTR V4 ==
+
+=== Pretty Printer and Syntactic Validator for the SPARQL 1.1 Query and Update Language ===
+The sparkle-g project has released a pretty printer and syntactic validator for the [http://www.w3.org/TR/sparql11-query/ SPARQL 1.1 Query] and 
+[http://www.w3.org/TR/2011/WD-sparql11-update-20110512/ Update Language] [http://www.w3.org/2001/sw/DataAccess/ http://sparkle-g.googlecode.com/svn/site/images/sw-sparql-green.png]. The pretty printer and syntactic validator is based on the [http://antlr.org/ ANTLR] framework for constructing recognizers, interpreters, compilers, and translators. The generation of the formatted output text relies on the [http://www.stringtemplate.org/ StringTemplate] template engine. [http://antlr.org/ ANTLR] and 
+[http://www.stringtemplate.org/ StringTemplate] have both been crafted by [http://www.cs.usfca.edu/~parrt/ Terence Parr], a professor of computer science at the [http://www.cs.usfca.edu/ University of San Francisco].
+ 
+The concept of Antlr V4 differs dramatically from its predecessors. The effects of these changes on the Sparkle project result in modifications of the grammar for the SPARQL 1.1 Query and Update Language, the omission of the AST generation and a complete new action interface.  
+The answer to the question “Why do we need ANTLR V4?” can be found [http://www.antlr.org/wiki/pages/viewpage.action?pageId=29130850 here]. 
+
+=== How to build the Pretty Printer ===
+The prerelase uses Ant as build tool. You should have Ant version 1.8 or later installed.
+Java 1.6 or later is obligatory. 
+
+Download the prerelease version from the download page of the sparkle-g project. Unpack the  jar archive in a directory of your choice.
+
+{{{
+jar xvf sparkle-pretty-printer-all-4.0-prerelease-0.5.jar
+}}}
+
+Change into the created sparkle-pretty-printer directory and type on the command line:
+
+{{{
+ant all
+}}}
+
+You should see the following build progress information:
+
+{{{
+Buildfile: C:\tmp\sparqlv4\sparkle-pretty-printer\build.xml
+
+antlr_home:
+     [echo] Anltr found via at: jar:file:/C:/tmp/sparqlv4/sparkle-pretty-printer/lib/antlr4/antlr-.4-complete.jar!/org/antlr/Tool.class
+
+init:
+    [mkdir] Created dir: C:\tmp\sparqlv4\sparkle-pretty-printer\target\classes\com\googlecode\sparkleg
+    [mkdir] Created dir: C:\tmp\sparqlv4\sparkle-pretty-printer\target\classes\META-INF
+    [mkdir] Created dir: C:\tmp\sparqlv4\sparkle-pretty-printer\target\dist
+    [mkdir] Created dir: C:\tmp\sparqlv4\sparkle-pretty-printer\target\dist\javadoc\com\googlecode\sparkleg
+    [mkdir] Created dir: C:\tmp\sparqlv4\sparkle-pretty-printer\target\test-classes\com\googlecode\sparkleg
+
+clean:
+
+antlr:
+
+compile:
+    [javac] Compiling 8 source files to C:\tmp\sparqlv4\sparkle-pretty-printer\target\classes
+    [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\IdentVisitor.java
+    [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlBaseListener.java
+    [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlBaseVisitor.java
+    [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlLexer.java
+    [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlListener.java
+    [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlMain.java
+    [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlParser.java
+    [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlVisitor.java
+    [javac] C:\tmp\sparqlv4\sparkle-pretty-printer\src\main\antlr4\com\googlecode\sparkleg\SparqlMain.java
+manifest:
+dist:
+      [jar] Building jar: C:\tmp\sparqlv4\sparkle-pretty-printer\target\dist\Sparql4.jar
+
+doc:
+  [javadoc] Generating Javadoc
+  [javadoc] Javadoc execution
+  [javadoc] Loading source files for package com.googlecode.sparkleg...
+  [javadoc] Constructing Javadoc information...
+  [javadoc] Standard Doclet version 1.6.0_26
+  [javadoc] Building tree for all the packages and classes...
+  [javadoc] Building index for all the packages and classes...
+  [javadoc] Building index for all classes...
+
+run:
+     [echo] running com.googlecode.sparkleg.Main with testfile input.rq
+
+all:
+
+BUILD SUCCESSFUL
+Total time: 42 seconds
+}}}
+
+=== Executing the Provided Tiny Example Program ===
+
+Assemble the following jar-files in a directory of your choice: 
+
+•	antlr-4.0ea-complete.jar
+•	Sparql4.jar 
+
+Copy the ident.stg file and the query file input.rq into the directory, too. 
+Execute the following command: 
+
+{{{
+java -cp antlr-4.0ea-complete.jar;sparql4.jar SparqlMain input.rq
+}}}
+
+You should receive the following output:
+
+{{{
+Working on file input.rq
+Parse tree: -------------------------------
+(query (prologue (prefixDecl PREFIX dc: <http://purl.org/dc/elements/1.1/>) (prefixDecl PREFIX : <http://example.org/book/>) (prefixDecl PREFIX ns: <http://example.org/ns#>)) (selectQuery (selectClause SELECT (var ?book) (var ?title) (var ?price)) (whereClause (groupGraphPattern { (groupGraphPatternSub (triplesBlock (triplesSameSubjectPath (varOrTerm (var ?book)) (propertyListNotEmptyPath (verbPath (path (pathAlternative (pathSequence (pathEltOrInverse (pathElt (pathPrimary (iriRef (prefixedName dc:title))))))))) (objectList (object (graphNode (varOrTerm (var ?title))))) ; (verbPath (path (pathAlternative (pathSequence (pathEltOrInverse (pathElt (pathPrimary (iriRef (prefixedName ns:price))))))))) (objectList (object (graphNode (varOrTerm (var ?price))))))) .)) })) solutionModifier) (bindingsClause BINDINGS (var ?book) (var ?title) { ( (bindingsValueList (bindingValue UNDEF) (bindingValue (rdfLiteral (string "SPARQL Tutorial")))) ) ( (bindingsValueList (bindingValue (iriRef (prefixedName :book2))) (bindingValue UNDEF)) ) })<EOF>)
+Emit reformatted query: -------------------------------
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX : <http://example.org/book/>
+PREFIX ns: <http://example.org/ns#>
+
+SELECT ?book ?title ?price
+WHERE {
+   ?book dc:title ?title;
+      ns:price ?price
+}
+BINDINGS ?book ?title {
+   (UNDEF "SPARQL Tutorial")
+   (:book2 UNDEF)
+}
+-------------------------------
+}}}
