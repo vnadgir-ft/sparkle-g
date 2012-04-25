@@ -91,8 +91,8 @@ Total time: 42 seconds
 
 Assemble the following jar-files in a directory of your choice: 
 
-•	antlr-4.0ea-complete.jar
-•	Sparql4.jar 
+ • antlr-4.0ea-complete.jar
+ • Sparql4.jar 
 
 Copy the ident.stg file and the query file input.rq into the directory, too. 
 Execute the following command: 
