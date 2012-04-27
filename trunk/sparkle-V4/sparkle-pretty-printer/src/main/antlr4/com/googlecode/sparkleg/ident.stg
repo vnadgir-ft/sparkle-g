@@ -445,7 +445,7 @@ triplesSameSubject(varOrTerm, propertyListNotEmpty, triplesNode, propertyList) :
 >>
 
 propertyListNotEmpty(verb, objectList) ::= <<
-<verb, objectList : {v, o |<v> <o>}; wrap, separator=";\n   ">
+<verb, objectList : {v, o |<v> <o>}; wrap, anchor, separator=";\n">
 >>
 
 propertyList(propertyListNotEmpty) ::= <<
@@ -453,7 +453,7 @@ propertyList(propertyListNotEmpty) ::= <<
 >>
 
 objectList(object) ::= <<
-<object; wrap, separator=", ">
+<object; wrap, anchor, separator=", ">
 >>
 
 object(graphNode) ::= <<
@@ -469,7 +469,7 @@ triplesSameSubjectPath(varOrTerm, propertyListNotEmptyPath, triplesNode, propert
 >>
 
 propertyListNotEmptyPath(verb, objectList) ::= <<
-<verb, objectList : {v, o |<v> <o>}; wrap, separator=";\n   ">
+<verb, objectList : {v, o |<v> <o>}; wrap, anchor, separator=";\n">
 >>
 
 propertyListPath(propertyListNotEmpty) ::= <<
@@ -848,9 +848,7 @@ booleanLiteral(value) ::= <<
 <value>
 >>
 
-string(value) ::= <%
-<value>
-%>
+string(value) ::= <%<value>%>
 
 iriRef(value, prefixedName) ::= <<
 <if(value)><value><else><prefixedName><endif>
