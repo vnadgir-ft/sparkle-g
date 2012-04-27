@@ -473,7 +473,6 @@ public class IdentVisitor extends SparqlBaseVisitor<ST> implements SparqlVisitor
         //  (BINDINGS var* OPEN_CURLY_BRACE (OPEN_BRACE bindingsValueList CLOSE_BRACE | nil)* CLOSE_CURLY_BRACE)?
 
         ST bindingsClause = g.getInstanceOf("bindingsClause");
-        bindingsClause.render(30);
 
         if (ctx.children != null) {
             for (ParseTree c : ctx.children) {
@@ -496,7 +495,6 @@ public class IdentVisitor extends SparqlBaseVisitor<ST> implements SparqlVisitor
         //    bindingValue+
 
         ST bindingsValueList = g.getInstanceOf("bindingsValueList");
-        bindingsValueList.render(40);
 
         for (ParseTree c : ctx.children) {
             if (c instanceof SparqlParser.BindingValueContext) {
