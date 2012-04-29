@@ -116,7 +116,7 @@ builtInMap ::= [
 			 "MD5":"md5",
 			 "MINUTES":"minutes",
 			 "MONTH":"month",
-			 "NOT_EXISTS":"NOT EXISTS",
+			 "NOT_EXISTS":"not exists",
 			 "NOW":"now",
 			 "RAND":"rand",
 			 "REGEX":"regex",
