@@ -103,7 +103,7 @@
                 </not>
             </condition>
         </fail>
-        <echo>Anltr V4 found at: ${antlr.jar.location}</echo>
+        <echo>Anltr V4 found in: ${antlr.jar.location}</echo>
     </target>
 
     <!-- A convenience macro which invokes antlr
