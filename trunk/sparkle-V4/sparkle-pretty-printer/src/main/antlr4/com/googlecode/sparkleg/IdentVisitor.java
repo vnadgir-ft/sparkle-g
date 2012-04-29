@@ -13,14 +13,12 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 /**
- * @author Simone Tripodi   (simone.tripodi)
+ * @author Simone Tripodi (simone.tripodi)
  * @author Michele Mostarda (michele.mostarda)
- * @author Juergen Pfundt   (Juergen.Pfundt)
+ * @author Juergen Pfundt (Juergen.Pfundt)
  * @version $Id: Sparql.g 523 2012-02-17 23:10:57Z Juergen.Pfundt@gmail.com $
  */
- 
 package com.googlecode.sparkleg;
 
 import java.util.List;
@@ -97,7 +95,8 @@ public class IdentVisitor extends SparqlBaseVisitor<ST> implements SparqlVisitor
 
         ST baseDecl = g.getInstanceOf("baseDecl");
 
-        baseDecl.add("iriRef", ctx.IRI_REF().getSymbol().getText());
+        String s = ctx.IRI_REF().getSymbol().getText();
+        baseDecl.add("iriRef", s.substring(1, s.length() - 1));
 
         return baseDecl;
     }
@@ -110,7 +109,9 @@ public class IdentVisitor extends SparqlBaseVisitor<ST> implements SparqlVisitor
         ST prefixDecl = g.getInstanceOf("prefixDecl");
 
         prefixDecl.add("pname", ctx.PNAME_NS().getSymbol().getText());
-        prefixDecl.add("iriRef", ctx.IRI_REF().getSymbol().getText());
+        
+        String s = ctx.IRI_REF().getSymbol().getText();
+        prefixDecl.add("iriRef", s.substring(1, s.length() - 1));
 
         return prefixDecl;
     }
@@ -2463,7 +2464,8 @@ public class IdentVisitor extends SparqlBaseVisitor<ST> implements SparqlVisitor
         ST iriRef = g.getInstanceOf("iriRef");
 
         if (ctx.IRI_REF() != null) {
-            iriRef.add("value", ctx.IRI_REF().getSymbol().getText());
+            String s = ctx.IRI_REF().getSymbol().getText();
+            iriRef.add("value", s.substring(1, s.length() - 1));
         } else if (ctx.prefixedName() != null) {
             iriRef.add("prefixedName", visitPrefixedName(ctx.prefixedName()));
         }
