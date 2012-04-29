@@ -15,15 +15,19 @@
  */
 
 /**
- * @author Simone Tripodi (simone.tripodi)
+ * @author Simone Tripodi   (simone.tripodi)
  * @author Michele Mostarda (michele.mostarda)
- * @author Juergen Pfundt (Juergen.Pfundt)
+ * @author Juergen Pfundt   (Juergen.Pfundt)
  * @version $Id: Sparql.g 523 2012-02-17 23:10:57Z Juergen.Pfundt@gmail.com $
  */
+ 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import org.stringtemplate.v4.*;
+
+import java.util.List;
+import java.util.*;
 
 import com.googlecode.sparkleg.*;
 
@@ -31,10 +35,22 @@ public class SparqlMain {
 
     public static void main(String args[]) throws Exception {
 
-        System.out.println("Working on file " + args[0]);
+        System.out.println("Work on file " + args[0]);
 
         SparqlLexer lex = new SparqlLexer(new ANTLRFileStream(args[0]));
         CommonTokenStream tokens = new CommonTokenStream(lex);
+
+        System.out.println("Tokens: -------------------------------");
+        System.out.println(tokens.toString());
+
+        List tokenList = tokens.getTokens();
+
+        System.out.println("TokenList: -------------------------------");
+        Iterator it = tokenList.iterator();
+        while (it.hasNext()) {
+            Token t = (Token) it.next();
+            System.out.println(t.toString());
+        }
 
         SparqlParser parser = new SparqlParser(tokens);
         parser.setBuildParseTree(true);
@@ -46,13 +62,19 @@ public class SparqlMain {
 
         ParseTreeWalker walker = new ParseTreeWalker();
 
-        STGroup g = new STGroupFile("ident.stg");
+        String groupFile = "ident.stg";
+        if (args.length > 1 ) {
+            groupFile = args[1];
+        }
+        System.out.println("Read StringTemplate Group File: "+groupFile+"-------------------------------");
+
+        STGroup g = new STGroupFile(groupFile);
         IdentVisitor visitor = new IdentVisitor();
         visitor.setSTGroup(g);
         ST query = visitor.visit(t);
 
         System.out.println("Emit reformatted query: -------------------------------");
-
+        
         System.out.println(query.render());
         System.out.println("-------------------------------");
     }
