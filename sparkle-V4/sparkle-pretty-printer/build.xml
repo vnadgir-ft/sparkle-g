@@ -1,13 +1,13 @@
 
 <project name="sparql4" default="dist" basedir=".">
     <description>
-            Sparql Pretty Printer based on Antlr V4
+        Sparql Pretty Printer based on Antlr V4
     </description>
         
     <property name="project.name" value="sparql4" />
 
     <!-- program version -->
-    <property name="version" value="0.5" />
+    <property name="version" value="0.6" />
 
     <!-- set global properties for this build -->
     <property name="build" location="."/>
@@ -76,9 +76,6 @@
     <!-- where to write java doc files -->
     <property name="doc" location="${dist}/javadoc"/>
 
-    <!-- Inquire environment variables -->
-    <property environment="envList"/>
-
     <!-- where to find the Antlr libraries -->
     <property name="antlrHome" location="${lib}/antlr4"/>
     
@@ -98,38 +95,37 @@
     
     <!-- Make sure Antlr V4 is in reach -->
     <target name="antlr_home">
-        <whichresource property="antlr.jar.location" class="org.antlr.Tool" classpathref="antlr.path"/>
-        <fail message="Antlr library not found in '${antlrHome}'">
+        <whichresource property="antlr.jar.location" class="org.antlr.v4.Tool" classpathref="antlr.path"/>
+        <fail message="Antlr V4 library not found in '${antlrHome}'">
             <condition>
                 <not>
                     <isset property="antlr.jar.location"/>
                 </not>
             </condition>
         </fail>
-        <echo>Anltr found at: ${antlr.jar.location}</echo>
+        <echo>Anltr V4 found at: ${antlr.jar.location}</echo>
     </target>
 
     <!-- A convenience macro which invokes antlr
          Be aware that JVM arguments can be specified via the jvmarg directive
-    -->
-    
+    -->    
     <macrodef name="antlr4">
-       <attribute name="grammar.name"/>
-       <attribute name="outputdirectory" default="${src}/${package}"/>
-       <attribute name="libdirectory" default="${src}/${package}"/>
+        <attribute name="grammar.name"/>
+        <attribute name="outputdirectory" default="${src}/${package}"/>
+        <attribute name="libdirectory" default="${src}/${package}"/>
         <sequential>
-           <java classname="org.antlr.v4.Tool" fork="true" failonerror="true">
-              <arg value="-o"/>
-              <arg path="@{outputdirectory}"/>
-              <arg value="-lib"/>
-              <arg path="@{libdirectory}"/>
-              <arg value="-visitor"/>
-              <arg path="@{grammar.name}"/>
-              <classpath>
-                  <path refid="antlr.path"/>
-              </classpath>
-              <jvmarg value="-Xmx512M"/>
-           </java>
+            <java classname="org.antlr.v4.Tool" fork="true" failonerror="true">
+                <arg value="-o"/>
+                <arg path="@{outputdirectory}"/>
+                <arg value="-lib"/>
+                <arg path="@{libdirectory}"/>
+                <arg value="-visitor"/>
+                <arg path="@{grammar.name}"/>
+                <classpath>
+                    <path refid="antlr.path"/>
+                </classpath>
+                <jvmarg value="-Xmx512M"/>
+            </java>
         </sequential>
     </macrodef>
 
@@ -157,7 +153,7 @@
 
     <target name="compile" depends="init, antlr" description="compile">
         <!-- Compile the java code from ${src} into ${classes} -->
-        <javac debug="true" srcdir="${src}" destdir="${classes}"
+        <javac debug="true" srcdir="${src}" destdir="${classes}" 
                listfiles="Yes" deprecation="Yes" includeantruntime="false">
             <compilerarg value="-Xlint:unchecked"/>
             <classpath>
@@ -167,11 +163,11 @@
     </target>
     
     <!-- Define the classpath which includes the junit.jar and the classes after compiling-->
-	  <path id="junit.class.path">
-		   <pathelement location="${lib}/junit_4/junit-4.10.jar" />
-		   <pathelement location="${test-classes}" />
-		   <pathelement location="${classes}" />
-	  </path>
+    <path id="junit.class.path">
+        <pathelement location="${lib}/junit_4/junit-4.10.jar" />
+        <pathelement location="${test-classes}" />
+        <pathelement location="${classes}" />
+    </path>
 
     <target name="test-compile" depends="init, compile" description="test_compile">
         <!-- Compile the java code from ${src} into ${classes} -->
@@ -184,11 +180,8 @@
             </classpath>
         </javac>
         <copy todir="${test-classes}/../src/test">
-           <fileset dir="${test-src}"/>
+            <fileset dir="${test-src}"/>
         </copy>
-        <!--copy todir="${test-classes}/../src/test/gunit">
-           <fileset dir="${test-src}/../gunit"/>
-        </copy-->
     </target>
 
     <target name="manifest">
@@ -220,7 +213,7 @@
         </javadoc>
     </target>
 
-    <target name="run" depends="dist" description="run Sparql">
+    <target name="run" depends="init" description="run Sparql">
         <echo message="running com.googlecode.sparkleg.Main with testfile input.rq" />
         <java classname="SparqlMain"
               output="${build}/tmp.lis"
@@ -236,14 +229,14 @@
     </target>
     
     <target name="junit" depends="test-compile" description="compile junit test">
-       <junit printsummary="yes" fork="yes" haltonfailure="yes">
-          <formatter type="plain"/>
-          <test name="com.googlecode.sparkleg.IdentGunitOkTest"/>
+        <junit printsummary="yes" fork="yes" haltonfailure="yes">
+            <formatter type="plain"/>
+            <test name="com.googlecode.sparkleg.IdentGunitOkTest"/>
             <classpath>
                 <path refid="antlr.path"/>
                 <path refid="junit.class.path"/>
             </classpath>
-       </junit>
+        </junit>
     </target>
 
     <target name="clean" description="clean up">
