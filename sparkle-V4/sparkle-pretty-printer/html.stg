@@ -196,7 +196,7 @@ htmlPrefixedNameAttributes(prefixedName) ::= <<
 indent(line) ::= "   <line>"
 
 query(prologue, selectQuery, constructQuery, describeQuery, askQuery, bindingsClause, update) ::= <<
-\<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"\> \<html\>\<head\>\</head\>\<body\>\<pre\><if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif><else><update; separator=";\n"><endif>\</pre\>\</body\>\</html\>
+\<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"\> \<html\>\<head\>\</head\>\<body\>\<pre\><if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif><else><update; separator=" ;\n"><endif>\</pre\>\</body\>\</html\>
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
@@ -489,7 +489,7 @@ triplesSameSubject(varOrTerm, propertyListNotEmpty, triplesNode, propertyList) :
 >>
 
 propertyListNotEmpty(verb, objectList) ::= <<
-<verb, objectList : {v, o |<v> <o>}; wrap, separator=";\n">
+<verb, objectList : {v, o |<v> <o>}; wrap, separator=" ;\n   ">
 >>
 
 propertyList(propertyListNotEmpty) ::= <<
@@ -513,7 +513,7 @@ triplesSameSubjectPath(varOrTerm, propertyListNotEmptyPath, triplesNode, propert
 >>
 
 propertyListNotEmptyPath(verb, objectList) ::= <<
-<verb, objectList : {v, o |<v> <o>}; wrap, separator=" ;\n">
+<verb, objectList : {v, o |<v> <o>}; wrap, separator=" ;\n   ">
 >>
 
 propertyListPath(propertyListNotEmpty) ::= <<
@@ -661,7 +661,7 @@ LANG(expression) ::= <<
 >>
 
 LANGMATCHES(expression) ::= <<
-<builtInMap.LANGMATCHES:htmlBuiltInCallAttributes()>(<expression; wrap, separator=",">)
+<builtInMap.LANGMATCHES:htmlBuiltInCallAttributes()>(<expression; wrap, separator=", ">)
 >>
 
 DATATYPE(expression) ::= <<
