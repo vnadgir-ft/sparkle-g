@@ -131,6 +131,6 @@ Switching to the StringTemplate group file html.stg renders a query in a simple 
 
 An example of a reformatted query is shown here:
 
-[http://code.google.com/p/sparkle-g/source/browse/site/images/HTML-Formatted-Query.png]
+http://sparkle-g.googlecode.com/svn/site/images/HTML-Formatted-Query.png
 
 The colors, fonts, etc. can be adapted without modification of Java code, just by editing the html.stg template.
