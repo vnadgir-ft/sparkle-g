@@ -60,7 +60,6 @@ keywordMap ::= [
 				"DESCRIBE":"DESCRIBE",
 				"DISTINCT":"DISTINCT",
 				"DROP":"DROP",
-				"EXISTS":"EXISTS",
 				"FILTER":"FILTER",
 				"FROM":"FROM",
 				"GRAPH":"GRAPH",
@@ -73,7 +72,6 @@ keywordMap ::= [
 				"MINUS":"MINUS",
 				"MOVE":"MOVE",
 				"NAMED":"NAMED",
-				"NOT_EXISTS":"NOT EXISTS",
 				"OFFSET":"OFFSET",
 				"OPTIONAL":"OPTIONAL",
 				"ORDER_BY":"ORDER BY",
@@ -102,6 +100,7 @@ builtInMap ::= [
 			 "DATATYPE":"datatype",
 			 "DAY":"day",
 			 "ENCODE_FOR_URI":"encode_for_uri",
+			 "EXISTS":"exists",
 			 "FLOOR":"floor",
 			 "HOURS":"hours",
 			 "IF":"if",
@@ -117,6 +116,7 @@ builtInMap ::= [
 			 "MD5":"md5",
 			 "MINUTES":"minutes",
 			 "MONTH":"month",
+			 "NOT_EXISTS":"NOT EXISTS",
 			 "NOW":"now",
 			 "RAND":"rand",
 			 "REGEX":"regex",
@@ -152,7 +152,7 @@ builtInMap ::= [
 indent(line) ::= "   <line>"
 
 query(prologue, selectQuery, constructQuery, describeQuery, askQuery, bindingsClause, update) ::= <<
-<if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif><else><update; separator=";\n"><endif>
+<if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(bindingsClause)><bindingsClause><endif><else><update; separator=" ;\n"><endif>
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
@@ -160,11 +160,11 @@ prologue(baseDecl, prefixDecl) ::= <<
 >>
 
 baseDecl(iriRef) ::= <<
-<keywordMap.BASE> <iriRef>
+<keywordMap.BASE> \<<iriRef>\>
 >>
 
 prefixDecl(pname, iriRef) ::= <<
-<keywordMap.PREFIX> <pname> <iriRef>
+<keywordMap.PREFIX> <pname> \<<iriRef>\>
 >>
 
 selectQuery(selectClause, datasetClause, whereClause, solutionModifier) ::= <<
@@ -218,7 +218,7 @@ groupCondition(builtInCall, functionCall, expression, var) ::= <<
 >>
 
 havingClause(havingCondition) ::= <<
-<keywordMap.HAVING> <havingCondition; wrap, separator=" ">
+<keywordMap.HAVING> <havingCondition; wrap, anchor, separator="\n">
 >>
 
 havingCondition(constraint) ::= <<
@@ -226,11 +226,11 @@ havingCondition(constraint) ::= <<
 >>
 
 orderClause(orderCondition) ::= <<
-<keywordMap.ORDER_BY> <orderCondition; wrap, separator=" ">
+<keywordMap.ORDER_BY> <orderCondition; wrap, anchor, separator="\n">
 >>
 
 orderCondition(ASC, DESC, brackettedExpression, constraint, var) ::= <<
-<if(ASC)><keywordMap.ASC> <brackettedExpression><elseif(DESC)><keywordMap.DESC> <brackettedExpression><elseif(constraint)><constraint><elseif(var)><var><endif> 
+<if(ASC)><keywordMap.ASC> <brackettedExpression><elseif(DESC)><keywordMap.DESC> <brackettedExpression><elseif(constraint)><constraint><elseif(var)><var><endif>
 >>
 
 limitOffsetClauses(limitClause, offsetClause) ::= <<
@@ -248,7 +248,7 @@ limitClause(limit) ::= <<
 bindingsClause(var, bindingsValueList) ::= <<
 <if(var || bindingsValueList)>
 <keywordMap.BINDINGS> <var; wrap, separator=" "> {
-<bindingsValueList:indent(); wrap, separator="\n">
+<bindingsValueList:indent(); wrap, anchor, separator="\n">
 }<endif>
 >>
 
@@ -305,7 +305,7 @@ deleteWhere(quadData) ::= <<
 >>
 
 modify(iriRef, deleteClause, insertClause, usingClause, groupGraphPattern) ::= <<
-<if(iriRef)><keywordMap.WITH> <iriRef><\n><endif><if(deleteClause)><deleteClause><if(insertClause)><\n><insertClause><\n><endif><else><insertClause><\n><endif><if(usingClause)><usingClause; wrap, separator="\n"><endif><\n><keywordMap.WHERE> {<\n><groupGraphPattern:indent()><\n>}
+<if(iriRef)><keywordMap.WITH> <iriRef><\n><endif><if(deleteClause)><deleteClause><if(insertClause)><\n><insertClause><\n><endif><else><insertClause><\n><endif><if(usingClause)><\n><usingClause; wrap, separator="\n"><endif><\n><keywordMap.WHERE> {<\n><groupGraphPattern:indent()><\n>}
 >>
 
 deleteClause(quadPattern) ::= <<
@@ -355,7 +355,7 @@ quadsNotTriples(varOrIRIref, triplesTemplate) ::= <<
 >>
 
 triplesTemplate(triplesSameSubject, triplesTemplate) ::= <<
-<triplesSameSubject><if(triplesTemplate)> .<\n><triplesTemplate:indent()><endif>
+<triplesSameSubject><if(triplesTemplate)> .<\n><triplesTemplate><endif>
 >>
 
 groupGraphPattern(subSelect, groupGraphPatternSub) ::= <<
@@ -445,7 +445,7 @@ triplesSameSubject(varOrTerm, propertyListNotEmpty, triplesNode, propertyList) :
 >>
 
 propertyListNotEmpty(verb, objectList) ::= <<
-<verb, objectList : {v, o |<v> <o>}; wrap, anchor, separator=";\n">
+<verb, objectList : {v, o |<v> <o>}; wrap, anchor, separator=" ;\n">
 >>
 
 propertyList(propertyListNotEmpty) ::= <<
@@ -453,7 +453,7 @@ propertyList(propertyListNotEmpty) ::= <<
 >>
 
 objectList(object) ::= <<
-<object; wrap, anchor, separator=", ">
+<object; wrap, anchor, separator=" ,\n">
 >>
 
 object(graphNode) ::= <<
@@ -469,7 +469,7 @@ triplesSameSubjectPath(varOrTerm, propertyListNotEmptyPath, triplesNode, propert
 >>
 
 propertyListNotEmptyPath(verb, objectList) ::= <<
-<verb, objectList : {v, o |<v> <o>}; wrap, anchor, separator=";\n">
+<verb, objectList : {v, o |<v> <o>}; wrap, anchor, separator=" ;\n">
 >>
 
 propertyListPath(propertyListNotEmpty) ::= <<
@@ -529,7 +529,7 @@ triplesNode(collection, blankNodePropertyList) ::= <<
 >>
 
 blankNodePropertyList(propertyListNotEmpty) ::= <<
-[<propertyListNotEmpty>]
+[ <propertyListNotEmpty> ]
 >>
 
 collection(graphNode) ::= <<
@@ -809,11 +809,11 @@ regexExpression(expression) ::= <<
 >>
 
 existsFunction(groupGraphPattern) ::= <<
-<keywordMap.EXISTS> {<\n><groupGraphPattern:indent()><\n>}
+<builtInMap.EXISTS> {<\n><groupGraphPattern:indent()><\n>}
 >>
 
 notExistsFunction(groupGraphPattern) ::= <<
-<keywordMap.NOT_EXISTS> {<\n><groupGraphPattern:indent()><\n>}
+<builtInMap.NOT_EXISTS> {<\n><groupGraphPattern:indent()><\n>}
 >>
 
 aggregate(operation, attribute, whatever, expression, string) ::= <<
@@ -851,7 +851,7 @@ booleanLiteral(value) ::= <<
 string(value) ::= <%<value>%>
 
 iriRef(value, prefixedName) ::= <<
-<if(value)><value><else><prefixedName><endif>
+<if(value)>\<<value>\><else><prefixedName><endif>
 >>
 
 prefixedName(value) ::= <<
