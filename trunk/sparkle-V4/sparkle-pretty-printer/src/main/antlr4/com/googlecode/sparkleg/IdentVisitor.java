@@ -29,7 +29,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import org.stringtemplate.v4.*;
 
-public class IdentVisitor extends SparqlBaseVisitor<ST> implements SparqlVisitor<ST> {
+public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlParserVisitor<ST> {
 
     STGroup g = null;
 

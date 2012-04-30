@@ -148,7 +148,8 @@
     <!-- Antlr is called here -->
     <!-- The antlr4 macro is doing the work -->
     <target name="antlr" depends="init">
-        <antlr4 grammar.name="${src}/${package}/Sparql.g4" />
+        <antlr4 grammar.name="${src}/${package}/SparqlLexer.g4" />
+        <antlr4 grammar.name="${src}/${package}/SparqlParser.g4" />
     </target>
 
     <target name="compile" depends="init, antlr" description="compile">
