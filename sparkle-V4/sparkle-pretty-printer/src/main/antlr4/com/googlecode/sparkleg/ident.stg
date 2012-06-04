@@ -180,7 +180,7 @@ selectClause(attribute, ASTERISK, expression, var) ::= <<
 >>
 
 selectVariables(expression, var) ::= <<
-<expression, var : {e, v| <if(e)>(<e> AS <endif><v><if(e)>)<endif>}; wrap, separator = " ">
+<expression, var : {e, v| <if(e)>(<e> AS <endif><v><if(e)>)<endif>}; anchor, wrap, separator = "\n">
 >>
 
 constructQuery(constructTemplate, datasetClause, whereClause, triplesTemplate, solutionModifier) ::= <<
