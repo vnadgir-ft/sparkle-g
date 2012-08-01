@@ -33,8 +33,8 @@ package com.googlecode.sparkleg;
 // $<Parser
 
 query
-    : prologue (selectQuery | constructQuery | describeQuery | askQuery) bindingsClause EOF
-    | update (SEMICOLON update?)* EOF
+    : prologue (selectQuery | constructQuery | describeQuery | askQuery) valuesClause EOF
+    | update (SEMICOLON update)* SEMICOLON? EOF
     ;
 
 prologue
@@ -42,11 +42,11 @@ prologue
     ;
 
 baseDecl
-    : BASE IRI_REF
+    : BASE IRIREF
     ; 
 
 prefixDecl
-    : PREFIX PNAME_NS IRI_REF
+    : PREFIX PNAME_NS IRIREF
     ;
 
 selectQuery
@@ -54,7 +54,7 @@ selectQuery
     ;
 
 subSelect
-    : selectClause whereClause solutionModifier
+    : selectClause whereClause solutionModifier valuesClause
     ;
     	
 selectClause
@@ -74,7 +74,7 @@ askQuery
     ;
 
 datasetClause
-    : FROM NAMED? iriRef
+    : FROM NAMED? iri
     ;
 
 whereClause
@@ -121,16 +121,8 @@ offsetClause
     : OFFSET INTEGER
     ;
 
-bindingsClause
-    : (BINDINGS (var)* OPEN_CURLY_BRACE (OPEN_BRACE bindingsValueList CLOSE_BRACE | nil)* CLOSE_CURLY_BRACE)?
-    ;
-
-bindingsValueList
-    : bindingValue+
-    ;
-
-bindingValue
-    : iriRef | rdfLiteral | numericLiteral | booleanLiteral | UNDEF
+valuesClause
+    : (VALUES dataBlock)?
     ;
     
 update
@@ -138,7 +130,7 @@ update
     ;   
     
 load 	  
-    : LOAD SILENT? iriRef (INTO graphRef)?
+    : LOAD SILENT? iri (INTO graphRef)?
     ;
     
 clear
@@ -174,11 +166,11 @@ deleteData
     ;
 
 deleteWhere
-    : DELETE WHERE quadData
+    : DELETE WHERE quadPattern
     ;
     
 modify
-    : (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern
+    : (WITH iri)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern
     ;
   
 deleteClause
@@ -190,15 +182,15 @@ insertClause
     ;
 
 usingClause
-    : USING NAMED? iriRef
+    : USING NAMED? iri
     ;
 
 graphOrDefault	  
-    : DEFAULT | GRAPH? iriRef
+    : DEFAULT | GRAPH? iri
     ;
     	    	
 graphRef
-    : GRAPH iriRef
+    : GRAPH iri
     ;
 
 graphRefAll
@@ -242,7 +234,7 @@ triplesBlock
     ;
 
 graphPatternNotTriples
-    : groupOrUnionGraphPattern | optionalGraphPattern | minusGraphPattern | graphGraphPattern | serviceGraphPattern | filter | bind
+    : groupOrUnionGraphPattern | optionalGraphPattern | minusGraphPattern | graphGraphPattern | serviceGraphPattern | filter | bind | inlineData
     ;
 
 optionalGraphPattern
@@ -261,6 +253,30 @@ bind
     : BIND OPEN_BRACE expression AS var CLOSE_BRACE
     ;
     	
+inlineData
+    : VALUES dataBlock
+    ;
+
+dataBlock
+    : inlineDataOneVar | inlineDataFull
+    ;
+
+inlineDataOneVar
+    : var OPEN_CURLY_BRACE dataBlockValue* CLOSE_CURLY_BRACE
+    ;
+
+inlineDataFull
+    : OPEN_BRACE var* CLOSE_BRACE OPEN_CURLY_BRACE dataBlockValues* CLOSE_CURLY_BRACE
+    ;
+
+dataBlockValues
+    : OPEN_BRACE dataBlockValue* CLOSE_BRACE
+    ;
+
+dataBlockValue
+    : iri | rdfLiteral | numericLiteral | booleanLiteral | UNDEF
+    ;
+
 minusGraphPattern
     : MINUS_KEYWORD groupGraphPattern
     ;
@@ -278,7 +294,7 @@ constraint
     ;
 
 functionCall
-    : iriRef argList
+    : iri argList
     ;
 
 argList
@@ -300,14 +316,18 @@ constructTriples
 triplesSameSubject
     : varOrTerm propertyListNotEmpty | triplesNode propertyList 
     ;
+ 
+propertyList
+    : propertyListNotEmpty?
+    ;
 
 propertyListNotEmpty
     : verb objectList (SEMICOLON (verb objectList)?)* 
     ;
-    
-propertyList
-    : propertyListNotEmpty?
-    ;
+
+verb
+    : varOrIRIref | A
+    ;    
 
 objectList
     : object (COMMA object)*
@@ -316,21 +336,17 @@ objectList
 object
     : graphNode
     ;
-    
-verb
-    : varOrIRIref | A
-    ;
 
 triplesSameSubjectPath
-    : varOrTerm propertyListNotEmptyPath | triplesNode propertyListPath
-    ;
-  
-propertyListNotEmptyPath
-    : (verbPath|verbSimple) objectList (SEMICOLON ((verbPath|verbSimple) objectList)?)*
+    : varOrTerm propertyListPathNotEmpty | triplesNodePath propertyListPath
     ;
   
 propertyListPath
-    : propertyListNotEmpty?
+    : propertyListPathNotEmpty?
+    ;  
+
+propertyListPathNotEmpty
+    : (verbPath|verbSimple) objectListPath (SEMICOLON ((verbPath|verbSimple) objectList)?)*
     ;
     
 verbPath
@@ -341,12 +357,20 @@ verbSimple
     : var
     ;
     	
+objectListPath
+    : objectPath (COMMA objectPath)*
+    ;
+
+objectPath
+    : graphNodePath
+    ;
+
 path
     : pathAlternative
     ; 
 
 pathAlternative
-    : pathSequence ( PIPE pathSequence)*
+    : pathSequence (PIPE pathSequence)*
     ;
     
 pathSequence
@@ -362,11 +386,11 @@ pathEltOrInverse
     ;
 
 pathMod
-    : (ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE (integer (COMMA (CLOSE_CURLY_BRACE | integer CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | COMMA integer CLOSE_CURLY_BRACE))
+    : QUESTION_MARK | ASTERISK | PLUS 
     ;
 
 pathPrimary
-    : iriRef | A | NEGATION pathNegatedPropertySet | OPEN_BRACE path CLOSE_BRACE
+    : iri | A | NEGATION pathNegatedPropertySet | DISTINCT? OPEN_BRACE path CLOSE_BRACE
     ;
 
 pathNegatedPropertySet
@@ -374,7 +398,7 @@ pathNegatedPropertySet
     ;  	
 
 pathOneInPropertySet
-    : INVERSE? (iriRef | A)
+    : INVERSE? (iri | A)
     ;
 	
 integer
@@ -388,13 +412,29 @@ triplesNode
 blankNodePropertyList
     : OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET
     ;
-    
+
+triplesNodePath
+    : collectionPath | blankNodePropertyListPath
+    ;
+
+blankNodePropertyListPath
+    : OPEN_SQUARE_BRACKET propertyListPathNotEmpty CLOSE_SQUARE_BRACKET
+    ;
+
 collection
     : OPEN_BRACE graphNode+ CLOSE_BRACE
+    ;
+
+collectionPath
+    : OPEN_BRACE graphNodePath+ CLOSE_BRACE
     ;
     
 graphNode
     : varOrTerm | triplesNode
+    ;
+
+graphNodePath
+    : varOrTerm | triplesNodePath
     ;
 
 varOrTerm
@@ -402,7 +442,7 @@ varOrTerm
     ;
 
 varOrIRIref
-    : var | iriRef
+    : var | iri
     ;
 
 var
@@ -410,7 +450,7 @@ var
     ;
 
 graphTerm
-    : iriRef | rdfLiteral | numericLiteral | booleanLiteral | blankNode | nil
+    : iri | rdfLiteral | numericLiteral | booleanLiteral | blankNode | nil
     ;
     
 nil
@@ -466,7 +506,7 @@ unaryExpression
     ;
 
 primaryExpression
-    : brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var | aggregate
+    : brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
     ;
 
 brackettedExpression
@@ -474,7 +514,8 @@ brackettedExpression
     ;
 
 builtInCall
-    : STR OPEN_BRACE expression CLOSE_BRACE
+    : aggregate
+    | STR OPEN_BRACE expression CLOSE_BRACE
     | LANG OPEN_BRACE expression CLOSE_BRACE
     | LANGMATCHES OPEN_BRACE expression COMMA expression CLOSE_BRACE
     | DATATYPE OPEN_BRACE expression CLOSE_BRACE
@@ -490,8 +531,8 @@ builtInCall
     | ROUND OPEN_BRACE expression CLOSE_BRACE
     | CONCAT expressionList
     | subStringExpression
-    | strReplaceExpression
     | STRLEN OPEN_BRACE expression CLOSE_BRACE
+    | strReplaceExpression
     | UCASE OPEN_BRACE expression CLOSE_BRACE
     | LCASE OPEN_BRACE expression CLOSE_BRACE
     | ENCODE_FOR_URI OPEN_BRACE expression CLOSE_BRACE
@@ -509,6 +550,8 @@ builtInCall
     | TIMEZONE OPEN_BRACE expression CLOSE_BRACE
     | TZ OPEN_BRACE expression CLOSE_BRACE
     | NOW nil
+    | UUID nil
+    | STRUUID nil
     | MD5 OPEN_BRACE expression CLOSE_BRACE
     | SHA1 OPEN_BRACE expression CLOSE_BRACE
     | SHA256 OPEN_BRACE expression CLOSE_BRACE
@@ -560,11 +603,11 @@ aggregate
     ;
     
 iriRefOrFunction
-    : iriRef argList?
+    : iri argList?
     ;
 
 rdfLiteral
-    : string (LANGTAG | (REFERENCE iriRef))?
+    : string (LANGTAG | (REFERENCE iri))?
     ;
 
 numericLiteral
@@ -591,8 +634,8 @@ string
     : STRING_LITERAL1 | STRING_LITERAL2 | STRING_LITERAL_LONG1 | STRING_LITERAL_LONG2
     ;
 
-iriRef
-    : IRI_REF | prefixedName
+iri
+    : IRIREF | prefixedName
     ;
 
 prefixedName
