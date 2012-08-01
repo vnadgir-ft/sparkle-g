@@ -28,7 +28,7 @@ package com.googlecode.sparkleg;
 
 // $<Lexer
 
-WS : (' '| '\t'| EOL)+ -> skip;
+WS : (' '| '\t'| EOL)+ -> channel(99);
 
 BASE : ('B'|'b')('A'|'a')('S'|'s')('E'|'e');
 
@@ -63,6 +63,8 @@ DESC : ('D'|'d')('E'|'e')('S'|'s')('C'|'c');
 LIMIT : ('L'|'l')('I'|'i')('M'|'m')('I'|'i')('T'|'t');
 
 OFFSET : ('O'|'o')('F'|'f')('F'|'f')('S'|'s')('E'|'e')('T'|'t');
+
+VALUES : ('V'|'v')('A'|'a')('L'|'l')('U'|'u')('U'|'u')('E'|'e')('E'|'e')('S'|'s')('S'|'s');
 
 OPTIONAL : ('O'|'o')('P'|'p')('T'|'t')('I'|'i')('O'|'o')('N'|'n')('A'|'a')('L'|'l');  
 
@@ -208,6 +210,10 @@ TZ : ('T'|'t')('Z'|'z');
 
 NOW : ('N'|'n')('O'|'o')('W'|'w');
 
+UUID : ('U'|'u')('U'|'u')('I'|'i')('D'|'d');
+
+STRUUID : ('S'|'s')('T'|'t')('R'|'r')('U'|'u')('U'|'u')('I'|'i')('D'|'d');
+
 MD5 : ('M'|'m')('D'|'d')'5';
 
 SHA1 : ('S'|'s')('H'|'h')('A'|'a')'1';
@@ -250,7 +256,7 @@ EXISTS : ('E'|'e')('X'|'x')('I'|'i')('S'|'s')('T'|'t')('S'|'s');
     
 SEPARATOR : ('S'|'s')('E'|'e')('P'|'p')('A'|'a')('R'|'r')('A'|'a')('T'|'t')('O'|'o')('R'|'r');
 
-IRI_REF
+IRIREF
     : '<' (~('<' | '>' | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | PIPE | INVERSE | '`' | '\\' | '\u0000'..'\u0020'))* '>'
     ;
 
@@ -258,7 +264,7 @@ PNAME_NS : PN_PREFIX? ':';
 
 PNAME_LN : PNAME_NS PN_LOCAL;
     
-BLANK_NODE_LABEL : '_:' PN_LOCAL;
+BLANK_NODE_LABEL : '_:' (PN_CHARS_U|DIGIT) ((PN_CHARS|DOT)* PN_CHARS)?;
 
 VAR1 : '?' VARNAME;
 
@@ -269,7 +275,7 @@ LANGTAG : '@' ('A'..'Z'|'a'..'z')+ (MINUS ('A'..'Z'|'a'..'z'|DIGIT)+)*;
 INTEGER : DIGIT+;
 
 DECIMAL
-    : DIGIT+ DOT DIGIT*
+    : DIGIT+ DOT DIGIT* /* Allows decimal with no fraction: 1. */
     | DOT DIGIT+
     ;
 
@@ -304,33 +310,6 @@ STRING_LITERAL_LONG2 : '"""' (('"' | '""')? (~('"'|'\\') | ECHAR))* '"""';
 
 fragment
 ECHAR : '\\' ('t' | 'b' | 'n' | 'r' | 'f' | '\\' | '"' | '\'');
-    
-fragment
-IRI_REF_CHARACTERS
-    :  ~('<' | '>' | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | PIPE | INVERSE | '`' | '\\' | '\u0000' | '\u0001'| '\u0002' | '\u0003' | '\u0004'| '\u0005' | '\u0006'| '\u0007' | '\u0008' | '\u0009'| '\u000A' | '\u000B'| '\u000C' | '\u000D' | '\u000E'| '\u000F'| '\u0010' | '\u0011'| '\u0012' | '\u0013' | '\u0014'| '\u0015' | '\u0016'| '\u0017' | '\u0018' | '\u0019'| '\u001A' | '\u001B'| '\u001C' | '\u001D' | '\u001E'| '\u001F' | '\u0020')
-    ;
-
-fragment
-PN_CHARS_U : PN_CHARS_BASE | '_';
-
-fragment
-VARNAME : (PN_CHARS_U | DIGIT) (PN_CHARS_U | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040')*;
-
-fragment
-PN_CHARS
-    : PN_CHARS_U
-    | MINUS
-    | DIGIT
-    | '\u00B7' 
-    | '\u0300'..'\u036F'
-    | '\u203F'..'\u2040'
-    ;
-
-fragment
-PN_PREFIX : PN_CHARS_BASE ((PN_CHARS|DOT)* PN_CHARS)?;
-
-fragment
-PN_LOCAL : (PN_CHARS_U|DIGIT|PLX)  ((PN_CHARS| DOT| PLX)* (PN_CHARS|PLX))?;
 
 fragment
 PN_CHARS_BASE
@@ -347,7 +326,23 @@ PN_CHARS_BASE
     | '\u3001'..'\uD7FF'
     | '\uF900'..'\uFDCF'
     | '\uFDF0'..'\uFFFD'
+    //| '\u10000'..'\uEFFFF'
     ;
+
+fragment
+PN_CHARS_U : PN_CHARS_BASE | '_';
+
+fragment
+VARNAME : (PN_CHARS_U | DIGIT) (PN_CHARS_U | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040')*;
+
+fragment
+PN_CHARS : PN_CHARS_U | MINUS | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040';
+
+fragment
+PN_PREFIX : PN_CHARS_BASE ((PN_CHARS|DOT)* PN_CHARS)?;
+
+fragment
+PN_LOCAL : (PN_CHARS_U|':'|DIGIT|PLX) ((PN_CHARS|DOT|':'|PLX)* (PN_CHARS|':'|PLX))?;
 
 fragment
 PLX : PERCENT | PN_LOCAL_ESC;
@@ -359,12 +354,12 @@ fragment
 HEX : DIGIT | 'A'..'F' | 'a'..'z';
 
 fragment
-PN_LOCAL_ESC : '\\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | ';' | '=' | ':' | '/' | '?' | '#' | '@' | '%' );    	
+PN_LOCAL_ESC : '\\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | ';' | '=' | '/' | '?' | '#' | '@' | '%' );    	
 
 fragment
 DIGIT : '0'..'9';
 
-COMMENT : '#' .* EOL -> skip;
+COMMENT : '#' .* EOL -> channel(99);
 
 fragment
 EOL : '\n' | '\r';
