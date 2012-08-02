@@ -66,7 +66,7 @@ constructQuery
     ;
 
 describeQuery
-    : DESCRIBE (varOrIRIref+ | ASTERISK) datasetClause* whereClause? solutionModifier
+    : DESCRIBE (varOrIRI+ | ASTERISK) datasetClause* whereClause? solutionModifier
     ;
 
 askQuery
@@ -210,7 +210,7 @@ quads
     ;
 
 quadsNotTriples
-    : GRAPH varOrIRIref OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE
+    : GRAPH varOrIRI OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE
     ;
     
 triplesTemplate
@@ -242,11 +242,11 @@ optionalGraphPattern
     ;
 
 graphGraphPattern
-    : GRAPH varOrIRIref groupGraphPattern
+    : GRAPH varOrIRI groupGraphPattern
     ;
 
 serviceGraphPattern
-    : SERVICE SILENT? varOrIRIref groupGraphPattern
+    : SERVICE SILENT? varOrIRI groupGraphPattern
     ;
     
 bind
@@ -326,7 +326,7 @@ propertyListNotEmpty
     ;
 
 verb
-    : varOrIRIref | A
+    : varOrIRI | A
     ;    
 
 objectList
@@ -441,7 +441,7 @@ varOrTerm
     : var | graphTerm
     ;
 
-varOrIRIref
+varOrIRI
     : var | iri
     ;
 
