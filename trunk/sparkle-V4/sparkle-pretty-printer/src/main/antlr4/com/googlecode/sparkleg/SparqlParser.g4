@@ -47,7 +47,7 @@ baseDecl
 
 prefixDecl
     : PREFIX PNAME_NS IRIREF
-    ;
+        ;
 
 selectQuery
     : selectClause datasetClause* whereClause solutionModifier
@@ -206,7 +206,11 @@ quadData
     ;
     
 quads
-    : triplesTemplate? (quadsNotTriples DOT? triplesTemplate?)*
+    : triplesTemplate? quadsDetails* 
+    ;
+
+quadsDetails
+    : quadsNotTriples DOT? triplesTemplate?
     ;
 
 quadsNotTriples
@@ -346,9 +350,13 @@ propertyListPath
     ;  
 
 propertyListPathNotEmpty
-    : (verbPath|verbSimple) objectListPath (SEMICOLON ((verbPath|verbSimple) objectList)?)*
+    : (verbPath|verbSimple) objectListPath propertyListPathNotEmptyList*
     ;
-    
+
+propertyListPathNotEmptyList
+    : SEMICOLON ((verbPath|verbSimple) objectList)?
+    ;
+
 verbPath
     : path
     ;
