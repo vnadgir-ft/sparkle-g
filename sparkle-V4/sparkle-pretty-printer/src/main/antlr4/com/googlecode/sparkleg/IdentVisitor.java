@@ -41,7 +41,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     public ST visitQuery(SparqlParser.QueryContext ctx) {
         // query :
         //   prologue (selectQuery | constructQuery | describeQuery | askQuery) bindingsClause EOF
-        // | update (SEMICOLON update?)* EOF
+        // | update (SEMICOLON update?)* SEMICOLON? EOF
 
         ST query = g.getInstanceOf("query");
 
@@ -58,7 +58,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
                 query.add("askQuery", visitAskQuery(ctx.askQuery()));
             }
 
-            query.add("bindingsClause", visitBindingsClause(ctx.bindingsClause()));
+            query.add("valuesClause", visitValuesClause(ctx.valuesClause()));
         } else {
             for (SparqlParser.UpdateContext update : ctx.update()) {
                 query.add("update", visitUpdate(update));
@@ -91,12 +91,12 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitBaseDecl(SparqlParser.BaseDeclContext ctx) {
         // baseDecl :
-        //   BASE IRI_REF
+        //   BASE IRIREF
 
         ST baseDecl = g.getInstanceOf("baseDecl");
 
-        String s = ctx.IRI_REF().getSymbol().getText();
-        baseDecl.add("iriRef", s.substring(1, s.length() - 1));
+        String s = ctx.IRIREF().getSymbol().getText();
+        baseDecl.add("iriref", s.substring(1, s.length() - 1));
 
         return baseDecl;
     }
@@ -104,14 +104,14 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitPrefixDecl(SparqlParser.PrefixDeclContext ctx) {
         // prefixDecl :
-        //   PREFIX PNAME_NS IRI_REF
+        //   PREFIX PNAME_NS IRIREF
 
         ST prefixDecl = g.getInstanceOf("prefixDecl");
 
         prefixDecl.add("pname", ctx.PNAME_NS().getSymbol().getText());
-        
-        String s = ctx.IRI_REF().getSymbol().getText();
-        prefixDecl.add("iriRef", s.substring(1, s.length() - 1));
+
+        String s = ctx.IRIREF().getSymbol().getText();
+        prefixDecl.add("iriref", s.substring(1, s.length() - 1));
 
         return prefixDecl;
     }
@@ -141,13 +141,14 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitSubSelect(SparqlParser.SubSelectContext ctx) {
         // subSelect
-        //   selectClause whereClause solutionModifier
+        //   selectClause whereClause solutionModifier valuesClause
 
         ST subSelect = g.getInstanceOf("subSelect");
 
         subSelect.add("selectClause", visitSelectClause(ctx.selectClause()));
         subSelect.add("whereClause", visitWhereClause(ctx.whereClause()));
         subSelect.add("solutionModifier", visitSolutionModifier(ctx.solutionModifier()));
+        subSelect.add("valuesClause", visitValuesClause(ctx.valuesClause()));
 
         return subSelect;
     }
@@ -221,7 +222,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitDescribeQuery(SparqlParser.DescribeQueryContext ctx) {
         // describeQuery
-        //   DESCRIBE (varOrIRIref+ | ASTERISK) datasetClause* whereClause? solutionModifier
+        //   DESCRIBE (varOrIRI+ | ASTERISK) datasetClause* whereClause? solutionModifier
 
         ST describeQuery = g.getInstanceOf("describeQuery");
 
@@ -232,8 +233,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
                 if (to.getType() == SparqlParser.ASTERISK) {
                     describeQuery.add("ASTERISK", to.getText());
                 }
-            } else if (c instanceof SparqlParser.VarOrIRIrefContext) {
-                describeQuery.add("varOrIRIref", visitVarOrIRIref((SparqlParser.VarOrIRIrefContext) c));
+            } else if (c instanceof SparqlParser.VarOrIRIContext) {
+                describeQuery.add("varOrIRI", visitVarOrIRI((SparqlParser.VarOrIRIContext) c));
             } else if (c instanceof SparqlParser.DatasetClauseContext) {
                 describeQuery.add("datasetClause", visitDatasetClause((SparqlParser.DatasetClauseContext) c));
             } else if (c instanceof SparqlParser.WhereClauseContext) {
@@ -241,7 +242,6 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             } else if (c instanceof SparqlParser.SolutionModifierContext) {
                 describeQuery.add("solutionModifier", visitSolutionModifier((SparqlParser.SolutionModifierContext) c));
             }
-
         }
 
         return describeQuery;
@@ -270,7 +270,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitDatasetClause(SparqlParser.DatasetClauseContext ctx) {
         // datasetClause
-        //   FROM NAMED? iriRef
+        //   FROM NAMED? iri
 
         ST datasetClause = g.getInstanceOf("datasetClause");
 
@@ -278,7 +278,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             datasetClause.add("NAMED", ctx.NAMED().getSymbol().getText().toUpperCase());
         }
 
-        datasetClause.add("iriRef", visitIriRef(ctx.iriRef()));
+        datasetClause.add("iri", visitIri(ctx.iri()));
 
         return datasetClause;
     }
@@ -469,63 +469,17 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
-    public ST visitBindingsClause(SparqlParser.BindingsClauseContext ctx) {
-        // bindingsClause :
-        //  (BINDINGS var* OPEN_CURLY_BRACE (OPEN_BRACE bindingsValueList CLOSE_BRACE | nil)* CLOSE_CURLY_BRACE)?
+    public ST visitValuesClause(SparqlParser.ValuesClauseContext ctx) {
+        // valuesClause :
+        //  (VALUES datablock)?
 
-        ST bindingsClause = g.getInstanceOf("bindingsClause");
+        ST valuesClause = g.getInstanceOf("valuesClause");
 
-        if (ctx.children != null) {
-            for (ParseTree c : ctx.children) {
-                if (c instanceof SparqlParser.VarContext) {
-                    bindingsClause.add("var", visitVar((SparqlParser.VarContext) c));
-                } else if (c instanceof SparqlParser.BindingsValueListContext) {
-                    bindingsClause.add("bindingsValueList", visitBindingsValueList((SparqlParser.BindingsValueListContext) c));
-                } else if (c instanceof SparqlParser.NilContext) {
-                    bindingsClause.add("bindingsValueList", visitNil((SparqlParser.NilContext) c));
-                }
-            }
+        if (ctx.dataBlock() != null) {
+            valuesClause.add("dataBlock", visitDataBlock(ctx.dataBlock()));
         }
 
-        return bindingsClause;
-    }
-
-    @Override
-    public ST visitBindingsValueList(SparqlParser.BindingsValueListContext ctx) {
-        // bindingsValueList :
-        //    bindingValue+
-
-        ST bindingsValueList = g.getInstanceOf("bindingsValueList");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.BindingValueContext) {
-                bindingsValueList.add("bindingValue", visitBindingValue((SparqlParser.BindingValueContext) c));
-            }
-        }
-
-        return bindingsValueList;
-    }
-
-    @Override
-    public ST visitBindingValue(SparqlParser.BindingValueContext ctx) {
-        // bindingValue
-        //   iriRef | rdfLiteral | numericLiteral | booleanLiteral | UNDEF
-
-        ST bindingValue = g.getInstanceOf("bindingValue");
-
-        if (ctx.iriRef() != null) {
-            bindingValue.add("iriRef", visitIriRef(ctx.iriRef()));
-        } else if (ctx.rdfLiteral() != null) {
-            bindingValue.add("rdfLiteral", visitRdfLiteral(ctx.rdfLiteral()));
-        } else if (ctx.numericLiteral() != null) {
-            bindingValue.add("numericLiteral", visitNumericLiteral(ctx.numericLiteral()));
-        } else if (ctx.booleanLiteral() != null) {
-            bindingValue.add("booleanLiteral", visitBooleanLiteral(ctx.booleanLiteral()));
-        } else if (ctx.UNDEF() != null) {
-            bindingValue.add("UNDEF", ctx.UNDEF().getSymbol().getText());
-        }
-
-        return bindingValue;
+        return valuesClause;
     }
 
     @Override
@@ -567,7 +521,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitLoad(SparqlParser.LoadContext ctx) {
         // load :	  
-        //   LOAD SILENT? iriRef (INTO graphRef)?
+        //   LOAD SILENT? iri (INTO graphRef)?
 
         ST load = g.getInstanceOf("load");
 
@@ -575,7 +529,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             load.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
         }
 
-        load.add("iriRef", visitIriRef(ctx.iriRef()));
+        load.add("iri", visitIri(ctx.iri()));
 
         if (ctx.graphRef() != null) {
             load.add("graphRef", visitGraphRef(ctx.graphRef()));
@@ -710,11 +664,11 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitDeleteWhere(SparqlParser.DeleteWhereContext ctx) {
         // deleteWhere :
-        //   DELETE WHERE quadData
+        //   DELETE WHERE quadPattern
 
         ST deleteWhere = g.getInstanceOf("deleteWhere");
 
-        deleteWhere.add("quadData", visitQuadData(ctx.quadData()));
+        deleteWhere.add("quadPattern", visitQuadPattern(ctx.quadPattern()));
 
         return deleteWhere;
     }
@@ -722,13 +676,13 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitModify(SparqlParser.ModifyContext ctx) {
         // modify :
-        //   (WITH iriRef)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern
+        //   (WITH iri)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern
 
         ST modify = g.getInstanceOf("modify");
 
         for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.IriRefContext) {
-                modify.add("iriRef", visitIriRef((SparqlParser.IriRefContext) c));
+            if (c instanceof SparqlParser.IriContext) {
+                modify.add("iri", visitIri((SparqlParser.IriContext) c));
             } else if (c instanceof SparqlParser.DeleteClauseContext) {
                 modify.add("deleteClause", visitDeleteClause((SparqlParser.DeleteClauseContext) c));
             } else if (c instanceof SparqlParser.InsertClauseContext) {
@@ -770,7 +724,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitUsingClause(SparqlParser.UsingClauseContext ctx) {
         // usingClause :
-        //   USING NAMED? iriRef
+        //   USING NAMED? iri
 
         ST usingClause = g.getInstanceOf("usingClause");
 
@@ -778,7 +732,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             usingClause.add("NAMED", ctx.NAMED().getSymbol().getText().toUpperCase());
         }
 
-        usingClause.add("iriRef", visitIriRef(ctx.iriRef()));
+        usingClause.add("iri", visitIri(ctx.iri()));
 
         return usingClause;
     }
@@ -786,7 +740,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitGraphOrDefault(SparqlParser.GraphOrDefaultContext ctx) {
         // graphOrDefault :	  
-        //   DEFAULT | GRAPH? iriRef
+        //   DEFAULT | GRAPH? iri
 
         ST graphOrDefault = g.getInstanceOf("graphOrDefault");
 
@@ -796,7 +750,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             if (ctx.GRAPH() != null) {
                 graphOrDefault.add("GRAPH", ctx.GRAPH().getSymbol().getText().toUpperCase());
             }
-            graphOrDefault.add("iriRef", visitIriRef(ctx.iriRef()));
+            graphOrDefault.add("iri", visitIri(ctx.iri()));
         }
 
         return graphOrDefault;
@@ -805,11 +759,11 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitGraphRef(SparqlParser.GraphRefContext ctx) {
         // graphRef :	  
-        //   GRAPH iriRef
+        //   GRAPH iri
 
         ST graphRef = g.getInstanceOf("graphRef");
 
-        graphRef.add("iriRef", visitIriRef(ctx.iriRef()));
+        graphRef.add("iri", visitIri(ctx.iri()));
 
         return graphRef;
     }
@@ -861,32 +815,18 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitQuads(SparqlParser.QuadsContext ctx) {
         // quads :
-        //   triplesTemplate? (quadsNotTriples DOT? triplesTemplate?)*
+        //   triplesTemplate? quadsDetails*
 
         ST quads = g.getInstanceOf("quads");
 
         int i = 0;
 
-        if (ctx.triplesTemplate(0) != null) {
-            quads.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate(0)));
-            i = 1;
-        }
-
         while (i < ctx.getChildCount()) {
             ParseTree c = ctx.getChild(i++);
-            if (c instanceof SparqlParser.QuadsNotTriplesContext) {
-                quads.add("quadsNotTriples", visitQuadsNotTriples((SparqlParser.QuadsNotTriplesContext) c));
-                if (i < ctx.getChildCount()) {
-                    c = ctx.getChild(i);
-                    if (c instanceof SparqlParser.TriplesTemplateContext) {
-                        quads.add("triplesTemplateTail", visitTriplesTemplate((SparqlParser.TriplesTemplateContext) c));
-                        i++;
-                    } else {
-                        quads.add("triplesTemplateTail", null);
-                    }
-                } else {
-                    quads.add("triplesTemplateTail", null);
-                }
+            if (c instanceof SparqlParser.TriplesTemplateContext) {
+                quads.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
+            } else if (c instanceof SparqlParser.QuadsDetailsContext) {
+                quads.add("quadsDetails", visitQuadsDetails(ctx.quadsDetails()));
             }
         }
 
@@ -894,13 +834,34 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
+    public ST visitQuadsDetails(SparqlParser.QuadsDetailsContext ctx) {
+        // quads :
+        //   quadsNotTriples DOT? triplesTemplate?
+
+        ST quadsDetails = g.getInstanceOf("quadsDetails");
+
+        int i = 0;
+
+        while (i < ctx.getChildCount()) {
+            ParseTree c = ctx.getChild(i++);
+            if (c instanceof SparqlParser.QuadsNotTriplesContext) {
+                quadsDetails.add("quadsNotTriples", visitQuadsNotTriples((SparqlParser.QuadsNotTriplesContext) c));
+            } else if (c instanceof SparqlParser.TriplesTemplateContext) {
+                quadsDetails.add("triplesTemplate", visitTriplesTemplate((SparqlParser.TriplesTemplateContext) c));
+            }
+        }
+
+        return quadsDetails;
+    }
+
+    @Override
     public ST visitQuadsNotTriples(SparqlParser.QuadsNotTriplesContext ctx) {
         // quadsNotTriples :
-        //   GRAPH varOrIRIref OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE
+        //   GRAPH varOrIRI OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE
 
         ST quadsNotTriples = g.getInstanceOf("quadsNotTriples");
 
-        quadsNotTriples.add("varOrIRIref", visitVarOrIRIref(ctx.varOrIRIref()));
+        quadsNotTriples.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
 
         if (ctx.triplesTemplate() != null) {
             quadsNotTriples.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
@@ -995,7 +956,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitGraphPatternNotTriples(SparqlParser.GraphPatternNotTriplesContext ctx) {
         // graphPatternNotTriples :
-        //   groupOrUnionGraphPattern | optionalGraphPattern | minusGraphPattern | graphGraphPattern | serviceGraphPattern | filter | bind
+        //   groupOrUnionGraphPattern | optionalGraphPattern | minusGraphPattern | graphGraphPattern | serviceGraphPattern | filter | bind | inlineData
 
         ST graphPatternNotTriples = g.getInstanceOf("graphPatternNotTriples");
 
@@ -1013,6 +974,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             graphPatternNotTriples.add("filter", visitFilter(ctx.filter()));
         } else if (ctx.bind() != null) {
             graphPatternNotTriples.add("bind", visitBind(ctx.bind()));
+        } else if (ctx.inlineData() != null) {
+            graphPatternNotTriples.add("inlineData", visitInlineData(ctx.inlineData()));
         }
 
         return graphPatternNotTriples;
@@ -1037,7 +1000,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         ST graphGraphPattern = g.getInstanceOf("graphGraphPattern");
 
-        graphGraphPattern.add("varOrIRIref", visitVarOrIRIref(ctx.varOrIRIref()));
+        graphGraphPattern.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
 
         graphGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
 
@@ -1047,7 +1010,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitServiceGraphPattern(SparqlParser.ServiceGraphPatternContext ctx) {
         // serviceGraphPattern :
-        //   SERVICE SILENT? varOrIRIref groupGraphPattern
+        //   SERVICE SILENT? varOrIRI groupGraphPattern
 
         ST serviceGraphPattern = g.getInstanceOf("serviceGraphPattern");
 
@@ -1055,7 +1018,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             serviceGraphPattern.add("SILENT", ctx.SILENT().getSymbol().getText());
         }
 
-        serviceGraphPattern.add("varOrIRIref", visitVarOrIRIref(ctx.varOrIRIref()));
+        serviceGraphPattern.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
 
         serviceGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
 
@@ -1074,6 +1037,107 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         bind.add("var", visitVar(ctx.var()));
 
         return bind;
+    }
+
+    @Override
+    public ST visitInlineData(SparqlParser.InlineDataContext ctx) {
+        // inlineData :
+        //  VALUES dataBlock
+
+        ST inlineData = g.getInstanceOf("inlineData");
+
+        inlineData.add("dataBlock", visitDataBlock(ctx.dataBlock()));
+
+        return inlineData;
+    }
+
+    @Override
+    public ST visitDataBlock(SparqlParser.DataBlockContext ctx) {
+        // dataBlock :
+        //  inlineDataOneVar |  inlineDataFull
+
+        ST dataBlock = g.getInstanceOf("dataBlock");
+        if (ctx.inlineDataOneVar() != null) {
+            dataBlock.add("inlineDataOneVar", visitInlineDataOneVar(ctx.inlineDataOneVar()));
+        } else if (ctx.inlineDataFull() != null) {
+            dataBlock.add("inlineDataFull", visitInlineDataOneVar(ctx.inlineDataOneVar()));
+        }
+
+        return dataBlock;
+    }
+
+    @Override
+    public ST visitInlineDataOneVar(SparqlParser.InlineDataOneVarContext ctx) {
+        // inlineDataOneVar :
+        //  var OPEN_CURLY_BRACE dataBlockValue* CLOSE_CURLY_BRACE
+
+        ST inlineDataOneVar = g.getInstanceOf("inlineDataOneVar");
+
+        for (ParseTree c : ctx.children) {
+            if (c instanceof SparqlParser.DataBlockContext) {
+                inlineDataOneVar.add("dataBlockValue", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
+            } else if (c instanceof SparqlParser.VarContext) {
+                inlineDataOneVar.add("var", visitVar((SparqlParser.VarContext) c));
+            }
+        }
+
+        return inlineDataOneVar;
+    }
+
+    @Override
+    public ST visitInlineDataFull(SparqlParser.InlineDataFullContext ctx) {
+        // inlineDataFull :
+        //  (OPEN_BRACE var* CLOSE_BRACE) OPEN_CURLY_BRACE dataBlockValues* CLOSE_CURLY_BRACE
+
+        ST inlineDataFull = g.getInstanceOf("inlineDataFull");
+
+        for (ParseTree c : ctx.children) {
+            if (c instanceof SparqlParser.VarContext) {
+                inlineDataFull.add("var", visitVar((SparqlParser.VarContext) c));
+            } else if (c instanceof SparqlParser.DataBlockValuesContext) {
+                inlineDataFull.add("dataBlockValues", visitDataBlockValues((SparqlParser.DataBlockValuesContext) c));
+            }
+        }
+
+        return inlineDataFull;
+    }
+
+    @Override
+    public ST visitDataBlockValues(SparqlParser.DataBlockValuesContext ctx) {
+        // dataBlockValues :
+        //  OPEN_BRACE dataBlockValue* CLOSE_BRACE
+
+        ST dataBlockValues = g.getInstanceOf("dataBlockValues");
+
+        for (ParseTree c : ctx.children) {
+            if (c instanceof SparqlParser.DataBlockValueContext) {
+                dataBlockValues.add("dataBlockValues", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
+            }
+        }
+
+        return dataBlockValues;
+    }
+
+    @Override
+    public ST visitDataBlockValue(SparqlParser.DataBlockValueContext ctx) {
+        // dataBlockValue :
+        //  iri | rdfLiteral | numericLiteral | booleanLiteral | UNDEF
+
+        ST dataBlockValue = g.getInstanceOf("dataBlockValue");
+
+        if (ctx.iri() != null) {
+            dataBlockValue.add("iri", visitIri(ctx.iri()));
+        } else if (ctx.rdfLiteral() != null) {
+            dataBlockValue.add("rdfLiteral", visitRdfLiteral(ctx.rdfLiteral()));
+        } else if (ctx.numericLiteral() != null) {
+            dataBlockValue.add("numericLiteral", visitNumericLiteral(ctx.numericLiteral()));
+        } else if (ctx.booleanLiteral() != null) {
+            dataBlockValue.add("booleanLiteral", visitBooleanLiteral(ctx.booleanLiteral()));
+        } else if (ctx.UNDEF() != null) {
+            dataBlockValue.add("UNDEF", ctx.UNDEF().getSymbol().getText());
+        }
+
+        return dataBlockValue;
     }
 
     @Override
@@ -1137,11 +1201,11 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitFunctionCall(SparqlParser.FunctionCallContext ctx) {
         // functionCall :
-        //   iriRef argList
+        //   iri argList
 
         ST functionCall = g.getInstanceOf("functionCall");
 
-        functionCall.add("iriRef", visitIriRef(ctx.iriRef()));
+        functionCall.add("iri", visitIri(ctx.iri()));
 
         functionCall.add("argList", visitArgList(ctx.argList()));
 
@@ -1243,6 +1307,20 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
+    public ST visitPropertyList(SparqlParser.PropertyListContext ctx) {
+        // propertyList
+        //   propertyListNotEmpty?
+
+        ST propertyList = g.getInstanceOf("propertyList");
+
+        if (ctx.propertyListNotEmpty() != null) {
+            propertyList.add("propertyListNotEmpty", visitPropertyListNotEmpty(ctx.propertyListNotEmpty()));
+        }
+
+        return propertyList;
+    }
+
+    @Override
     public ST visitPropertyListNotEmpty(SparqlParser.PropertyListNotEmptyContext ctx) {
         // propertyListNotEmpty :
         //   verb objectList (SEMICOLON (verb objectList)?)* 
@@ -1261,17 +1339,19 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
-    public ST visitPropertyList(SparqlParser.PropertyListContext ctx) {
-        // propertyList
-        //   propertyListNotEmpty?
+    public ST visitVerb(SparqlParser.VerbContext ctx) {
+        // verb :
+        //   varOrIRI | A
 
-        ST propertyList = g.getInstanceOf("propertyList");
+        ST verb = g.getInstanceOf("verb");
 
-        if (ctx.propertyListNotEmpty() != null) {
-            propertyList.add("propertyListNotEmpty", visitPropertyListNotEmpty(ctx.propertyListNotEmpty()));
+        if (ctx.varOrIRI() != null) {
+            verb.add("varOrIri", visitVarOrIRI(ctx.varOrIRI()));
+        } else if (ctx.A() != null) {
+            verb.add("A", ctx.A().getSymbol().getText());
         }
 
-        return propertyList;
+        return verb;
     }
 
     @Override
@@ -1303,33 +1383,17 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
-    public ST visitVerb(SparqlParser.VerbContext ctx) {
-        // verb :
-        //   varOrIRIref | A
-
-        ST verb = g.getInstanceOf("verb");
-
-        if (ctx.varOrIRIref() != null) {
-            verb.add("varOrIriRef", visitVarOrIRIref(ctx.varOrIRIref()));
-        } else if (ctx.A() != null) {
-            verb.add("A", ctx.A().getSymbol().getText());
-        }
-
-        return verb;
-    }
-
-    @Override
     public ST visitTriplesSameSubjectPath(SparqlParser.TriplesSameSubjectPathContext ctx) {
         // triplesSameSubjectPath :
-        //   varOrTerm propertyListNotEmptyPath | triplesNode propertyListPath
+        //   varOrTerm propertyListPathNotEmpty | triplesNodePath propertyListPath
 
         ST triplesSameSubjectPath = g.getInstanceOf("triplesSameSubjectPath");
 
         if (ctx.varOrTerm() != null) {
             triplesSameSubjectPath.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
-            triplesSameSubjectPath.add("propertyListNotEmptyPath", visitPropertyListNotEmptyPath(ctx.propertyListNotEmptyPath()));
+            triplesSameSubjectPath.add("propertyListPathNotEmpty", visitPropertyListPathNotEmpty(ctx.propertyListPathNotEmpty()));
         } else {
-            triplesSameSubjectPath.add("triplesNode", visitTriplesNode(ctx.triplesNode()));
+            triplesSameSubjectPath.add("triplesNodePath", visitTriplesNodePath(ctx.triplesNodePath()));
             triplesSameSubjectPath.add("propertyListPath", visitPropertyListPath(ctx.propertyListPath()));
         }
 
@@ -1337,37 +1401,59 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
-    public ST visitPropertyListNotEmptyPath(SparqlParser.PropertyListNotEmptyPathContext ctx) {
-        // propertyListNotEmptyPath :
-        //  (verbPath|verbSimple) objectList (SEMICOLON ((verbPath|verbSimple) objectList)?)*
-
-        ST propertyListNotEmptyPath = g.getInstanceOf("propertyListNotEmptyPath");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.VerbPathContext) {
-                propertyListNotEmptyPath.add("verb", visitVerbPath((SparqlParser.VerbPathContext) c));
-            } else if (c instanceof SparqlParser.VerbSimpleContext) {
-                propertyListNotEmptyPath.add("verb", visitVerbSimple((SparqlParser.VerbSimpleContext) c));
-            } else if (c instanceof SparqlParser.ObjectListContext) {
-                propertyListNotEmptyPath.add("objectList", visitObjectList((SparqlParser.ObjectListContext) c));
-            }
-        }
-
-        return propertyListNotEmptyPath;
-    }
-
-    @Override
     public ST visitPropertyListPath(SparqlParser.PropertyListPathContext ctx) {
         // propertyListPath :
-        //   propertyListNotEmpty?
+        //   propertyListPathNotEmpty?
 
         ST propertyListPath = g.getInstanceOf("propertyListPath");
 
-        if (ctx.propertyListNotEmpty() != null) {
-            propertyListPath.add("propertyListNotEmpty", visitPropertyListNotEmpty(ctx.propertyListNotEmpty()));
+        if (ctx.propertyListPathNotEmpty() != null) {
+            propertyListPath.add("propertyListPathNotEmpty", visitPropertyListPathNotEmpty(ctx.propertyListPathNotEmpty()));
         }
 
         return propertyListPath;
+    }
+
+    @Override
+    public ST visitPropertyListPathNotEmpty(SparqlParser.PropertyListPathNotEmptyContext ctx) {
+        // propertyListPathNotEmpty :
+        //  (verbPath|verbSimple) objectListPath propertyListPathNotEmptyList*
+
+        ST propertyListPathNotEmpty = g.getInstanceOf("propertyListPathNotEmpty");
+
+        for (ParseTree c : ctx.children) {
+            if (c instanceof SparqlParser.VerbPathContext) {
+                propertyListPathNotEmpty.add("verb", visitVerbPath((SparqlParser.VerbPathContext) c));
+            } else if (c instanceof SparqlParser.VerbSimpleContext) {
+                propertyListPathNotEmpty.add("verb", visitVerbSimple((SparqlParser.VerbSimpleContext) c));
+            } else if (c instanceof SparqlParser.ObjectListContext) {
+                propertyListPathNotEmpty.add("objectListPath", visitObjectListPath((SparqlParser.ObjectListPathContext) c));
+            }
+        }
+
+        return propertyListPathNotEmpty;
+    }
+
+    @Override
+    public ST visitPropertyListPathNotEmptyList(SparqlParser.PropertyListPathNotEmptyListContext ctx) {
+        // propertyListPathNotEmptyList :
+        //  SEMICOLON ((verbPath|verbSimple) objectList)?
+
+        ST propertyListPathNotEmptyList = g.getInstanceOf("propertyListPathNotEmpty");
+
+        if (ctx.verbPath() != null) {
+            propertyListPathNotEmptyList.add("verbPath", ctx.verbPath());
+        }
+
+        if (ctx.verbSimple() != null) {
+            propertyListPathNotEmptyList.add("verbSimple", ctx.verbSimple());
+        }
+
+        if (ctx.objectList() != null) {
+            propertyListPathNotEmptyList.add("objectList", ctx.objectList());
+        }
+
+        return propertyListPathNotEmptyList;
     }
 
     @Override
@@ -1392,6 +1478,34 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         verbSimple.add("var", visitVar(ctx.var()));
 
         return verbSimple;
+    }
+
+    @Override
+    public ST visitObjectListPath(SparqlParser.ObjectListPathContext ctx) {
+        // objectListPath :
+        //   objectPath (COMMA objectPath)*
+
+        ST objectListPath = g.getInstanceOf("objectListPath");
+
+        for (ParseTree c : ctx.children) {
+            if (c instanceof SparqlParser.ObjectPathContext) {
+                objectListPath.add("objectPath", visitObjectPath((SparqlParser.ObjectPathContext) c));
+            }
+        }
+
+        return objectListPath;
+    }
+
+    @Override
+    public ST visitObjectPath(SparqlParser.ObjectPathContext ctx) {
+        // objectPath :
+        //   graphNodePath
+
+        ST objectPath = g.getInstanceOf("objectPath");
+
+        objectPath.add("graphNodePath", visitGraphNodePath(ctx.graphNodePath()));
+
+        return objectPath;
     }
 
     @Override
@@ -1473,32 +1587,16 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitPathMod(SparqlParser.PathModContext ctx) {
         // pathMod :
-        //   ASTERISK 
-        // | QUESTION_MARK 
-        // | PLUS 
-        // | OPEN_CURLY_BRACE (integer (COMMA (CLOSE_CURLY_BRACE | integer CLOSE_CURLY_BRACE) | CLOSE_CURLY_BRACE) | COMMA integer CLOSE_CURLY_BRACE)
+        //   QUESTION_MARK | ASTERISK | PLUS 
 
         ST pathMod = g.getInstanceOf("pathMod");
 
-        if (ctx.ASTERISK() != null) {
-            pathMod.add("ASTERISK", ctx.ASTERISK().getSymbol().getText());
-        } else if (ctx.QUESTION_MARK() != null) {
+        if (ctx.QUESTION_MARK() != null) {
             pathMod.add("QUESTION_MARK", ctx.QUESTION_MARK().getSymbol().getText());
+        } else if (ctx.ASTERISK() != null) {
+            pathMod.add("ASTERISK", ctx.ASTERISK().getSymbol().getText());
         } else if (ctx.PLUS() != null) {
             pathMod.add("PLUS", ctx.PLUS().getSymbol().getText());
-        } else if (ctx.OPEN_CURLY_BRACE() != null) {
-            if (ctx.integer(0) != null) {
-                pathMod.add("from", visitInteger(ctx.integer(0)));
-            }
-            if (ctx.COMMA(0) != null) {
-                pathMod.add("COMMA", ctx.COMMA(0).getSymbol().getText());
-            }
-            if (ctx.integer(1) != null) {
-                pathMod.add("to", visitInteger(ctx.integer(1)));
-            }
-            if (ctx.integer(2) != null) {
-                pathMod.add("to", visitInteger(ctx.integer(2)));
-            }
         }
 
         return pathMod;
@@ -1507,17 +1605,20 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitPathPrimary(SparqlParser.PathPrimaryContext ctx) {
         // pathPrimary :
-        //   iriRef | A | NEGATION pathNegatedPropertySet | OPEN_BRACE path CLOSE_BRACE
+        //   iri | A | NEGATION pathNegatedPropertySet | DISTINCT? OPEN_BRACE path CLOSE_BRACE
 
         ST pathPrimary = g.getInstanceOf("pathPrimary");
 
-        if (ctx.iriRef() != null) {
-            pathPrimary.add("iriRef", visitIriRef(ctx.iriRef()));
+        if (ctx.iri() != null) {
+            pathPrimary.add("iri", visitIri(ctx.iri()));
         } else if (ctx.A() != null) {
             pathPrimary.add("A", ctx.A().getSymbol().getText());
         } else if (ctx.pathNegatedPropertySet() != null) {
             pathPrimary.add("pathNegatedPropertySet", visitPathNegatedPropertySet(ctx.pathNegatedPropertySet()));
         } else if (ctx.path() != null) {
+            if (ctx.DISTINCT() != null) {
+                pathPrimary.add("DISTINCT", ctx.DISTINCT().getSymbol().getText());
+            }
             pathPrimary.add("path", visitPath(ctx.path()));
         }
 
@@ -1543,7 +1644,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitPathOneInPropertySet(SparqlParser.PathOneInPropertySetContext ctx) {
         // pathOneInPropertySet :
-        //   INVERSE? (iriRef | A)
+        //   INVERSE? (iri | A)
 
         ST pathOneInPropertySet = g.getInstanceOf("pathOneInPropertySet");
 
@@ -1551,8 +1652,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             pathOneInPropertySet.add("INVERSE", ctx.INVERSE().getSymbol().getText());
         }
 
-        if (ctx.iriRef() != null) {
-            pathOneInPropertySet.add("iriRef", visitIriRef(ctx.iriRef()));
+        if (ctx.iri() != null) {
+            pathOneInPropertySet.add("iri", visitIri(ctx.iri()));
         } else if (ctx.A() != null) {
             pathOneInPropertySet.add("A", ctx.A().getSymbol().getText());
         }
@@ -1601,6 +1702,34 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
+    public ST visitTriplesNodePath(SparqlParser.TriplesNodePathContext ctx) {
+        // triplesNodePath :
+        //   collectionPath | blankNodePropertyListPath
+
+        ST triplesNodePath = g.getInstanceOf("triplesNodePath");
+
+        if (ctx.collectionPath() != null) {
+            triplesNodePath.add("collectionPath", visitCollectionPath(ctx.collectionPath()));
+        } else if (ctx.blankNodePropertyListPath() != null) {
+            triplesNodePath.add("blankNodePropertyListPath", visitBlankNodePropertyListPath(ctx.blankNodePropertyListPath()));
+        }
+
+        return triplesNodePath;
+    }
+
+    @Override
+    public ST visitBlankNodePropertyListPath(SparqlParser.BlankNodePropertyListPathContext ctx) {
+        // blankNodePropertyListPath :
+        //   OPEN_SQUARE_BRACKET propertyListPathNotEmpty CLOSE_SQUARE_BRACKET
+
+        ST blankNodePropertyListPath = g.getInstanceOf("blankNodePropertyListPath");
+
+        blankNodePropertyListPath.add("propertyListPathNotEmpty", visitPropertyListPathNotEmpty(ctx.propertyListPathNotEmpty()));
+
+        return blankNodePropertyListPath;
+    }
+
+    @Override
     public ST visitCollection(SparqlParser.CollectionContext ctx) {
         // collection :
         //   OPEN_BRACE graphNode+ CLOSE_BRACE
@@ -1614,6 +1743,22 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         }
 
         return collection;
+    }
+
+    @Override
+    public ST visitCollectionPath(SparqlParser.CollectionPathContext ctx) {
+        // collectionPath :
+        //   OPEN_BRACE graphNodePath+ CLOSE_BRACE
+
+        ST collectionPath = g.getInstanceOf("collectionPath");
+
+        for (ParseTree c : ctx.children) {
+            if (c instanceof SparqlParser.GraphNodePathContext) {
+                collectionPath.add("graphNodePath", visitGraphNodePath((SparqlParser.GraphNodePathContext) c));
+            }
+        }
+
+        return collectionPath;
     }
 
     @Override
@@ -1633,6 +1778,22 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
+    public ST visitGraphNodePath(SparqlParser.GraphNodePathContext ctx) {
+        // graphNodePath :
+        //   varOrTerm | triplesNodePath
+
+        ST graphNodePath = g.getInstanceOf("graphNodePath");
+
+        if (ctx.varOrTerm() != null) {
+            graphNodePath.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
+        } else if (ctx.triplesNodePath() != null) {
+            graphNodePath.add("triplesNodePath", visitTriplesNodePath(ctx.triplesNodePath()));
+        }
+
+        return graphNodePath;
+    }
+
+    @Override
     public ST visitVarOrTerm(SparqlParser.VarOrTermContext ctx) {
         // varOrTerm :
         //   var | graphTerm
@@ -1649,19 +1810,19 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
-    public ST visitVarOrIRIref(SparqlParser.VarOrIRIrefContext ctx) {
-        // varOrIRIref :
-        //   var | iriRef
+    public ST visitVarOrIRI(SparqlParser.VarOrIRIContext ctx) {
+        // varOrIRI :
+        //   var | iri
 
-        ST varOrIRIref = g.getInstanceOf("varOrIRIref");
+        ST varOrIRI = g.getInstanceOf("varOrIRI");
 
         if (ctx.var() != null) {
-            varOrIRIref.add("var", visitVar(ctx.var()));
-        } else if (ctx.iriRef() != null) {
-            varOrIRIref.add("iriRef", visitIriRef(ctx.iriRef()));
+            varOrIRI.add("var", visitVar(ctx.var()));
+        } else if (ctx.iri() != null) {
+            varOrIRI.add("iri", visitIri(ctx.iri()));
         }
 
-        return varOrIRIref;
+        return varOrIRI;
     }
 
     @Override
@@ -1683,12 +1844,12 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitGraphTerm(SparqlParser.GraphTermContext ctx) {
         // graphTerm
-        //   iriRef | rdfLiteral | numericLiteral | booleanLiteral | blankNode | nil
+        //   iri | rdfLiteral | numericLiteral | booleanLiteral | blankNode | nil
 
         ST graphTerm = g.getInstanceOf("graphTerm");
 
-        if (ctx.iriRef() != null) {
-            graphTerm.add("iriRef", visitIriRef(ctx.iriRef()));
+        if (ctx.iri() != null) {
+            graphTerm.add("iri", visitIri(ctx.iri()));
         } else if (ctx.rdfLiteral() != null) {
             graphTerm.add("rdfLiteral", visitRdfLiteral(ctx.rdfLiteral()));
         } else if (ctx.numericLiteral() != null) {
@@ -1912,7 +2073,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitPrimaryExpression(SparqlParser.PrimaryExpressionContext ctx) {
         // primaryExpression :
-        //   brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var | aggregate
+        //   brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
 
         ST primaryExpression = g.getInstanceOf("primaryExpression");
 
@@ -1930,8 +2091,6 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             primaryExpression.add("booleanLiteral", visitBooleanLiteral(ctx.booleanLiteral()));
         } else if (ctx.var() != null) {
             primaryExpression.add("var", visitVar(ctx.var()));
-        } else if (ctx.aggregate() != null) {
-            primaryExpression.add("aggregate", visitAggregate(ctx.aggregate()));
         }
 
         return primaryExpression;
@@ -1952,7 +2111,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitBuiltInCall(SparqlParser.BuiltInCallContext ctx) {
         // builtInCall :
-        //   STR OPEN_BRACE expression CLOSE_BRACE
+        //   aggregate
+        //   | STR OPEN_BRACE expression CLOSE_BRACE
         //   | LANG OPEN_BRACE expression CLOSE_BRACE
         //   | LANGMATCHES OPEN_BRACE expression COMMA expression CLOSE_BRACE
         //   | DATATYPE OPEN_BRACE expression CLOSE_BRACE
@@ -1987,6 +2147,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         //   | TIMEZONE OPEN_BRACE expression CLOSE_BRACE
         //   | TZ OPEN_BRACE expression CLOSE_BRACE
         //   | NOW nil
+        //   | UUID nil
+        //   | STRUUID nil
         //   | MD5 OPEN_BRACE expression CLOSE_BRACE
         //   | SHA1 OPEN_BRACE expression CLOSE_BRACE
         //   | SHA256 OPEN_BRACE expression CLOSE_BRACE
@@ -2008,7 +2170,9 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         ST builtInCall = g.getInstanceOf("builtInCall");
 
-        if (ctx.STR() != null) {
+        if (ctx.aggregate() != null) {
+            builtInCall.add("aggregate", visitAggregate(ctx.aggregate()));
+        } else if (ctx.STR() != null) {
             builtInCall.add("builtInFunction", ctx.STR().getSymbol().getText().toUpperCase());
             builtInCall.add("expression", visitExpression(ctx.expression(0)));
         } else if (ctx.LANG() != null) {
@@ -2110,6 +2274,10 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
             builtInCall.add("expression", visitExpression(ctx.expression(0)));
         } else if (ctx.NOW() != null) {
             builtInCall.add("builtInFunction", ctx.NOW().getSymbol().getText().toUpperCase());
+        } else if (ctx.UUID() != null) {
+            builtInCall.add("builtInFunction", ctx.UUID().getSymbol().getText().toUpperCase());
+        } else if (ctx.STRUUID() != null) {
+            builtInCall.add("builtInFunction", ctx.STRUUID().getSymbol().getText().toUpperCase());        
         } else if (ctx.MD5() != null) {
             builtInCall.add("builtInFunction", ctx.MD5().getSymbol().getText().toUpperCase());
             builtInCall.add("expression", visitExpression(ctx.expression(0)));
@@ -2317,11 +2485,11 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitIriRefOrFunction(SparqlParser.IriRefOrFunctionContext ctx) {
         // iriRefOrFunction :
-        //   iriRef argList?
+        //   iri argList?
 
         ST iriRefOrFunction = g.getInstanceOf("iriRefOrFunction");
 
-        iriRefOrFunction.add("iriRef", visitIriRef(ctx.iriRef()));
+        iriRefOrFunction.add("iri", visitIri(ctx.iri()));
 
         if (ctx.argList() != null) {
             iriRefOrFunction.add("argList", visitArgList(ctx.argList()));
@@ -2333,7 +2501,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitRdfLiteral(SparqlParser.RdfLiteralContext ctx) {
         // rdfLiteral :
-        //   string (LANGTAG | (REFERENCE iriRef))?
+        //   string (LANGTAG | (REFERENCE iri))?
 
         ST rdfLiteral = g.getInstanceOf("rdfLiteral");
 
@@ -2341,8 +2509,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         if (ctx.LANGTAG() != null) {
             rdfLiteral.add("langTag", ctx.LANGTAG().getSymbol().getText());
-        } else if (ctx.iriRef() != null) {
-            rdfLiteral.add("iriRef", visitIriRef(ctx.iriRef()));
+        } else if (ctx.iri() != null) {
+            rdfLiteral.add("iri", visitIri(ctx.iri()));
         }
 
         return rdfLiteral;
@@ -2457,20 +2625,20 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     }
 
     @Override
-    public ST visitIriRef(SparqlParser.IriRefContext ctx) {
-        // iriRef :
-        //   IRI_REF | prefixedName
+    public ST visitIri(SparqlParser.IriContext ctx) {
+        // iri :
+        //   IRIREF | prefixedName
 
-        ST iriRef = g.getInstanceOf("iriRef");
+        ST iri = g.getInstanceOf("iri");
 
-        if (ctx.IRI_REF() != null) {
-            String s = ctx.IRI_REF().getSymbol().getText();
-            iriRef.add("value", s.substring(1, s.length() - 1));
+        if (ctx.IRIREF() != null) {
+            String s = ctx.IRIREF().getSymbol().getText();
+            iri.add("iriref", s.substring(1, s.length() - 1));
         } else if (ctx.prefixedName() != null) {
-            iriRef.add("prefixedName", visitPrefixedName(ctx.prefixedName()));
+            iri.add("prefixedName", visitPrefixedName(ctx.prefixedName()));
         }
 
-        return iriRef;
+        return iri;
     }
 
     @Override
