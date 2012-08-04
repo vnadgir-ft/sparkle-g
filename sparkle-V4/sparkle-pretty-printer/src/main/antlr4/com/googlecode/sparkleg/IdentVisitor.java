@@ -1111,7 +1111,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         for (ParseTree c : ctx.children) {
             if (c instanceof SparqlParser.DataBlockValueContext) {
-                dataBlockValues.add("dataBlockValues", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
+                dataBlockValues.add("dataBlockValue", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
             }
         }
 
@@ -1346,7 +1346,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         ST verb = g.getInstanceOf("verb");
 
         if (ctx.varOrIRI() != null) {
-            verb.add("varOrIri", visitVarOrIRI(ctx.varOrIRI()));
+            verb.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
         } else if (ctx.A() != null) {
             verb.add("A", ctx.A().getSymbol().getText());
         }
@@ -1423,11 +1423,13 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         for (ParseTree c : ctx.children) {
             if (c instanceof SparqlParser.VerbPathContext) {
-                propertyListPathNotEmpty.add("verb", visitVerbPath((SparqlParser.VerbPathContext) c));
+                propertyListPathNotEmpty.add("verbPath", visitVerbPath((SparqlParser.VerbPathContext) c));
             } else if (c instanceof SparqlParser.VerbSimpleContext) {
-                propertyListPathNotEmpty.add("verb", visitVerbSimple((SparqlParser.VerbSimpleContext) c));
+                propertyListPathNotEmpty.add("verbSimple", visitVerbSimple((SparqlParser.VerbSimpleContext) c));
             } else if (c instanceof SparqlParser.ObjectListContext) {
                 propertyListPathNotEmpty.add("objectListPath", visitObjectListPath((SparqlParser.ObjectListPathContext) c));
+            } else if (c instanceof SparqlParser.PropertyListPathNotEmptyListContext) {
+                propertyListPathNotEmpty.add("propertyListPathNotEmptyList", visitPropertyListPathNotEmptyList((SparqlParser.PropertyListPathNotEmptyListContext) c));
             }
         }
 
@@ -2277,7 +2279,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         } else if (ctx.UUID() != null) {
             builtInCall.add("builtInFunction", ctx.UUID().getSymbol().getText().toUpperCase());
         } else if (ctx.STRUUID() != null) {
-            builtInCall.add("builtInFunction", ctx.STRUUID().getSymbol().getText().toUpperCase());        
+            builtInCall.add("builtInFunction", ctx.STRUUID().getSymbol().getText().toUpperCase());
         } else if (ctx.MD5() != null) {
             builtInCall.add("builtInFunction", ctx.MD5().getSymbol().getText().toUpperCase());
             builtInCall.add("expression", visitExpression(ctx.expression(0)));
@@ -2633,7 +2635,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         if (ctx.IRIREF() != null) {
             String s = ctx.IRIREF().getSymbol().getText();
-            iri.add("iriref", s.substring(1, s.length() - 1));
+            iri.add("IRIREF", s.substring(1, s.length() - 1));
         } else if (ctx.prefixedName() != null) {
             iri.add("prefixedName", visitPrefixedName(ctx.prefixedName()));
         }
