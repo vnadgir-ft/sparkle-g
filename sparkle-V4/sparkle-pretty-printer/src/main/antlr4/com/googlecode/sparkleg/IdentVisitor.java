@@ -471,7 +471,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitValuesClause(SparqlParser.ValuesClauseContext ctx) {
         // valuesClause :
-        //  (VALUES datablock)?
+        //  (VALUES dataBlock)?
 
         ST valuesClause = g.getInstanceOf("valuesClause");
 
@@ -1054,13 +1054,14 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitDataBlock(SparqlParser.DataBlockContext ctx) {
         // dataBlock :
-        //  inlineDataOneVar |  inlineDataFull
+        //  inlineDataOneVar | inlineDataFull
 
         ST dataBlock = g.getInstanceOf("dataBlock");
+        
         if (ctx.inlineDataOneVar() != null) {
             dataBlock.add("inlineDataOneVar", visitInlineDataOneVar(ctx.inlineDataOneVar()));
         } else if (ctx.inlineDataFull() != null) {
-            dataBlock.add("inlineDataFull", visitInlineDataOneVar(ctx.inlineDataOneVar()));
+            dataBlock.add("inlineDataFull", visitInlineDataFull(ctx.inlineDataFull()));
         }
 
         return dataBlock;
@@ -1073,14 +1074,15 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         ST inlineDataOneVar = g.getInstanceOf("inlineDataOneVar");
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.DataBlockContext) {
-                inlineDataOneVar.add("dataBlockValue", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
-            } else if (c instanceof SparqlParser.VarContext) {
-                inlineDataOneVar.add("var", visitVar((SparqlParser.VarContext) c));
+        if (ctx.children != null) {
+            for (ParseTree c : ctx.children) {
+                if (c instanceof SparqlParser.DataBlockContext) {
+                    inlineDataOneVar.add("dataBlockValue", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
+                } else if (c instanceof SparqlParser.VarContext) {
+                    inlineDataOneVar.add("var", visitVar((SparqlParser.VarContext) c));
+                }
             }
         }
-
         return inlineDataOneVar;
     }
 
@@ -1426,7 +1428,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
                 propertyListPathNotEmpty.add("verbPath", visitVerbPath((SparqlParser.VerbPathContext) c));
             } else if (c instanceof SparqlParser.VerbSimpleContext) {
                 propertyListPathNotEmpty.add("verbSimple", visitVerbSimple((SparqlParser.VerbSimpleContext) c));
-            } else if (c instanceof SparqlParser.ObjectListContext) {
+            } else if (c instanceof SparqlParser.ObjectListPathContext) {
                 propertyListPathNotEmpty.add("objectListPath", visitObjectListPath((SparqlParser.ObjectListPathContext) c));
             } else if (c instanceof SparqlParser.PropertyListPathNotEmptyListContext) {
                 propertyListPathNotEmpty.add("propertyListPathNotEmptyList", visitPropertyListPathNotEmptyList((SparqlParser.PropertyListPathNotEmptyListContext) c));
@@ -1441,7 +1443,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         // propertyListPathNotEmptyList :
         //  SEMICOLON ((verbPath|verbSimple) objectList)?
 
-        ST propertyListPathNotEmptyList = g.getInstanceOf("propertyListPathNotEmpty");
+        ST propertyListPathNotEmptyList = g.getInstanceOf("propertyListPathNotEmptyList");
 
         if (ctx.verbPath() != null) {
             propertyListPathNotEmptyList.add("verbPath", ctx.verbPath());
@@ -1525,7 +1527,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitPathAlternative(SparqlParser.PathAlternativeContext ctx) {
         // pathAlternative :
-        //   pathSequence ( PIPE pathSequence)*
+        //   pathSequence (PIPE pathSequence)*
 
         ST pathAlternative = g.getInstanceOf("pathAlternative");
 
@@ -1835,9 +1837,9 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         ST var = g.getInstanceOf("var");
 
         if (ctx.VAR1() != null) {
-            var.add("var", ctx.VAR1().getSymbol().getText());
+            var.add("value", ctx.VAR1().getSymbol().getText());
         } else if (ctx.VAR2() != null) {
-            var.add("var", ctx.VAR2().getSymbol().getText());
+            var.add("value", ctx.VAR2().getSymbol().getText());
         }
 
         return var;
