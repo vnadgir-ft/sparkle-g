@@ -84,6 +84,7 @@ keywordMap ::= [
                 "UNDEF":"UNDEF",
                 "UNION":"UNION",
                 "USING":"USING",
+                "VALUES":"VALUES",
                 "WHERE":"WHERE",
                 "WITH":"WITH",
                 default:"---ERROR---" // not a keyword
@@ -247,8 +248,8 @@ offsetClause(offset) ::= <<
 <keywordMap.OFFSET> <offset>
 >>
 
-valuesClause(datablock) ::= <<
-<if(datablock)><keywordMap.VALUES> <datablock><endif>
+valuesClause(dataBlock) ::= <<
+<if(dataBlock)><\n><keywordMap.VALUES> <dataBlock><endif>
 >>
 
 update(prologue, load, clear, drop, add, move, copy, create, insertData, deleteData, deleteWhere, modify) ::= <<
@@ -399,7 +400,7 @@ inlineData(datablock) ::= <<
 <keywordMap.VALUES> <datablock>
 >>
 
-datablock(inlineDataOneVar, inlineDataFull) ::= <<
+dataBlock(inlineDataOneVar, inlineDataFull) ::= <<
 <if(inlineDataOneVar)><inlineDataOneVar><elseif(inlineDataFull)><inlineDataFull><endif>
 >>
 
@@ -492,11 +493,12 @@ propertyListPath(propertyListPathNotEmpty) ::= <<
 >>
 
 propertyListPathNotEmpty(verbPath, verbSimple, objectListPath, propertyListPathNotEmptyList) ::= <<
-<if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif> <objectListPath> <propertyListPathNotEmptyList; separator=" ">
+<if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif> <objectListPath><propertyListPathNotEmptyList; separator=" ">
 >>
 
 propertyListPathNotEmptyList(verbPath, verbSimple, objectList) ::= <<
-;<\n><if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif><if(objectList)><objectList><endif>
+;
+<if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif><objectList>
 >>
 
 verbPath(path) ::= <<
@@ -567,7 +569,6 @@ triplesNodePath(collectionPath, blankNodePropertyListPath) ::= <<
 <if(collectionPath)><collectionPath><elseif(blankNodePropertyListPath)><blankNodePropertyListPath><endif>
 >>
 
-
 blankNodePropertyListPath(propertyListPathNotEmpty) ::= <<
 [ <propertyListPathNotEmpty> ]
 >>
@@ -576,17 +577,16 @@ collection(graphNode) ::= <<
 (<graphNode; wrap, separator="">)
 >>
 
-
 collectionPath(graphNodePath) ::= <<
 (<graphNodePath; wrap, separator="">)
 >>
 
-graphNode(varOrTerm, triplesNodePath) ::= <<
-<if(varOrTerm)><varOrTerm><else><triplesNodePath><endif>
+graphNode(varOrTerm, triplesNode) ::= <<
+<if(varOrTerm)><varOrTerm><else><triplesNode><endif>
 >>
 
-graphNodePath(varOrTerm, triplesNode) ::= <<
-<if(varOrTerm)><varOrTerm><else><triplesNode><endif>
+graphNodePath(varOrTerm, triplesNodePath) ::= <<
+<if(varOrTerm)><varOrTerm><else><triplesNodePath><endif>
 >>
 
 varOrTerm(var, graphTerm) ::= <<
@@ -597,8 +597,8 @@ varOrIRI(var, iri) ::= <<
 <if(var)><var><else><iri><endif>
 >>
 
-var(var) ::= <<
-<var>
+var(value) ::= <<
+<value>
 >>
 
 graphTerm(iri, rdfLiteral, numericLiteral, booleanLiteral, blankNode, nil) ::= <<
@@ -791,6 +791,14 @@ TZ(expression) ::= <<
 
 NOW(expression) ::= <<
 <builtInMap.NOW>()
+>>
+
+UUID(expression) ::= <<
+<builtInMap.UUID>()
+>>
+
+STRUUID(expression) ::= <<
+<builtInMap.STRUUID>()
 >>
 
 MD5(expression) ::= <<
