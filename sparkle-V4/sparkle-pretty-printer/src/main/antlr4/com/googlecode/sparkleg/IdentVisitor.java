@@ -21,11 +21,10 @@
  */
 package com.googlecode.sparkleg;
 
-import java.util.List;
-import java.util.ArrayList;
 
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import org.stringtemplate.v4.*;
 
@@ -166,8 +165,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         ST selectClause = g.getInstanceOf("selectClause");
 
         for (ParseTree c : ctx.children) {
-            if (c instanceof ParseTree.TerminalNode) {
-                ParseTree.TerminalNode t = (ParseTree.TerminalNode) c;
+            if (c instanceof TerminalNode) {
+                TerminalNode t = (TerminalNode) c;
                 Token to = (Token) (t.getSymbol());
                 if (to.getType() == SparqlParser.ASTERISK) {
                     selectClause.add("ASTERISK", to.getText());
@@ -227,8 +226,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         ST describeQuery = g.getInstanceOf("describeQuery");
 
         for (ParseTree c : ctx.children) {
-            if (c instanceof ParseTree.TerminalNode) {
-                ParseTree.TerminalNode t = (ParseTree.TerminalNode) c;
+            if (c instanceof TerminalNode) {
+                TerminalNode t = (TerminalNode) c;
                 Token to = (Token) (t.getSymbol());
                 if (to.getType() == SparqlParser.ASTERISK) {
                     describeQuery.add("ASTERISK", to.getText());
@@ -1226,8 +1225,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
                 argList.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
             } else if (c instanceof SparqlParser.NilContext) {
                 argList.add("nil", visitNil((SparqlParser.NilContext) c));
-            } else if (c instanceof ParseTree.TerminalNode) {
-                ParseTree.TerminalNode t = (ParseTree.TerminalNode) c;
+            } else if (c instanceof TerminalNode) {
+                TerminalNode t = (TerminalNode) c;
                 Token to = (Token) (t.getSymbol());
                 if (to.getType() == SparqlParser.DISTINCT) {
                     argList.add("DISTINCT", to.getText().toUpperCase());
@@ -2003,8 +2002,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         ST additiveExpression = g.getInstanceOf("additiveExpression");
 
         for (ParseTree c : ctx.children) {
-            if (c instanceof ParseTree.TerminalNode) {
-                ParseTree.TerminalNode t = (ParseTree.TerminalNode) c;
+            if (c instanceof TerminalNode) {
+                TerminalNode t = (TerminalNode) c;
                 Token to = (Token) (t.getSymbol());
                 if (to.getType() == SparqlParser.PLUS || to.getType() == SparqlParser.MINUS) {
                     additiveExpression.add("additiveOperator", ((Token) (t.getSymbol())).getText());
@@ -2038,8 +2037,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         ST multiplicativeExpression = g.getInstanceOf("multiplicativeExpression");
 
         for (ParseTree c : ctx.children) {
-            if (c instanceof ParseTree.TerminalNode) {
-                ParseTree.TerminalNode t = (ParseTree.TerminalNode) c;
+            if (c instanceof TerminalNode) {
+                TerminalNode t = (TerminalNode) c;
                 multiplicativeExpression.add("operator", ((Token) (t.getSymbol())).getText());
             } else if (c instanceof SparqlParser.UnaryExpressionContext) {
                 multiplicativeExpression.add("unaryExpression", visitUnaryExpression((SparqlParser.UnaryExpressionContext) c));
