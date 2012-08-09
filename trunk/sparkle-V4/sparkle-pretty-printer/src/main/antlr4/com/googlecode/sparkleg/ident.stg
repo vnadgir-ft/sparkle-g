@@ -497,8 +497,7 @@ propertyListPathNotEmpty(verbPath, verbSimple, objectListPath, propertyListPathN
 >>
 
 propertyListPathNotEmptyList(verbPath, verbSimple, objectList) ::= <<
-;
-<if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif><objectList>
+;<\n><if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif><objectList>
 >>
 
 verbPath(path) ::= <<
@@ -537,8 +536,8 @@ pathEltOrInverse(INVERSE, pathElt) ::= <<
 <if(INVERSE)><INVERSE><endif><pathElt>
 >>
 
-pathMod(ASTERISK, QUESTION_MARK, PLUS, from, COMMA, to) ::= <<
-<if(ASTERISK)><ASTERISK><elseif(QUESTION_MARK)><QUESTION_MARK><elseif(PLUS)><PLUS><else>{<if(from)><from><if(to)>,<to><elseif(COMMA)><COMMA><endif><else><if(COMMA)><COMMA><endif><to><endif>}<endif>
+pathMod(QUESTION_MARK, ASTERISK, PLUS) ::= <<
+<if(ASTERISK)><ASTERISK><elseif(QUESTION_MARK)><QUESTION_MARK><elseif(PLUS)><PLUS><endif>
 >>
 
 pathPrimary(iri, A, pathNegatedPropertySet, path) ::= <<
