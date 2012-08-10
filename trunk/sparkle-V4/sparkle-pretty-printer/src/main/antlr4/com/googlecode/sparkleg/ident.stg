@@ -540,8 +540,8 @@ pathMod(QUESTION_MARK, ASTERISK, PLUS) ::= <<
 <if(ASTERISK)><ASTERISK><elseif(QUESTION_MARK)><QUESTION_MARK><elseif(PLUS)><PLUS><endif>
 >>
 
-pathPrimary(iri, A, pathNegatedPropertySet, path) ::= <<
-<if(iri)><iri><elseif(A)><A><elseif(pathNegatedPropertySet)>!<pathNegatedPropertySet><elseif(path)>(<path>)<endif>
+pathPrimary(iri, A, pathNegatedPropertySet, DISTINCT, path) ::= <<
+<if(iri)><iri><elseif(A)><A><elseif(pathNegatedPropertySet)>!<pathNegatedPropertySet><elseif(path)><if(DISTINCT)><keywordMap.DISTINCT> <endif>(<path>)<endif>
 >>
 
 pathNegatedPropertySet(pathOneInPropertySet) ::= <<
