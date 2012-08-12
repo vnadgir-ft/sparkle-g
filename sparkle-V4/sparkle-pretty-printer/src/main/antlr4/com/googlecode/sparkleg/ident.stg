@@ -485,7 +485,7 @@ object(graphNode) ::= <<
 >>
 
 triplesSameSubjectPath(varOrTerm, propertyListPathNotEmpty, triplesNodePath, propertyListPath) ::= <<
-<if(varOrTerm)><varOrTerm> <propertyListPathNotEmpty><elseif(triplesNodePath)><triplesNodePath:indent()><if(propertyListPath)> <propertyListPath><endif><endif>
+<if(varOrTerm)><varOrTerm> <propertyListPathNotEmpty; anchor><elseif(triplesNodePath)><triplesNodePath:indent()><if(propertyListPath)> <propertyListPath><endif><endif>
 >>
 
 propertyListPath(propertyListPathNotEmpty) ::= <<
@@ -493,11 +493,11 @@ propertyListPath(propertyListPathNotEmpty) ::= <<
 >>
 
 propertyListPathNotEmpty(verbPath, verbSimple, objectListPath, propertyListPathNotEmptyList) ::= <<
-<if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif> <objectListPath><propertyListPathNotEmptyList; separator=" ">
+<if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif> <objectListPath><if(propertyListPathNotEmptyList)>;<\n><propertyListPathNotEmptyList; separator=";<\n>"><endif>
 >>
 
 propertyListPathNotEmptyList(verbPath, verbSimple, objectList) ::= <<
-;<\n><if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif><objectList>
+<if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif><if(objectList)> <objectList><endif>
 >>
 
 verbPath(path) ::= <<

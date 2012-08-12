@@ -21,7 +21,6 @@
  */
 package com.googlecode.sparkleg;
 
-
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -1056,7 +1055,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         //  inlineDataOneVar | inlineDataFull
 
         ST dataBlock = g.getInstanceOf("dataBlock");
-        
+
         if (ctx.inlineDataOneVar() != null) {
             dataBlock.add("inlineDataOneVar", visitInlineDataOneVar(ctx.inlineDataOneVar()));
         } else if (ctx.inlineDataFull() != null) {
@@ -1418,18 +1417,21 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitPropertyListPathNotEmpty(SparqlParser.PropertyListPathNotEmptyContext ctx) {
         // propertyListPathNotEmpty :
-        //  (verbPath|verbSimple) objectListPath propertyListPathNotEmptyList*
+        //  (verbPath|verbSimple) objectListPath (SEMICOLON propertyListPathNotEmptyList)* SEMICOLON?
 
         ST propertyListPathNotEmpty = g.getInstanceOf("propertyListPathNotEmpty");
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.VerbPathContext) {
-                propertyListPathNotEmpty.add("verbPath", visitVerbPath((SparqlParser.VerbPathContext) c));
-            } else if (c instanceof SparqlParser.VerbSimpleContext) {
-                propertyListPathNotEmpty.add("verbSimple", visitVerbSimple((SparqlParser.VerbSimpleContext) c));
-            } else if (c instanceof SparqlParser.ObjectListPathContext) {
-                propertyListPathNotEmpty.add("objectListPath", visitObjectListPath((SparqlParser.ObjectListPathContext) c));
-            } else if (c instanceof SparqlParser.PropertyListPathNotEmptyListContext) {
+        if (ctx.verbPath() != null) {
+            propertyListPathNotEmpty.add("verbPath", visitVerbPath(ctx.verbPath()));
+        } else if (ctx.verbSimple() != null) {
+            propertyListPathNotEmpty.add("verbSimple", visitVerbSimple(ctx.verbSimple()));
+        }
+
+        propertyListPathNotEmpty.add("objectListPath", visitObjectListPath(ctx.objectListPath()));
+
+        for (int i = 3; i < ctx.getChildCount(); i++) {
+            ParseTree c = ctx.getChild(i);
+            if (c instanceof SparqlParser.PropertyListPathNotEmptyListContext) {
                 propertyListPathNotEmpty.add("propertyListPathNotEmptyList", visitPropertyListPathNotEmptyList((SparqlParser.PropertyListPathNotEmptyListContext) c));
             }
         }
@@ -1440,21 +1442,17 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitPropertyListPathNotEmptyList(SparqlParser.PropertyListPathNotEmptyListContext ctx) {
         // propertyListPathNotEmptyList :
-        //  SEMICOLON ((verbPath|verbSimple) objectList)?
+        //  (verbPath|verbSimple) objectList
 
         ST propertyListPathNotEmptyList = g.getInstanceOf("propertyListPathNotEmptyList");
 
         if (ctx.verbPath() != null) {
-            propertyListPathNotEmptyList.add("verbPath", ctx.verbPath());
+            propertyListPathNotEmptyList.add("verbPath", visitVerbPath(ctx.verbPath()));
+        } else if (ctx.verbSimple() != null) {
+            propertyListPathNotEmptyList.add("verbSimple", visitVerbSimple(ctx.verbSimple()));
         }
 
-        if (ctx.verbSimple() != null) {
-            propertyListPathNotEmptyList.add("verbSimple", ctx.verbSimple());
-        }
-
-        if (ctx.objectList() != null) {
-            propertyListPathNotEmptyList.add("objectList", ctx.objectList());
-        }
+        propertyListPathNotEmptyList.add("objectList", visitObjectList(ctx.objectList()));
 
         return propertyListPathNotEmptyList;
     }
