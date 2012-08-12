@@ -350,11 +350,11 @@ propertyListPath
     ;  
 
 propertyListPathNotEmpty
-    : (verbPath|verbSimple) objectListPath propertyListPathNotEmptyList*
+    : (verbPath|verbSimple) objectListPath (SEMICOLON propertyListPathNotEmptyList)* SEMICOLON?
     ;
 
 propertyListPathNotEmptyList
-    : SEMICOLON ((verbPath|verbSimple) objectList)?
+    : (verbPath|verbSimple) objectList
     ;
 
 verbPath
