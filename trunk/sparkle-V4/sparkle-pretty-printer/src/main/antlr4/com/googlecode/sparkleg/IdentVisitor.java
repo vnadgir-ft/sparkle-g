@@ -1074,7 +1074,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         if (ctx.children != null) {
             for (ParseTree c : ctx.children) {
-                if (c instanceof SparqlParser.DataBlockContext) {
+                if (c instanceof SparqlParser.DataBlockValueContext) {
                     inlineDataOneVar.add("dataBlockValue", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
                 } else if (c instanceof SparqlParser.VarContext) {
                     inlineDataOneVar.add("var", visitVar((SparqlParser.VarContext) c));

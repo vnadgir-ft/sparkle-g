@@ -46,12 +46,14 @@ keywordMap ::= [
                 "ALL":"ALL",
                 "ASC":"ASC",
                 "ASK":"ASK",
+                "AVG":"AVG",
                 "BASE":"BASE",
 				"BIND":"BIND",
 				"BINDINGS":"BINDINGS",
 				"CLEAR":"CLEAR",
 				"CONSTRUCT":"CONSTRUCT",
 				"COPY":"COPY",
+				"COUNT":"COUNT",
 				"CREATE":"CREATE",
 				"DATA":"DATA",
 				"DEFAULT":"DEFAULT",
@@ -64,11 +66,14 @@ keywordMap ::= [
 				"FROM":"FROM",
 				"GRAPH":"GRAPH",
 				"GROUP_BY":"GROUP BY",
+				"GROUP_CONCAT":"GROUP_CONCAT",
 				"HAVING":"HAVING",
 				"INSERT":"INSERT",
 				"INTO":"INTO",
 				"LOAD":"LOAD",
 				"LIMIT":"LIMIT",
+				"MAX":"MAX",
+				"MIN":"MIN",
 				"MINUS":"MINUS",
 				"MOVE":"MOVE",
 				"NAMED":"NAMED",
@@ -77,9 +82,11 @@ keywordMap ::= [
 				"ORDER_BY":"ORDER BY",
 				"PREFIX":"PREFIX",
 				"REDUCED":"REDUCED",
+				"SAMPLE":"SAMPLE",
                 "SELECT":"SELECT",
                 "SERVICE":"SERVICE",
                 "SILENT":"SILENT",
+				"SUM":"SUM",
                 "TO":"TO",
                 "UNDEF":"UNDEF",
                 "UNION":"UNION",
@@ -155,7 +162,7 @@ builtInMap ::= [
 indent(line) ::= "   <line>"
 
 query(prologue, selectQuery, constructQuery, describeQuery, askQuery, valuesClause, update) ::= <<
-<if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(valuesClause)><valuesClause><endif><else><update; separator=" ;\n"><endif>
+<if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(valuesClause)><valuesClause><endif><else><update; separator=";\n"><endif>
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
@@ -297,7 +304,7 @@ deleteWhere(quadPattern) ::= <<
 >>
 
 modify(iri, deleteClause, insertClause, usingClause, groupGraphPattern) ::= <<
-<if(iri)><keywordMap.WITH> <iri><\n><endif><if(deleteClause)><deleteClause><if(insertClause)><\n><insertClause><\n><endif><else><insertClause><\n><endif><if(usingClause)><\n><usingClause; wrap, separator="\n"><endif><\n><keywordMap.WHERE> {<\n><groupGraphPattern:indent()><\n>}
+<if(iri)><keywordMap.WITH> <iri><\n><endif><if(deleteClause)><deleteClause><if(insertClause)><\n><insertClause><\n><endif><else><insertClause><endif><if(usingClause)><\n><usingClause; wrap, separator="\n"><endif><\n><keywordMap.WHERE> {<\n><groupGraphPattern:indent()><\n>}
 >>
 
 deleteClause(quadPattern) ::= <<
@@ -396,8 +403,8 @@ bind(expression, var) ::= <<
 <keywordMap.BIND>(<expression> <keywordMap.AS> <var>)
 >>
 
-inlineData(datablock) ::= <<
-<keywordMap.VALUES> <datablock>
+inlineData(dataBlock) ::= <<
+<keywordMap.VALUES; anchor> <dataBlock>
 >>
 
 dataBlock(inlineDataOneVar, inlineDataFull) ::= <<
@@ -409,11 +416,11 @@ inlineDataOneVar(var, dataBlockValue) ::= <<
 >>
 
 inlineDataFull(var, dataBlockValues) ::= <<
-( <var; separator="\n"> ) { <dataBlockValues; separator="\n"> }
+( <var; anchor, wrap, separator="\n"> ) {<\n><dataBlockValues:indent(); anchor, wrap, separator="\n"><\n>}
 >>
 
 dataBlockValues(dataBlockValue) ::= <<
-( <dataBlockValue; separator="\n"> )
+( <dataBlockValue; anchor, wrap, separator=" "> )
 >>
 
 dataBlockValue(iri, rdfLiteral, numericLiteral, booleanLiteral, UNDEF) ::= <<
@@ -477,7 +484,7 @@ verb(varOrIRI, A) ::= <<
 >>
 
 objectList(object) ::= <<
-<object; wrap, anchor, separator=" ,\n">
+<object; wrap, anchor, separator=",\n">
 >>
 
 object(graphNode) ::= <<
@@ -873,7 +880,7 @@ notExistsFunction(groupGraphPattern) ::= <<
 >>
 
 aggregate(operation, attribute, whatever, expression, string) ::= <<
-<operation>(<if(attribute)><attribute><endif><if(whatever)> <whatever><endif><if(expression)><expression><endif><if(string)>; SEPARATOR=<string><endif>)
+<keywordMap.(operation)>(<if(attribute)><attribute><endif><if(whatever)><whatever><endif><if(expression)><expression><endif><if(string)>; SEPARATOR=<string><endif>)
 >>
 
 iriRefOrFunction(iri, argList) ::= <<
