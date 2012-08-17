@@ -46,14 +46,12 @@ keywordMap ::= [
                 "ALL":"ALL",
                 "ASC":"ASC",
                 "ASK":"ASK",
-                "AVG":"AVG",
                 "BASE":"BASE",
 				"BIND":"BIND",
 				"BINDINGS":"BINDINGS",
 				"CLEAR":"CLEAR",
 				"CONSTRUCT":"CONSTRUCT",
 				"COPY":"COPY",
-				"COUNT":"COUNT",
 				"CREATE":"CREATE",
 				"DATA":"DATA",
 				"DEFAULT":"DEFAULT",
@@ -72,8 +70,6 @@ keywordMap ::= [
 				"INTO":"INTO",
 				"LOAD":"LOAD",
 				"LIMIT":"LIMIT",
-				"MAX":"MAX",
-				"MIN":"MIN",
 				"MINUS":"MINUS",
 				"MOVE":"MOVE",
 				"NAMED":"NAMED",
@@ -82,11 +78,9 @@ keywordMap ::= [
 				"ORDER_BY":"ORDER BY",
 				"PREFIX":"PREFIX",
 				"REDUCED":"REDUCED",
-				"SAMPLE":"SAMPLE",
                 "SELECT":"SELECT",
                 "SERVICE":"SERVICE",
                 "SILENT":"SILENT",
-				"SUM":"SUM",
                 "TO":"TO",
                 "UNDEF":"UNDEF",
                 "UNION":"UNION",
@@ -99,17 +93,20 @@ keywordMap ::= [
 
 builtInMap ::= [
                 "ABS":"abs",
+                "AVG":"avg",
                 "BNODE":"bnode",
                 "BOUND":"bound",
                 "CEIL":"ceil",
                 "COALESCE":"coalesce",
                 "CONCAT":"concat",
                 "CONTAINS":"contains",
+                "COUNT":"count",
                 "DATATYPE":"datatype",
                 "DAY":"day",
                 "ENCODE_FOR_URI":"encode_for_uri",
                 "EXISTS":"exists",
                 "FLOOR":"floor",
+                "GROUP_CONCAT":"group_concat",
                 "HOURS":"hours",
                 "IF":"if",
                 "IRI":"iri",
@@ -121,7 +118,9 @@ builtInMap ::= [
                 "LANG":"lang",
                 "LANGMATCHES":"langmatches",
                 "LCASE":"lcase",
+                "MAX":"max",
                 "MD5":"md5",
+                "MIN":"min",
                 "MINUTES":"minutes",
                 "MONTH":"month",
                 "NOT_EXISTS":"not exists",
@@ -131,6 +130,7 @@ builtInMap ::= [
                 "REPLACE":"replace",
                 "ROUND":"round",
                 "SAMETERM":"sameterm",
+                "SAMPLE":"sample",
                 "SECONDS":"seconds",
                 "SHA1":"sha1",
                 "SHA256":"sha256",
@@ -146,6 +146,7 @@ builtInMap ::= [
                 "STRSTARTS":"strstarts",
                 "STRUUID":"struuid",
                 "SUBSTR":"substr",
+                "SUM":"sum",
                 "TIMEZONE":"timezone",
                 "TZ":"tz",
                 "UCASE":"ucase",
@@ -211,7 +212,7 @@ datasetClause(NAMED, iri) ::= <<
 
 whereClause(groupGraphPattern) ::= <<
 <keywordMap.WHERE> {
-<groupGraphPattern:indent()> 
+<if(groupGraphPattern)><groupGraphPattern:indent()><endif>
 }
 >>
 
@@ -220,7 +221,7 @@ solutionModifier(groupClause, havingClause, orderClause, limitOffsetClauses) ::=
 >>
 
 groupClause(groupCondition) ::= <<
-<keywordMap.GROUP_BY> <groupCondition; separator="\n">
+<keywordMap.GROUP_BY> <groupCondition; wrap, anchor, separator="\n">
 >>
 
 groupCondition(builtInCall, functionCall, expression, var) ::= <<
@@ -304,7 +305,7 @@ deleteWhere(quadPattern) ::= <<
 >>
 
 modify(iri, deleteClause, insertClause, usingClause, groupGraphPattern) ::= <<
-<if(iri)><keywordMap.WITH> <iri><\n><endif><if(deleteClause)><deleteClause><if(insertClause)><\n><insertClause><\n><endif><else><insertClause><endif><if(usingClause)><\n><usingClause; wrap, separator="\n"><endif><\n><keywordMap.WHERE> {<\n><groupGraphPattern:indent()><\n>}
+<if(iri)><keywordMap.WITH> <iri><\n><endif><if(deleteClause)><deleteClause><if(insertClause)><\n><insertClause><endif><else><insertClause><endif><if(usingClause)><\n><usingClause; wrap, separator="\n"><endif><\n><keywordMap.WHERE> {<\n><groupGraphPattern:indent()><\n>}
 >>
 
 deleteClause(quadPattern) ::= <<
@@ -412,11 +413,11 @@ dataBlock(inlineDataOneVar, inlineDataFull) ::= <<
 >>
 
 inlineDataOneVar(var, dataBlockValue) ::= <<
-<var> { <dataBlockValue; separator="\n"> }
+<var> {<dataBlockValue; separator="\n">}
 >>
 
 inlineDataFull(var, dataBlockValues) ::= <<
-( <var; anchor, wrap, separator="\n"> ) {<\n><dataBlockValues:indent(); anchor, wrap, separator="\n"><\n>}
+(<var; anchor, wrap, separator="\n">) {<\n><dataBlockValues:indent(); anchor, wrap, separator="\n"><\n>}
 >>
 
 dataBlockValues(dataBlockValue) ::= <<
@@ -456,7 +457,7 @@ argList(DISTINCT, expression, nil) ::= <<
 >>
 
 expressionList(nil, expression) ::= <<
-<if(expression)>(<expression; wrap, separator=", ">)<elseif(nil)><nil><endif>
+<if(expression)>(<expression; anchor, wrap, separator=", ">)<elseif(nil)><nil><endif>
 >>
 
 constructTemplate(constructTriples) ::= <<
@@ -880,7 +881,7 @@ notExistsFunction(groupGraphPattern) ::= <<
 >>
 
 aggregate(operation, attribute, whatever, expression, string) ::= <<
-<keywordMap.(operation)>(<if(attribute)><attribute><endif><if(whatever)><whatever><endif><if(expression)><expression><endif><if(string)>; SEPARATOR=<string><endif>)
+<builtInMap.(operation)>(<if(attribute)><attribute><endif><if(whatever)><whatever><endif><if(expression)><expression><endif><if(string)>; SEPARATOR=<string><endif>)
 >>
 
 iriRefOrFunction(iri, argList) ::= <<
