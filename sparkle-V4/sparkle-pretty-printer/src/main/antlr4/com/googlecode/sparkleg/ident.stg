@@ -92,67 +92,67 @@ keywordMap ::= [
                ]
 
 builtInMap ::= [
-                "ABS":"abs",
-                "AVG":"avg",
-                "BNODE":"bnode",
-                "BOUND":"bound",
-                "CEIL":"ceil",
-                "COALESCE":"coalesce",
-                "CONCAT":"concat",
-                "CONTAINS":"contains",
-                "COUNT":"count",
-                "DATATYPE":"datatype",
-                "DAY":"day",
-                "ENCODE_FOR_URI":"encode_for_uri",
-                "EXISTS":"exists",
-                "FLOOR":"floor",
-                "GROUP_CONCAT":"group_concat",
-                "HOURS":"hours",
-                "IF":"if",
-                "IRI":"iri",
-                "ISBLANK":"isblank",
-                "ISIRI":"isiri",
-                "ISLITERAL":"isliteral",
-                "ISNUMERIC":"isnumeric",
-                "ISURI":"isuri",
-                "LANG":"lang",
-                "LANGMATCHES":"langmatches",
-                "LCASE":"lcase",
-                "MAX":"max",
-                "MD5":"md5",
-                "MIN":"min",
-                "MINUTES":"minutes",
-                "MONTH":"month",
-                "NOT_EXISTS":"not exists",
-                "NOW":"now",
-                "RAND":"rand",
-                "REGEX":"regex",
-                "REPLACE":"replace",
-                "ROUND":"round",
-                "SAMETERM":"sameterm",
-                "SAMPLE":"sample",
-                "SECONDS":"seconds",
-                "SHA1":"sha1",
-                "SHA256":"sha256",
-                "SHA384":"sha384",
-                "SHA512":"sha512",
-                "STR":"str",
-                "STRAFTER":"strafter",
-                "STRBEFORE":"strbefore",
-                "STRDT":"strdt",
-                "STRENDS":"strends",
-                "STRLANG":"strlang",
-                "STRLEN":"strlen",
-                "STRSTARTS":"strstarts",
-                "STRUUID":"struuid",
-                "SUBSTR":"substr",
-                "SUM":"sum",
-                "TIMEZONE":"timezone",
-                "TZ":"tz",
-                "UCASE":"ucase",
-                "URI":"uri",
-                "UUID":"uuid",
-                "YEAR":"year",
+                "ABS":"Abs",
+                "AVG":"Avg",
+                "BNODE":"Bnode",
+                "BOUND":"Bound",
+                "CEIL":"Ceil",
+                "COALESCE":"Coalesce",
+                "CONCAT":"Concat",
+                "CONTAINS":"Contains",
+                "COUNT":"Count",
+                "DATATYPE":"Datatype",
+                "DAY":"Day",
+                "ENCODE_FOR_URI":"Encode_For_Uri",
+                "EXISTS":"Exists",
+                "FLOOR":"Floor",
+                "GROUP_CONCAT":"Group_Concat",
+                "HOURS":"Hours",
+                "IF":"If",
+                "IRI":"Iri",
+                "ISBLANK":"Isblank",
+                "ISIRI":"Isiri",
+                "ISLITERAL":"Isliteral",
+                "ISNUMERIC":"Isnumeric",
+                "ISURI":"Isuri",
+                "LANG":"Lang",
+                "LANGMATCHES":"Langmatches",
+                "LCASE":"Lcase",
+                "MAX":"Max",
+                "MD5":"Md5",
+                "MIN":"Min",
+                "MINUTES":"Minutes",
+                "MONTH":"Month",
+                "NOT_EXISTS":"Not Exists",
+                "NOW":"Now",
+                "RAND":"Rand",
+                "REGEX":"Regex",
+                "REPLACE":"Replace",
+                "ROUND":"Round",
+                "SAMETERM":"Sameterm",
+                "SAMPLE":"Sample",
+                "SECONDS":"Seconds",
+                "SHA1":"Sha1",
+                "SHA256":"Sha256",
+                "SHA384":"Sha384",
+                "SHA512":"Sha512",
+                "STR":"Str",
+                "STRAFTER":"Strafter",
+                "STRBEFORE":"Strbefore",
+                "STRDT":"StrDt",
+                "STRENDS":"Strends",
+                "STRLANG":"Strlang",
+                "STRLEN":"Strlen",
+                "STRSTARTS":"Strstarts",
+                "STRUUID":"Struuid",
+                "SUBSTR":"Substr",
+                "SUM":"Sum",
+                "TIMEZONE":"Timezone",
+                "TZ":"Tz",
+                "UCASE":"Ucase",
+                "URI":"Uri",
+                "UUID":"Uuid",
+                "YEAR":"Year",
                 default:"+++ERROR+++" // not a built in function
                ]
 
@@ -421,7 +421,7 @@ inlineDataFull(var, dataBlockValues) ::= <<
 >>
 
 dataBlockValues(dataBlockValue) ::= <<
-( <dataBlockValue; anchor, wrap, separator=" "> )
+(<dataBlockValue; anchor, wrap, separator=" ">)
 >>
 
 dataBlockValue(iri, rdfLiteral, numericLiteral, booleanLiteral, UNDEF) ::= <<
@@ -441,11 +441,11 @@ groupOrUnionGraphPattern(groupGraphPattern) ::= <<
 >>
 
 filter(constraint) ::= <<
-<keywordMap.FILTER> <constraint>
+<keywordMap.FILTER><constraint; anchor>
 >>
 
 constraint(brackettedExpression, builtInCall, functionCall) ::= <<
-<if(brackettedExpression)><brackettedExpression><elseif(builtInCall)><builtInCall><elseif(functionCall)><functionCall><endif>
+<if(brackettedExpression)><brackettedExpression; wrap><elseif(builtInCall)><builtInCall; wrap><elseif(functionCall)><functionCall><endif>
 >>
 
 functionCall(iri, argList) ::= <<
@@ -617,7 +617,7 @@ nil() ::= <<
 >>
 
 expression(conditionalOrExpression) ::= <<
-<conditionalOrExpression>
+<conditionalOrExpression; wrap>
 >>
 
 conditionalOrExpression(conditionalAndExpression) ::= <<
