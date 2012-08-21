@@ -501,7 +501,7 @@ propertyListPath(propertyListPathNotEmpty) ::= <<
 >>
 
 propertyListPathNotEmpty(verbPath, verbSimple, objectListPath, propertyListPathNotEmptyList) ::= <<
-<if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif> <objectListPath><if(propertyListPathNotEmptyList)>;<\n><propertyListPathNotEmptyList; separator=";<\n>"><endif>
+<if(verbPath)><verbPath><elseif(verbSimple)><verbSimple><endif> <objectListPath><if(propertyListPathNotEmptyList)>;<\n><propertyListPathNotEmptyList; separator=";\n"><endif>
 >>
 
 propertyListPathNotEmptyList(verbPath, verbSimple, objectList) ::= <<
