@@ -47,7 +47,7 @@ baseDecl
 
 prefixDecl
     : PREFIX PNAME_NS IRIREF
-        ;
+    ;
 
 selectQuery
     : selectClause datasetClause* whereClause solutionModifier
@@ -194,7 +194,7 @@ graphRef
     ;
 
 graphRefAll
-    : graphRef | DEFAULT | NAMED | ALL
+    : graphRef | (DEFAULT | NAMED | ALL)
     ;
 
 quadPattern
