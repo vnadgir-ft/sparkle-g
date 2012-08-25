@@ -1361,12 +1361,13 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         ST objectList = g.getInstanceOf("objectList");
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ObjectContext) {
-                objectList.add("object", visitObject((SparqlParser.ObjectContext) c));
+        if (ctx != null) {
+            for (ParseTree c : ctx.children) {
+                if (c instanceof SparqlParser.ObjectContext) {
+                    objectList.add("object", visitObject((SparqlParser.ObjectContext) c));
+                }
             }
         }
-
         return objectList;
     }
 
@@ -1488,12 +1489,13 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         ST objectListPath = g.getInstanceOf("objectListPath");
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ObjectPathContext) {
-                objectListPath.add("objectPath", visitObjectPath((SparqlParser.ObjectPathContext) c));
+        if (ctx != null) {
+            for (ParseTree c : ctx.children) {
+                if (c instanceof SparqlParser.ObjectPathContext) {
+                    objectListPath.add("objectPath", visitObjectPath((SparqlParser.ObjectPathContext) c));
+                }
             }
         }
-
         return objectListPath;
     }
 
