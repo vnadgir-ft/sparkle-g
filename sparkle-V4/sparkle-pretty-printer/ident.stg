@@ -162,8 +162,8 @@ builtInMap ::= [
  */ 
 indent(line) ::= "   <line>"
 
-query(prologue, selectQuery, constructQuery, describeQuery, askQuery, valuesClause, update) ::= <<
-<if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(valuesClause)><valuesClause><endif><else><update; separator=";\n"><endif>
+query(prologue, selectQuery, constructQuery, describeQuery, askQuery, valuesClause, updateCommand) ::= <<
+<if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(valuesClause)><valuesClause><endif><else><updateCommand><endif>
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
@@ -260,8 +260,12 @@ valuesClause(dataBlock) ::= <<
 <if(dataBlock)><\n><keywordMap.VALUES> <dataBlock><endif>
 >>
 
-update(prologue, load, clear, drop, add, move, copy, create, insertData, deleteData, deleteWhere, modify) ::= <<
-<if(prologue)><prologue><endif><if(load)><load><elseif(clear)><clear><elseif(drop)><drop><elseif(add)><add><elseif(move)><move><elseif(copy)><copy><elseif(create)><create><elseif(insertData)><insertData><elseif(deleteData)><deleteData><elseif(deleteWhere)><deleteWhere><elseif(modify)><modify><endif>
+updateCommand(prologue, update, updateCommand) ::= <<
+<if(prologue)><prologue><if(update)> <update><if(updateCommand)>;<updateCommand><endif><endif><endif>
+>>
+
+update(load, clear, drop, add, move, copy, create, insertData, deleteData, deleteWhere, modify) ::= <<
+<if(load)><load><elseif(clear)><clear><elseif(drop)><drop><elseif(add)><add><elseif(move)><move><elseif(copy)><copy><elseif(create)><create><elseif(insertData)><insertData><elseif(deleteData)><deleteData><elseif(deleteWhere)><deleteWhere><elseif(modify)><modify><endif>
 >>
 
 load(SILENT, iri, graphRef) ::= <<
@@ -445,7 +449,7 @@ filter(constraint) ::= <<
 >>
 
 constraint(brackettedExpression, builtInCall, functionCall) ::= <<
-<if(brackettedExpression)><brackettedExpression; wrap><elseif(builtInCall)><builtInCall; wrap><elseif(functionCall)><functionCall><endif>
+<if(brackettedExpression)><brackettedExpression; wrap><elseif(builtInCall)> <builtInCall; wrap><elseif(functionCall)><functionCall><endif>
 >>
 
 functionCall(iri, argList) ::= <<
