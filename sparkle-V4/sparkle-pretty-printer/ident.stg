@@ -186,12 +186,12 @@ subSelect(selectClause, whereClause, solutionModifier, valuesClause) ::= <<
 <if(selectClause)><selectClause><\n><endif><if(whereClause)><whereClause><endif><if(solutionModifier)><solutionModifier><endif><if(valuesClause)><valuesClause><endif>
 >>
 
-selectClause(attribute, ASTERISK, expression, var) ::= <<
-<keywordMap.SELECT> <if(attribute)><keywordMap.(attribute)> <endif><if(ASTERISK)><ASTERISK><else><selectVariables(expression, var)><endif>
+selectClause(attribute, ASTERISK, selectVariables) ::= <<
+<keywordMap.SELECT> <if(attribute)><keywordMap.(attribute)> <endif><if(ASTERISK)><ASTERISK><else><selectVariables; anchor, separator="\n"><endif>
 >>
 
 selectVariables(expression, var) ::= <<
-<expression, var : {e, v| <if(e)>(<e> AS <endif><v><if(e)>)<endif>}; anchor, wrap, separator = "\n">
+<if(expression)>(<expression> AS <var>)<else><var><endif>
 >>
 
 constructQuery(constructTemplate, datasetClause, whereClause, triplesTemplate, solutionModifier) ::= <<
@@ -881,7 +881,7 @@ notExistsFunction(groupGraphPattern) ::= <<
 >>
 
 aggregate(operation, attribute, whatever, expression, string) ::= <<
-<builtInMap.(operation)>(<if(attribute)><attribute><endif><if(whatever)><whatever><endif><if(expression)><expression><endif><if(string)>; SEPARATOR=<string><endif>)
+<builtInMap.(operation)>(<if(attribute)><attribute> <endif><if(whatever)><whatever><endif><if(expression)><expression><endif><if(string)>; SEPARATOR=<string><endif>)
 >>
 
 iriRefOrFunction(iri, argList) ::= <<
