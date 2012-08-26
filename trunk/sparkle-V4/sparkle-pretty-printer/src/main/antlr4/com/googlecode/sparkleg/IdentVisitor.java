@@ -154,12 +154,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitSelectClause(SparqlParser.SelectClauseContext ctx) {
         // selectClause :
-        //   SELECT (DISTINCT | REDUCED)? ((var| OPEN_BRACE expression AS var CLOSE_BRACE)+ | ASTERISK)
-
-        final int EXPRESSION = 1;
-        final int VAR = EXPRESSION + 1;
-
-        int status = VAR;
+        //   SELECT (DISTINCT | REDUCED)? (selectVariables+ | ASTERISK)
 
         ST selectClause = g.getInstanceOf("selectClause");
 
@@ -173,24 +168,30 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
                     selectClause.add("attribute", to.getText().toUpperCase());
                 } else if (to.getType() == SparqlParser.REDUCED) {
                     selectClause.add("attribute", to.getText().toUpperCase());
-                } else if (to.getType() == SparqlParser.OPEN_BRACE) {
-                    status = EXPRESSION;
-                } else if (to.getType() == SparqlParser.CLOSE_BRACE) {
-                    status = VAR;
                 }
-            }
-
-            if (c instanceof SparqlParser.VarContext) {
-                if (status == VAR) {
-                    selectClause.add("expression", (SparqlParser.ExpressionContext) null);
-                }
-                selectClause.add("var", visitVar((SparqlParser.VarContext) c));
-            } else if (c instanceof SparqlParser.ExpressionContext) {
-                selectClause.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
+            } else if (c instanceof SparqlParser.SelectVariablesContext) {
+                selectClause.add("selectVariables", visitSelectVariables((SparqlParser.SelectVariablesContext) c));
             }
         }
 
         return selectClause;
+    }
+
+    @Override
+    public ST visitSelectVariables(SparqlParser.SelectVariablesContext ctx) {
+        // selectVariables :
+        //  var | OPEN_BRACE expression AS var CLOSE_BRACE
+
+        ST selectVariables = g.getInstanceOf("selectVariables");
+
+        if (ctx.expression() != null ) {
+            selectVariables.add("expression", visitExpression(ctx.expression()));
+        }
+        if (ctx.var() != null){
+            selectVariables.add("var", visitVar(ctx.var()));
+        }
+
+        return selectVariables;
     }
 
     @Override
