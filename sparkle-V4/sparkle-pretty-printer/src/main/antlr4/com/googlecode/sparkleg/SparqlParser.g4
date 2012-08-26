@@ -58,7 +58,12 @@ subSelect
     ;
     	
 selectClause
-    : SELECT (DISTINCT | REDUCED)? ((var| OPEN_BRACE expression AS var CLOSE_BRACE)+ | ASTERISK)
+    : SELECT (DISTINCT | REDUCED)? (selectVariables+ | ASTERISK)
+    ;
+
+selectVariables
+    : var
+    | OPEN_BRACE expression AS var CLOSE_BRACE
     ;
 
 constructQuery
