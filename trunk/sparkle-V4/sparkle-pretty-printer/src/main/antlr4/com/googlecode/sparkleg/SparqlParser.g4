@@ -34,7 +34,7 @@ package com.googlecode.sparkleg;
 
 query
     : prologue (selectQuery | constructQuery | describeQuery | askQuery) valuesClause EOF
-    | update (SEMICOLON update)* SEMICOLON? EOF
+    | updateCommand EOF
     ;
 
 prologue
@@ -130,8 +130,12 @@ valuesClause
     : (VALUES dataBlock)?
     ;
     
+updateCommand
+    : prologue (update (SEMICOLON updateCommand)?)?
+    ;
+
 update
-    : prologue (load | clear | drop | add | move | copy | create | insertData | deleteData | deleteWhere | modify)
+    : load | clear | drop | add | move | copy | create | insertData | deleteData | deleteWhere | modify
     ;   
     
 load 	  

@@ -58,9 +58,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
             query.add("valuesClause", visitValuesClause(ctx.valuesClause()));
         } else {
-            for (SparqlParser.UpdateContext update : ctx.update()) {
-                query.add("update", visitUpdate(update));
-            }
+            query.add("updateCommand", visitUpdateCommand(ctx.updateCommand()));
         }
 
         return query;
@@ -481,14 +479,31 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
         return valuesClause;
     }
 
+        @Override
+    public ST visitUpdateCommand(SparqlParser.UpdateCommandContext ctx) {
+        // updateCommand :
+        //  prologue (update (SEMICOLON updateCommand)?)?
+
+        ST updateCommand = g.getInstanceOf("updateCommand");
+
+        updateCommand.add("prologue", visitPrologue(ctx.prologue()));
+        
+        if ( ctx.update() != null ) {
+            updateCommand.add("update", visitUpdate(ctx.update()));
+            if ( ctx.updateCommand() != null ) {
+                updateCommand.add("updateCommand", visitUpdateCommand(ctx.updateCommand()));
+            }
+        }
+
+        return updateCommand;
+    }
+        
     @Override
     public ST visitUpdate(SparqlParser.UpdateContext ctx) {
         // update :
-        //   prologue (load | clear | drop | add | move | copy | create | insertData | deleteData | deleteWhere | modify)
+        //   load | clear | drop | add | move | copy | create | insertData | deleteData | deleteWhere | modify
 
         ST update = g.getInstanceOf("update");
-
-        update.add("prologue", visitPrologue(ctx.prologue()));
 
         if (ctx.load() != null) {
             update.add("load", visitLoad(ctx.load()));
