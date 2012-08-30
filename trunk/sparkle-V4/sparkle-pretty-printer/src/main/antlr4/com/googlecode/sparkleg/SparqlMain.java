@@ -15,12 +15,11 @@
  */
 
 /**
- * @author Simone Tripodi   (simone.tripodi)
+ * @author Simone Tripodi (simone.tripodi)
  * @author Michele Mostarda (michele.mostarda)
- * @author Juergen Pfundt   (Juergen.Pfundt)
+ * @author Juergen Pfundt (Juergen.Pfundt)
  * @version $Id: Sparql.g 523 2012-02-17 23:10:57Z Juergen.Pfundt@gmail.com $
  */
- 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -41,7 +40,9 @@ public class SparqlMain {
         CommonTokenStream tokens = new CommonTokenStream(lex);
 
         System.out.println("Tokens: -------------------------------");
-        System.out.println(tokens.toString());
+		
+		tokens.fill();
+		System.out.println("Number of tokens "+tokens.getTokens().size());
 
         List tokenList = tokens.getTokens();
 
@@ -51,31 +52,40 @@ public class SparqlMain {
             Token t = (Token) it.next();
             System.out.println(t.toString());
         }
+        System.out.flush();
 
         SparqlParser parser = new SparqlParser(tokens);
         parser.setBuildParseTree(true);
 
         ParserRuleContext<Token> t = parser.query();
 
+        System.out.flush();
         System.out.println("Parse tree: -------------------------------");
         System.out.println(t.toStringTree(parser));
 
-        ParseTreeWalker walker = new ParseTreeWalker();
+        // visualize parse tree in dialog box 
+        // t.inspect(parser);
+		
+        if (parser.getNumberOfSyntaxErrors() <= 0) {
 
-        String groupFile = "ident.stg";
-        if (args.length > 1 ) {
-            groupFile = args[1];
+            //ParseTreeWalker walker = new ParseTreeWalker();
+
+            String groupFile = "ident.stg";
+            if (args.length > 1) {
+                groupFile = args[1];
+            }
+            System.out.println("Read StringTemplate Group File: " + groupFile + "-------------------------------");
+
+            STGroup g = new STGroupFile(groupFile);
+            IdentVisitor visitor = new IdentVisitor();
+            visitor.setSTGroup(g);
+            ST query = visitor.visit(t);
+
+            System.out.println("Emit reformatted query: -------------------------------");
+
+            System.out.println(query.render());
         }
-        System.out.println("Read StringTemplate Group File: "+groupFile+"-------------------------------");
-
-        STGroup g = new STGroupFile(groupFile);
-        IdentVisitor visitor = new IdentVisitor();
-        visitor.setSTGroup(g);
-        ST query = visitor.visit(t);
-
-        System.out.println("Emit reformatted query: -------------------------------");
-        
-        System.out.println(query.render());
         System.out.println("-------------------------------");
+        System.out.println("Number of errors encountered: " + parser.getNumberOfSyntaxErrors());
     }
 }
