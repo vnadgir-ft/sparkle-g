@@ -47,37 +47,37 @@ keywordMap ::= [
                 "ASC":"ASC",
                 "ASK":"ASK",
                 "BASE":"BASE",
-				"BIND":"BIND",
-				"BINDINGS":"BINDINGS",
-				"CLEAR":"CLEAR",
-				"CONSTRUCT":"CONSTRUCT",
-				"COPY":"COPY",
-				"CREATE":"CREATE",
-				"DATA":"DATA",
-				"DEFAULT":"DEFAULT",
-				"DELETE":"DELETE",
-				"DESC":"DESC",
-				"DESCRIBE":"DESCRIBE",
-				"DISTINCT":"DISTINCT",
-				"DROP":"DROP",
-				"FILTER":"FILTER",
-				"FROM":"FROM",
-				"GRAPH":"GRAPH",
-				"GROUP_BY":"GROUP BY",
-				"GROUP_CONCAT":"GROUP_CONCAT",
-				"HAVING":"HAVING",
-				"INSERT":"INSERT",
-				"INTO":"INTO",
-				"LOAD":"LOAD",
-				"LIMIT":"LIMIT",
-				"MINUS":"MINUS",
-				"MOVE":"MOVE",
-				"NAMED":"NAMED",
-				"OFFSET":"OFFSET",
-				"OPTIONAL":"OPTIONAL",
-				"ORDER_BY":"ORDER BY",
-				"PREFIX":"PREFIX",
-				"REDUCED":"REDUCED",
+		"BIND":"BIND",
+		"BINDINGS":"BINDINGS",
+		"CLEAR":"CLEAR",
+		"CONSTRUCT":"CONSTRUCT",
+		"COPY":"COPY",
+		"CREATE":"CREATE",
+		"DATA":"DATA",
+		"DEFAULT":"DEFAULT",
+		"DELETE":"DELETE",
+		"DESC":"DESC",
+		"DESCRIBE":"DESCRIBE",
+		"DISTINCT":"DISTINCT",
+		"DROP":"DROP",
+		"FILTER":"FILTER",
+		"FROM":"FROM",
+		"GRAPH":"GRAPH",
+		"GROUP_BY":"GROUP BY",
+		"GROUP_CONCAT":"GROUP_CONCAT",
+		"HAVING":"HAVING",
+		"INSERT":"INSERT",
+		"INTO":"INTO",
+		"LOAD":"LOAD",
+		"LIMIT":"LIMIT",
+		"MINUS":"MINUS",
+		"MOVE":"MOVE",
+		"NAMED":"NAMED",
+		"OFFSET":"OFFSET",
+		"OPTIONAL":"OPTIONAL",
+		"ORDER_BY":"ORDER BY",
+		"PREFIX":"PREFIX",
+		"REDUCED":"REDUCED",
                 "SELECT":"SELECT",
                 "SERVICE":"SERVICE",
                 "SILENT":"SILENT",
@@ -163,11 +163,11 @@ builtInMap ::= [
 indent(line) ::= "   <line>"
 
 query(prologue, selectQuery, constructQuery, describeQuery, askQuery, valuesClause, updateCommand) ::= <<
-<if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(valuesClause)><valuesClause><endif><else><updateCommand><endif>
+<if(prologue)><prologue><\n><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(valuesClause)><valuesClause><endif><else><updateCommand><endif>
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
-<baseDecl; separator="\n"><if(baseDecl)><\n><endif><prefixDecl; separator="\n"><if(prefixDecl)><\n><endif><if(baseDecl || prefixDecl)><\n><endif>
+<baseDecl; separator="\n"><if(baseDecl)><\n><endif><prefixDecl; separator="\n"><if(prefixDecl)><\n><endif><if(baseDecl || prefixDecl)><endif>
 >>
 
 baseDecl(iriref) ::= <<
@@ -195,7 +195,7 @@ selectVariables(expression, var) ::= <<
 >>
 
 constructQuery(constructTemplate, datasetClause, whereClause, triplesTemplate, solutionModifier) ::= <<
-<keywordMap.CONSTRUCT> <if(constructTemplate)>{<\n><constructTemplate><\n>}<if(datasetClause)><\n><datasetClause; separator="\n"><endif><\n><whereClause><if(solutionModifier)><\n><solutionModifier><endif><else><if(datasetClause)><\n><datasetClause; separator="\n"><endif><\n><keywordMap.WHERE> { <if(triplesTemplate)><\n><triplesTemplate:indent()><endif><\n>}<if(solutionModifier)><\n><solutionModifier><endif><endif>
+<keywordMap.CONSTRUCT> <if(constructTemplate)>{<\n><constructTemplate><\n>}<if(datasetClause)><\n><datasetClause; separator="\n"><endif><\n><whereClause><if(solutionModifier)><\n><solutionModifier><endif><else><if(datasetClause)><\n><datasetClause; separator="\n"><endif><\n><keywordMap.WHERE> { <if(triplesTemplate)><\n><triplesTemplate:indent()><endif><\n>}<if(solutionModifier)><solutionModifier><endif><endif>
 >>
 
 describeQuery(ASTERISK, varOrIRI, datasetClause, whereClause, solutionModifier) ::= <<
@@ -217,7 +217,7 @@ whereClause(groupGraphPattern) ::= <<
 >>
 
 solutionModifier(groupClause, havingClause, orderClause, limitOffsetClauses) ::= <<
-<if(groupClause)><\n><groupClause><endif><if(havingClause)><\n><havingClause><endif><if(orderClause)><\n><orderClause><endif><if(limitOffsetClauses)><\n><limitOffsetClauses><endif>
+<if(groupClause)><\n><groupClause><if(havingClause)><\n><havingClause><endif><if(orderClause)><\n><orderClause><endif><if(limitOffsetClauses)><\n><limitOffsetClauses><endif><elseif(havingClause)><\n><havingClause><if(orderClause)><\n><orderClause><endif><if(limitOffsetClauses)><\n><limitOffsetClauses><endif><elseif(orderClause)><\n><orderClause><if(limitOffsetClauses)><\n><limitOffsetClauses><endif><elseif(limitOffsetClauses)><\n><limitOffsetClauses><endif>
 >>
 
 groupClause(groupCondition) ::= <<
@@ -261,7 +261,7 @@ valuesClause(dataBlock) ::= <<
 >>
 
 updateCommand(prologue, update, updateCommand) ::= <<
-<if(prologue)><prologue><if(update)> <update><if(updateCommand)>;<updateCommand><endif><endif><endif>
+<if(prologue)><prologue><if(update)><\n><update><if(updateCommand)>;<updateCommand><endif><endif><endif>
 >>
 
 update(load, clear, drop, add, move, copy, create, insertData, deleteData, deleteWhere, modify) ::= <<
@@ -445,7 +445,7 @@ groupOrUnionGraphPattern(groupGraphPattern) ::= <<
 >>
 
 filter(constraint) ::= <<
-<keywordMap.FILTER><constraint; anchor>
+<keywordMap.FILTER><constraint>
 >>
 
 constraint(brackettedExpression, builtInCall, functionCall) ::= <<
@@ -573,7 +573,7 @@ triplesNode(collection, blankNodePropertyList) ::= <<
 >>
 
 blankNodePropertyList(propertyListNotEmpty) ::= <<
-[ <propertyListNotEmpty> ]
+[<propertyListNotEmpty>]
 >>
 
 triplesNodePath(collectionPath, blankNodePropertyListPath) ::= <<
@@ -581,7 +581,7 @@ triplesNodePath(collectionPath, blankNodePropertyListPath) ::= <<
 >>
 
 blankNodePropertyListPath(propertyListPathNotEmpty) ::= <<
-[ <propertyListPathNotEmpty> ]
+[<propertyListPathNotEmpty>]
 >>
 
 collection(graphNode) ::= <<
