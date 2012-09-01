@@ -47,37 +47,37 @@ keywordMap ::= [
                 "ASC":"ASC",
                 "ASK":"ASK",
                 "BASE":"BASE",
-		"BIND":"BIND",
-		"BINDINGS":"BINDINGS",
-		"CLEAR":"CLEAR",
-		"CONSTRUCT":"CONSTRUCT",
-		"COPY":"COPY",
-		"CREATE":"CREATE",
-		"DATA":"DATA",
-		"DEFAULT":"DEFAULT",
-		"DELETE":"DELETE",
-		"DESC":"DESC",
-		"DESCRIBE":"DESCRIBE",
-		"DISTINCT":"DISTINCT",
-		"DROP":"DROP",
-		"FILTER":"FILTER",
-		"FROM":"FROM",
-		"GRAPH":"GRAPH",
-		"GROUP_BY":"GROUP BY",
-		"GROUP_CONCAT":"GROUP_CONCAT",
-		"HAVING":"HAVING",
-		"INSERT":"INSERT",
-		"INTO":"INTO",
-		"LOAD":"LOAD",
-		"LIMIT":"LIMIT",
-		"MINUS":"MINUS",
-		"MOVE":"MOVE",
-		"NAMED":"NAMED",
-		"OFFSET":"OFFSET",
-		"OPTIONAL":"OPTIONAL",
-		"ORDER_BY":"ORDER BY",
-		"PREFIX":"PREFIX",
-		"REDUCED":"REDUCED",
+                "BIND":"BIND",
+                "BINDINGS":"BINDINGS",
+                "CLEAR":"CLEAR",
+                "CONSTRUCT":"CONSTRUCT",
+                "COPY":"COPY",
+                "CREATE":"CREATE",
+                "DATA":"DATA",
+                "DEFAULT":"DEFAULT",
+                "DELETE":"DELETE",
+                "DESC":"DESC",
+                "DESCRIBE":"DESCRIBE",
+                "DISTINCT":"DISTINCT",
+                "DROP":"DROP",
+                "FILTER":"FILTER",
+                "FROM":"FROM",
+                "GRAPH":"GRAPH",
+                "GROUP_BY":"GROUP BY",
+                "GROUP_CONCAT":"GROUP_CONCAT",
+                "HAVING":"HAVING",
+                "INSERT":"INSERT",
+                "INTO":"INTO",
+                "LOAD":"LOAD",
+                "LIMIT":"LIMIT",
+                "MINUS":"MINUS",
+                "MOVE":"MOVE",
+                "NAMED":"NAMED",
+                "OFFSET":"OFFSET",
+                "OPTIONAL":"OPTIONAL",
+                "ORDER_BY":"ORDER BY",
+                "PREFIX":"PREFIX",
+                "REDUCED":"REDUCED",
                 "SELECT":"SELECT",
                 "SERVICE":"SERVICE",
                 "SILENT":"SILENT",
@@ -449,7 +449,7 @@ filter(constraint) ::= <<
 >>
 
 constraint(brackettedExpression, builtInCall, functionCall) ::= <<
-<if(brackettedExpression)><brackettedExpression; wrap><elseif(builtInCall)> <builtInCall; wrap><elseif(functionCall)><functionCall><endif>
+<if(brackettedExpression)><brackettedExpression><elseif(builtInCall)> <builtInCall><elseif(functionCall)><functionCall><endif>
 >>
 
 functionCall(iri, argList) ::= <<
@@ -589,7 +589,7 @@ collection(graphNode) ::= <<
 >>
 
 collectionPath(graphNodePath) ::= <<
-(<graphNodePath; wrap, separator="">)
+(<graphNodePath; wrap, separator=" ">)
 >>
 
 graphNode(varOrTerm, triplesNode) ::= <<
@@ -621,15 +621,15 @@ nil() ::= <<
 >>
 
 expression(conditionalOrExpression) ::= <<
-<conditionalOrExpression; wrap>
+<conditionalOrExpression; anchor, wrap>
 >>
 
 conditionalOrExpression(conditionalAndExpression) ::= <<
-<conditionalAndExpression; wrap, separator=" || ">
+<conditionalAndExpression; wrap, separator=" ||\n">
 >>
 
 conditionalAndExpression(valueLogical) ::= <<
-<valueLogical; wrap, separator=" && ">
+<valueLogical; wrap, separator=" &&\n">
 >>
 
 valueLogical(relationalExpression) ::= <<
@@ -877,11 +877,11 @@ regexExpression(expression) ::= <<
 >>
 
 existsFunction(groupGraphPattern) ::= <<
-<builtInMap.EXISTS> {<\n><groupGraphPattern:indent()><\n>}
+<builtInMap.EXISTS> {<\n>   <groupGraphPattern:indent()><\n>}
 >>
 
 notExistsFunction(groupGraphPattern) ::= <<
-<builtInMap.NOT_EXISTS> {<\n><groupGraphPattern:indent()><\n>}
+<builtInMap.NOT_EXISTS> {<\n>   <groupGraphPattern:indent()><\n>}
 >>
 
 aggregate(operation, attribute, whatever, expression, string) ::= <<
