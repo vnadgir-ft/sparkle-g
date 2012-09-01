@@ -22,7 +22,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import org.stringtemplate.v4.*;
 
@@ -60,6 +59,7 @@ public class IdentGunitOkTest {
 	static OutputStreamWriter w = null;
 	private String query;
 	static int qcounter = 0;
+	private int numberOfSyntaxErrors = 0;
 
 	public IdentGunitOkTest(String query) {
 		this.query = query;
@@ -151,7 +151,11 @@ public class IdentGunitOkTest {
 
 			try {
 				String response1 = sparklegPrettyPrinter(this.query);
+				assertTrue("\n#Test case " + qcounter + " @@@Number of syntax errors for query: " + numberOfSyntaxErrors,
+				  numberOfSyntaxErrors <= 0);
 				String response2 = sparklegPrettyPrinter(response1);
+				assertTrue("\n#Test case " + qcounter + " @@@Number of syntax errors for response: " + numberOfSyntaxErrors,
+				  numberOfSyntaxErrors <= 0);
 				w.write("\n#+++Response 1:\n");
 				w.write(response1);
 				w.write("\n#---Response 2:\n");
@@ -160,10 +164,10 @@ public class IdentGunitOkTest {
 				assertNotNull("*** response2 is null", response2);
 				assertEquals("***\nInput:\n" + query + "\nResponse:\n", response1, response2);
 			} catch (Exception ex) {
-				Logger.getLogger(IdentGunitOkTest.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(IdentGunitOkTest.class.getName()).log(Level.SEVERE, "Test case " + qcounter, ex);
 			}
 		} catch (IOException ex) {
-			Logger.getLogger(IdentGunitOkTest.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(IdentGunitOkTest.class.getName()).log(Level.SEVERE, "Test case " + qcounter, ex);
 		}
 	}
 
@@ -200,12 +204,14 @@ public class IdentGunitOkTest {
 
 		ParserRuleContext<Token> t = parser.query();
 
+		numberOfSyntaxErrors = parser.getNumberOfSyntaxErrors();
+
 		/* transformation pipline
 		 * step 5: read AST
 		 * step 6: traverse AST, pass parameters to stringTemplate and write output to string
 		 */
 
-		ParseTreeWalker walker = new ParseTreeWalker();
+		//ParseTreeWalker walker = new ParseTreeWalker();
 
 		STGroup g = new STGroupFile("ident.stg");
 		IdentVisitor visitor = new IdentVisitor();
