@@ -29,63 +29,80 @@ import java.util.List;
 import java.util.*;
 
 import com.googlecode.sparkleg.*;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SparqlMain {
 
-    public static void main(String args[]) throws Exception {
+	/**
+	 *
+	 * @param args
+	 */
+	public static void main(String args[]) throws Exception {
 
-        System.out.println("Work on file " + args[0]);
+		System.out.println("Work on file " + args[0]);
 
-        SparqlLexer lex = new SparqlLexer(new ANTLRFileStream(args[0]));
-        CommonTokenStream tokens = new CommonTokenStream(lex);
+		int lineWidth = 80;
+		if (args.length >= 2) {
+			lineWidth = Integer.parseInt(args[1]);
+		}
 
-        System.out.println("Tokens: -------------------------------");
-		
+		SparqlLexer lex = null;
+		try {
+			lex = new SparqlLexer(new ANTLRFileStream(args[0]));
+		} catch (IOException ex) {
+			Logger.getLogger(SparqlMain.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		CommonTokenStream tokens = new CommonTokenStream(lex);
+
+		System.out.println("Tokens: -------------------------------");
+
 		tokens.fill();
-		System.out.println("Number of tokens "+tokens.getTokens().size());
+		System.out.println("Number of tokens " + tokens.getTokens().size());
 
-        List tokenList = tokens.getTokens();
+		List tokenList = tokens.getTokens();
 
-        System.out.println("TokenList: -------------------------------");
-        Iterator it = tokenList.iterator();
-        while (it.hasNext()) {
-            Token t = (Token) it.next();
-            System.out.println(t.toString());
-        }
-        System.out.flush();
+		System.out.println("TokenList: -------------------------------");
+		Iterator it = tokenList.iterator();
+		while (it.hasNext()) {
+			Token t = (Token) it.next();
+			System.out.println(t.toString());
+		}
+		System.out.flush();
 
-        SparqlParser parser = new SparqlParser(tokens);
-        parser.setBuildParseTree(true);
+		SparqlParser parser = new SparqlParser(tokens);
+		parser.setBuildParseTree(true);
 
-        ParserRuleContext<Token> t = parser.query();
+		ParserRuleContext<Token> t = parser.query();
 
-        System.out.flush();
-        System.out.println("Parse tree: -------------------------------");
-        System.out.println(t.toStringTree(parser));
+		System.out.flush();
+		System.out.println("Parse tree: -------------------------------");
+		System.out.println(t.toStringTree(parser));
 
-        // visualize parse tree in dialog box 
-        // t.inspect(parser);
-		
-        if (parser.getNumberOfSyntaxErrors() <= 0) {
+		// visualize parse tree in dialog box 
+		// t.inspect(parser);
 
-            //ParseTreeWalker walker = new ParseTreeWalker();
+		if (parser.getNumberOfSyntaxErrors() <= 0) {
 
-            String groupFile = "ident.stg";
-            if (args.length > 1) {
-                groupFile = args[1];
-            }
-            System.out.println("Read StringTemplate Group File: " + groupFile + "-------------------------------");
+			//ParseTreeWalker walker = new ParseTreeWalker();
 
-            STGroup g = new STGroupFile(groupFile);
-            IdentVisitor visitor = new IdentVisitor();
-            visitor.setSTGroup(g);
-            ST query = visitor.visit(t);
+			String groupFile = "ident.stg";
+			if (args.length > 1) {
+				groupFile = args[1];
+			}
+			System.out.println("Read StringTemplate Group File: " + groupFile + "-------------------------------");
 
-            System.out.println("Emit reformatted query: -------------------------------");
+			STGroup g = new STGroupFile(groupFile);
+			IdentVisitor visitor = new IdentVisitor();
+			visitor.setSTGroup(g);
+			ST query = visitor.visit(t);
 
-            System.out.println(query.render());
-        }
-        System.out.println("-------------------------------");
-        System.out.println("Number of errors encountered: " + parser.getNumberOfSyntaxErrors());
-    }
+			System.out.println("Emit reformatted query: -------------------------------");
+
+			System.out.println(query.render(lineWidth));
+		}
+		System.out.println("-------------------------------");
+		System.out.println("Number of errors encountered: " + parser.getNumberOfSyntaxErrors());
+	}
 }
