@@ -163,11 +163,11 @@ builtInMap ::= [
 indent(line) ::= "   <line>"
 
 query(prologue, selectQuery, constructQuery, describeQuery, askQuery, valuesClause, updateCommand) ::= <<
-<if(prologue)><prologue><\n><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(valuesClause)><valuesClause><endif><else><updateCommand><endif>
+<if(prologue)><prologue><if(selectQuery)><selectQuery><elseif(constructQuery)><constructQuery><elseif(describeQuery)><describeQuery><elseif(askQuery)><askQuery><endif><if(valuesClause)><valuesClause><endif><else><updateCommand><endif>
 >>
 
 prologue(baseDecl, prefixDecl) ::= <<
-<baseDecl; separator="\n"><if(baseDecl)><\n><endif><prefixDecl; separator="\n"><if(prefixDecl)><\n><endif><if(baseDecl || prefixDecl)><endif>
+<baseDecl; separator="\n"><if(baseDecl)><\n><endif><prefixDecl; separator="\n"><if(prefixDecl)><\n><endif><if(baseDecl || prefixDecl)><\n><endif>
 >>
 
 baseDecl(iriref) ::= <<
@@ -187,7 +187,7 @@ subSelect(selectClause, whereClause, solutionModifier, valuesClause) ::= <<
 >>
 
 selectClause(attribute, ASTERISK, selectVariables) ::= <<
-<keywordMap.SELECT> <if(attribute)><keywordMap.(attribute)> <endif><if(ASTERISK)><ASTERISK><else><selectVariables; anchor, separator="\n"><endif>
+<keywordMap.SELECT> <if(attribute)><keywordMap.(attribute)> <endif><if(ASTERISK)><ASTERISK><else><selectVariables; wrap, anchor, separator=" "><endif>
 >>
 
 selectVariables(expression, var) ::= <<
@@ -261,7 +261,7 @@ valuesClause(dataBlock) ::= <<
 >>
 
 updateCommand(prologue, update, updateCommand) ::= <<
-<if(prologue)><prologue><if(update)><\n><update><if(updateCommand)>;<updateCommand><endif><endif><endif>
+<if(prologue)><prologue><if(update)><update><if(updateCommand)>;<updateCommand><endif><endif><endif>
 >>
 
 update(load, clear, drop, add, move, copy, create, insertData, deleteData, deleteWhere, modify) ::= <<
@@ -409,7 +409,7 @@ bind(expression, var) ::= <<
 >>
 
 inlineData(dataBlock) ::= <<
-<keywordMap.VALUES; anchor> <dataBlock>
+<\n><keywordMap.VALUES; anchor> <dataBlock>
 >>
 
 dataBlock(inlineDataOneVar, inlineDataFull) ::= <<
@@ -421,7 +421,7 @@ inlineDataOneVar(var, dataBlockValue) ::= <<
 >>
 
 inlineDataFull(var, dataBlockValues) ::= <<
-(<var; anchor, wrap, separator="\n">) {<\n><dataBlockValues:indent(); anchor, wrap, separator="\n"><\n>}
+(<var; anchor, wrap, separator=" ">) {<\n><dataBlockValues:indent(); anchor, wrap, separator="\n"><\n>}
 >>
 
 dataBlockValues(dataBlockValue) ::= <<

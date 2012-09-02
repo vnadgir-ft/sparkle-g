@@ -187,7 +187,7 @@ subSelect(selectClause, whereClause, solutionModifier, valuesClause) ::= <<
 >>
 
 selectClause(attribute, ASTERISK, selectVariables) ::= <<
-<keywordMap.SELECT> <if(attribute)><keywordMap.(attribute)> <endif><if(ASTERISK)><ASTERISK><else><selectVariables; anchor, separator="\n"><endif>
+<keywordMap.SELECT> <if(attribute)><keywordMap.(attribute)> <endif><if(ASTERISK)><ASTERISK><else><selectVariables; wrap, anchor, separator=" "><endif>
 >>
 
 selectVariables(expression, var) ::= <<
@@ -409,7 +409,7 @@ bind(expression, var) ::= <<
 >>
 
 inlineData(dataBlock) ::= <<
-<keywordMap.VALUES; anchor> <dataBlock>
+<\n><keywordMap.VALUES; anchor> <dataBlock>
 >>
 
 dataBlock(inlineDataOneVar, inlineDataFull) ::= <<
@@ -421,7 +421,7 @@ inlineDataOneVar(var, dataBlockValue) ::= <<
 >>
 
 inlineDataFull(var, dataBlockValues) ::= <<
-(<var; anchor, wrap, separator="\n">) {<\n><dataBlockValues:indent(); anchor, wrap, separator="\n"><\n>}
+(<var; anchor, wrap, separator=" ">) {<\n><dataBlockValues:indent(); anchor, wrap, separator="\n"><\n>}
 >>
 
 dataBlockValues(dataBlockValue) ::= <<
