@@ -4672,7 +4672,7 @@ CONSTRUCT {
 // qname-escape-01.rq 
 <<PREFIX og: <http://ogp.me/ns#>
 SELECT * WHERE {
-	?page og:audio\:title ?title
+	?page og:audio:title ?title
 }
 >> OK
 
