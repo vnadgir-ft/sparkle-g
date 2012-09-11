@@ -29,2676 +29,2675 @@ import org.stringtemplate.v4.*;
 
 public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlParserVisitor<ST> {
 
-    STGroup g = null;
-
-    public void setSTGroup(STGroup g) {
-        this.g = g;
-    }
-
-    @Override
-    public ST visitQuery(SparqlParser.QueryContext ctx) {
-        // query :
-        //   prologue (selectQuery | constructQuery | describeQuery | askQuery) bindingsClause EOF
-        // | update (SEMICOLON update?)* SEMICOLON? EOF
-
-        ST query = g.getInstanceOf("query");
-
-        if (ctx.prologue() != null) {
-            query.add("prologue", visitPrologue(ctx.prologue()));
-
-            if (ctx.selectQuery() != null) {
-                query.add("selectQuery", visitSelectQuery(ctx.selectQuery()));
-            } else if (ctx.constructQuery() != null) {
-                query.add("constructQuery", visitConstructQuery(ctx.constructQuery()));
-            } else if (ctx.describeQuery() != null) {
-                query.add("describeQuery", visitDescribeQuery(ctx.describeQuery()));
-            } else if (ctx.askQuery() != null) {
-                query.add("askQuery", visitAskQuery(ctx.askQuery()));
-            }
-
-            query.add("valuesClause", visitValuesClause(ctx.valuesClause()));
-        } else {
-            query.add("updateCommand", visitUpdateCommand(ctx.updateCommand()));
-        }
-
-        return query;
-    }
-
-    @Override
-    public ST visitPrologue(SparqlParser.PrologueContext ctx) {
-        // prologue :
-        //   (baseDecl | prefixDecl)*
-
-        ST prologue = g.getInstanceOf("prologue");
-
-        if (ctx.children != null) {
-            for (ParseTree c : ctx.children) {
-                if (c instanceof SparqlParser.BaseDeclContext) {
-                    prologue.add("baseDecl", visitBaseDecl((SparqlParser.BaseDeclContext) c));
-                } else if (c instanceof SparqlParser.PrefixDeclContext) {
-                    prologue.add("prefixDecl", visitPrefixDecl((SparqlParser.PrefixDeclContext) c));
-                }
-            }
-        }
-
-        return prologue;
-    }
-
-    @Override
-    public ST visitBaseDecl(SparqlParser.BaseDeclContext ctx) {
-        // baseDecl :
-        //   BASE IRIREF
-
-        ST baseDecl = g.getInstanceOf("baseDecl");
-
-        String s = ctx.IRIREF().getSymbol().getText();
-        baseDecl.add("iriref", s.substring(1, s.length() - 1));
-
-        return baseDecl;
-    }
-
-    @Override
-    public ST visitPrefixDecl(SparqlParser.PrefixDeclContext ctx) {
-        // prefixDecl :
-        //   PREFIX PNAME_NS IRIREF
-
-        ST prefixDecl = g.getInstanceOf("prefixDecl");
-
-        prefixDecl.add("pname", ctx.PNAME_NS().getSymbol().getText());
-
-        String s = ctx.IRIREF().getSymbol().getText();
-        prefixDecl.add("iriref", s.substring(1, s.length() - 1));
-
-        return prefixDecl;
-    }
-
-    @Override
-    public ST visitSelectQuery(SparqlParser.SelectQueryContext ctx) {
-        // selectQuery :
-        //   selectClause datasetClause* whereClause solutionModifier
-
-        ST selectQuery = g.getInstanceOf("selectQuery");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.SelectClauseContext) {
-                selectQuery.add("selectClause", visitSelectClause((SparqlParser.SelectClauseContext) c));
-            } else if (c instanceof SparqlParser.DatasetClauseContext) {
-                selectQuery.add("datasetClause", visitDatasetClause((SparqlParser.DatasetClauseContext) c));
-            } else if (c instanceof SparqlParser.WhereClauseContext) {
-                selectQuery.add("whereClause", visitWhereClause((SparqlParser.WhereClauseContext) c));
-            } else if (c instanceof SparqlParser.SolutionModifierContext) {
-                selectQuery.add("solutionModifier", visitSolutionModifier((SparqlParser.SolutionModifierContext) c));
-            }
-        }
-
-        return selectQuery;
-    }
-
-    @Override
-    public ST visitSubSelect(SparqlParser.SubSelectContext ctx) {
-        // subSelect
-        //   selectClause whereClause solutionModifier valuesClause
-
-        ST subSelect = g.getInstanceOf("subSelect");
-
-        subSelect.add("selectClause", visitSelectClause(ctx.selectClause()));
-        subSelect.add("whereClause", visitWhereClause(ctx.whereClause()));
-        subSelect.add("solutionModifier", visitSolutionModifier(ctx.solutionModifier()));
-        subSelect.add("valuesClause", visitValuesClause(ctx.valuesClause()));
-
-        return subSelect;
-    }
-
-    @Override
-    public ST visitSelectClause(SparqlParser.SelectClauseContext ctx) {
-        // selectClause :
-        //   SELECT (DISTINCT | REDUCED)? (selectVariables+ | ASTERISK)
-
-        ST selectClause = g.getInstanceOf("selectClause");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof TerminalNode) {
-                TerminalNode t = (TerminalNode) c;
-                Token to = (Token) (t.getSymbol());
-                if (to.getType() == SparqlParser.ASTERISK) {
-                    selectClause.add("ASTERISK", to.getText());
-                } else if (to.getType() == SparqlParser.DISTINCT) {
-                    selectClause.add("attribute", to.getText().toUpperCase());
-                } else if (to.getType() == SparqlParser.REDUCED) {
-                    selectClause.add("attribute", to.getText().toUpperCase());
-                }
-            } else if (c instanceof SparqlParser.SelectVariablesContext) {
-                selectClause.add("selectVariables", visitSelectVariables((SparqlParser.SelectVariablesContext) c));
-            }
-        }
-
-        return selectClause;
-    }
-
-    @Override
-    public ST visitSelectVariables(SparqlParser.SelectVariablesContext ctx) {
-        // selectVariables :
-        //  var | OPEN_BRACE expression AS var CLOSE_BRACE
-
-        ST selectVariables = g.getInstanceOf("selectVariables");
-
-        if (ctx.expression() != null ) {
-            selectVariables.add("expression", visitExpression(ctx.expression()));
-        }
-        if (ctx.var() != null){
-            selectVariables.add("var", visitVar(ctx.var()));
-        }
-
-        return selectVariables;
-    }
-
-    @Override
-    public ST visitConstructQuery(SparqlParser.ConstructQueryContext ctx) {
-        // constructQuery
-        //   CONSTRUCT (constructTemplate datasetClause* whereClause solutionModifier | datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier)
-
-        ST constructQuery = g.getInstanceOf("constructQuery");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ConstructTemplateContext) {
-                constructQuery.add("constructTemplate", visitConstructTemplate((SparqlParser.ConstructTemplateContext) c));
-            } else if (c instanceof SparqlParser.DatasetClauseContext) {
-                constructQuery.add("datasetClause", visitDatasetClause((SparqlParser.DatasetClauseContext) c));
-            } else if (c instanceof SparqlParser.WhereClauseContext) {
-                constructQuery.add("whereClause", visitWhereClause((SparqlParser.WhereClauseContext) c));
-            } else if (c instanceof SparqlParser.TriplesTemplateContext) {
-                constructQuery.add("triplesTemplate", visitTriplesTemplate((SparqlParser.TriplesTemplateContext) c));
-            } else if (c instanceof SparqlParser.SolutionModifierContext) {
-                constructQuery.add("solutionModifier", visitSolutionModifier((SparqlParser.SolutionModifierContext) c));
-            }
-        }
-
-        return constructQuery;
-    }
-
-    @Override
-    public ST visitDescribeQuery(SparqlParser.DescribeQueryContext ctx) {
-        // describeQuery
-        //   DESCRIBE (varOrIRI+ | ASTERISK) datasetClause* whereClause? solutionModifier
-
-        ST describeQuery = g.getInstanceOf("describeQuery");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof TerminalNode) {
-                TerminalNode t = (TerminalNode) c;
-                Token to = (Token) (t.getSymbol());
-                if (to.getType() == SparqlParser.ASTERISK) {
-                    describeQuery.add("ASTERISK", to.getText());
-                }
-            } else if (c instanceof SparqlParser.VarOrIRIContext) {
-                describeQuery.add("varOrIRI", visitVarOrIRI((SparqlParser.VarOrIRIContext) c));
-            } else if (c instanceof SparqlParser.DatasetClauseContext) {
-                describeQuery.add("datasetClause", visitDatasetClause((SparqlParser.DatasetClauseContext) c));
-            } else if (c instanceof SparqlParser.WhereClauseContext) {
-                describeQuery.add("whereClause", visitWhereClause((SparqlParser.WhereClauseContext) c));
-            } else if (c instanceof SparqlParser.SolutionModifierContext) {
-                describeQuery.add("solutionModifier", visitSolutionModifier((SparqlParser.SolutionModifierContext) c));
-            }
-        }
-
-        return describeQuery;
-    }
-
-    @Override
-    public ST visitAskQuery(SparqlParser.AskQueryContext ctx) {
-        // askQuery
-        //   ASK datasetClause* whereClause solutionModifier
-
-        ST askQuery = g.getInstanceOf("askQuery");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.DatasetClauseContext) {
-                askQuery.add("datasetClause", visitDatasetClause((SparqlParser.DatasetClauseContext) c));
-            } else if (c instanceof SparqlParser.WhereClauseContext) {
-                askQuery.add("whereClause", visitWhereClause((SparqlParser.WhereClauseContext) c));
-            } else if (c instanceof SparqlParser.SolutionModifierContext) {
-                askQuery.add("solutionModifier", visitSolutionModifier((SparqlParser.SolutionModifierContext) c));
-            }
-        }
-
-        return askQuery;
-    }
-
-    @Override
-    public ST visitDatasetClause(SparqlParser.DatasetClauseContext ctx) {
-        // datasetClause
-        //   FROM NAMED? iri
-
-        ST datasetClause = g.getInstanceOf("datasetClause");
-
-        if (ctx.NAMED() != null) {
-            datasetClause.add("NAMED", ctx.NAMED().getSymbol().getText().toUpperCase());
-        }
-
-        datasetClause.add("iri", visitIri(ctx.iri()));
-
-        return datasetClause;
-    }
-
-    @Override
-    public ST visitWhereClause(SparqlParser.WhereClauseContext ctx) {
-        // whereClause :
-        //   WHERE? groupGraphPattern
-
-        ST whereClause = g.getInstanceOf("whereClause");
-
-        whereClause.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
-
-        return whereClause;
-    }
-
-    @Override
-    public ST visitSolutionModifier(SparqlParser.SolutionModifierContext ctx) {
-        // solutionModifier :
-        //   groupClause? havingClause? orderClause? limitOffsetClauses?
-
-        ST solutionModifier = g.getInstanceOf("solutionModifier");
-
-        if (ctx.groupClause() != null) {
-            solutionModifier.add("groupClause", visitGroupClause(ctx.groupClause()));
-        }
-
-        if (ctx.havingClause() != null) {
-            solutionModifier.add("havingClause", visitHavingClause(ctx.havingClause()));
-        }
-
-        if (ctx.orderClause() != null) {
-            solutionModifier.add("orderClause", visitOrderClause(ctx.orderClause()));
-        }
-
-        if (ctx.limitOffsetClauses() != null) {
-            solutionModifier.add("limitOffsetClauses", visitLimitOffsetClauses(ctx.limitOffsetClauses()));
-        }
-
-        return solutionModifier;
-    }
-
-    @Override
-    public ST visitGroupClause(SparqlParser.GroupClauseContext ctx) {
-        // groupClause
-        //   GROUP BY groupCondition+
-
-        ST groupClause = g.getInstanceOf("groupClause");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.GroupConditionContext) {
-                groupClause.add("groupCondition", visitGroupCondition((SparqlParser.GroupConditionContext) c));
-            }
-        }
-
-        return groupClause;
-    }
-
-    @Override
-    public ST visitGroupCondition(SparqlParser.GroupConditionContext ctx) {
-        // groupCondition
-        //   builtInCall | functionCall | OPEN_BRACE expression (AS var)? CLOSE_BRACE | var
-
-        ST groupCondition = g.getInstanceOf("groupCondition");
-
-        if (ctx.builtInCall() != null) {
-            groupCondition.add("builtInCall", visitBuiltInCall(ctx.builtInCall()));
-        } else if (ctx.functionCall() != null) {
-            groupCondition.add("functionCall", visitFunctionCall(ctx.functionCall()));
-        } else if (ctx.expression() != null) {
-            groupCondition.add("expression", visitExpression(ctx.expression()));
-            if (ctx.var() != null) {
-                groupCondition.add("var", visitVar(ctx.var()));
-            }
-        } else if (ctx.var() != null) {
-            groupCondition.add("var", visitVar(ctx.var()));
-        }
-
-        return groupCondition;
-    }
-
-    @Override
-    public ST visitHavingClause(SparqlParser.HavingClauseContext ctx) {
-        // havingClause
-        //   HAVING havingCondition+
-
-        ST havingClause = g.getInstanceOf("havingClause");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.HavingConditionContext) {
-                havingClause.add("havingCondition", visitHavingCondition((SparqlParser.HavingConditionContext) c));
-            }
-        }
-
-        return havingClause;
-    }
-
-    @Override
-    public ST visitHavingCondition(SparqlParser.HavingConditionContext ctx) {
-        // havingCondition
-        //   constraint
-
-        ST havingCondition = g.getInstanceOf("havingCondition");
-
-        havingCondition.add("constraint", visitConstraint(ctx.constraint()));
-
-        return havingCondition;
-    }
-
-    @Override
-    public ST visitOrderClause(SparqlParser.OrderClauseContext ctx) {
-        // orderClause
-        //   ORDER BY orderCondition+
-
-        ST orderClause = g.getInstanceOf("orderClause");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.OrderConditionContext) {
-                orderClause.add("orderCondition", visitOrderCondition((SparqlParser.OrderConditionContext) c));
-            }
-        }
-
-        return orderClause;
-    }
-
-    @Override
-    public ST visitOrderCondition(SparqlParser.OrderConditionContext ctx) {
-        // orderCondition
-        //   ASC brackettedExpression | DESC brackettedExpression | constraint | var
-
-        ST orderCondition = g.getInstanceOf("orderCondition");
-
-        if (ctx.ASC() != null) {
-            orderCondition.add("ASC", ctx.ASC().getSymbol().getText().toUpperCase());
-            orderCondition.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
-        } else if (ctx.DESC() != null) {
-            orderCondition.add("DESC", ctx.DESC().getSymbol().getText().toUpperCase());
-            orderCondition.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
-        } else if (ctx.constraint() != null) {
-            orderCondition.add("constraint", visitConstraint(ctx.constraint()));
-        } else if (ctx.var() != null) {
-            orderCondition.add("var", visitVar(ctx.var()));
-        }
-
-        return orderCondition;
-    }
-
-    @Override
-    public ST visitLimitOffsetClauses(SparqlParser.LimitOffsetClausesContext ctx) {
-        // limitOffsetClauses
-        //   limitClause offsetClause? | offsetClause limitClause?
-
-        ST limitOffsetClauses = g.getInstanceOf("limitOffsetClauses");
-
-        if (ctx.limitClause() != null) {
-            limitOffsetClauses.add("limitClause", visitLimitClause(ctx.limitClause()));
-        }
-
-        if (ctx.offsetClause() != null) {
-            limitOffsetClauses.add("offsetClause", visitOffsetClause(ctx.offsetClause()));
-        }
-
-        return limitOffsetClauses;
-    }
-
-    @Override
-    public ST visitLimitClause(SparqlParser.LimitClauseContext ctx) {
-        // limitClause
-        //   LIMIT INTEGER
-
-        ST limitClause = g.getInstanceOf("limitClause");
-
-        limitClause.add("limit", ctx.INTEGER().getSymbol().getText());
-
-        return limitClause;
-    }
-
-    @Override
-    public ST visitOffsetClause(SparqlParser.OffsetClauseContext ctx) {
-        // offsetClause
-        //   OFFSET INTEGER
-
-        ST offsetClause = g.getInstanceOf("offsetClause");
-
-        offsetClause.add("offset", ctx.INTEGER().getSymbol().getText());
-
-        return offsetClause;
-    }
-
-    @Override
-    public ST visitValuesClause(SparqlParser.ValuesClauseContext ctx) {
-        // valuesClause :
-        //  (VALUES dataBlock)?
-
-        ST valuesClause = g.getInstanceOf("valuesClause");
-
-        if (ctx.dataBlock() != null) {
-            valuesClause.add("dataBlock", visitDataBlock(ctx.dataBlock()));
-        }
-
-        return valuesClause;
-    }
-
-        @Override
-    public ST visitUpdateCommand(SparqlParser.UpdateCommandContext ctx) {
-        // updateCommand :
-        //  prologue (update (SEMICOLON updateCommand)?)?
-
-        ST updateCommand = g.getInstanceOf("updateCommand");
-
-        updateCommand.add("prologue", visitPrologue(ctx.prologue()));
-        
-        if ( ctx.update() != null ) {
-            updateCommand.add("update", visitUpdate(ctx.update()));
-            if ( ctx.updateCommand() != null ) {
-                updateCommand.add("updateCommand", visitUpdateCommand(ctx.updateCommand()));
-            }
-        }
-
-        return updateCommand;
-    }
-        
-    @Override
-    public ST visitUpdate(SparqlParser.UpdateContext ctx) {
-        // update :
-        //   load | clear | drop | add | move | copy | create | insertData | deleteData | deleteWhere | modify
-
-        ST update = g.getInstanceOf("update");
-
-        if (ctx.load() != null) {
-            update.add("load", visitLoad(ctx.load()));
-        } else if (ctx.clear() != null) {
-            update.add("clear", visitClear(ctx.clear()));
-        } else if (ctx.drop() != null) {
-            update.add("drop", visitDrop(ctx.drop()));
-        } else if (ctx.add() != null) {
-            update.add("add", visitAdd(ctx.add()));
-        } else if (ctx.move() != null) {
-            update.add("move", visitMove(ctx.move()));
-        } else if (ctx.copy() != null) {
-            update.add("copy", visitCopy(ctx.copy()));
-        } else if (ctx.create() != null) {
-            update.add("create", visitCreate(ctx.create()));
-        } else if (ctx.insertData() != null) {
-            update.add("insertData", visitInsertData(ctx.insertData()));
-        } else if (ctx.deleteData() != null) {
-            update.add("deleteData", visitDeleteData(ctx.deleteData()));
-        } else if (ctx.deleteWhere() != null) {
-            update.add("deleteWhere", visitDeleteWhere(ctx.deleteWhere()));
-        } else if (ctx.modify() != null) {
-            update.add("modify", visitModify(ctx.modify()));
-        }
-
-        return update;
-    }
-
-    @Override
-    public ST visitLoad(SparqlParser.LoadContext ctx) {
-        // load :	  
-        //   LOAD SILENT? iri (INTO graphRef)?
-
-        ST load = g.getInstanceOf("load");
-
-        if (ctx.SILENT() != null) {
-            load.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
-        }
-
-        load.add("iri", visitIri(ctx.iri()));
-
-        if (ctx.graphRef() != null) {
-            load.add("graphRef", visitGraphRef(ctx.graphRef()));
-        }
-
-        return load;
-    }
-
-    @Override
-    public ST visitClear(SparqlParser.ClearContext ctx) {
-        // clear :
-        //   CLEAR  SILENT? graphRefAll
-
-        ST clear = g.getInstanceOf("clear");
-
-        if (ctx.SILENT() != null) {
-            clear.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
-        }
-
-        clear.add("graphRefAll", visitGraphRefAll(ctx.graphRefAll()));
-
-        return clear;
-    }
-
-    @Override
-    public ST visitDrop(SparqlParser.DropContext ctx) {
-        // drop :
-        //   DROP SILENT? graphRefAll
-
-        ST drop = g.getInstanceOf("drop");
-
-        if (ctx.SILENT() != null) {
-            drop.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
-        }
-
-        drop.add("graphRefAll", visitGraphRefAll(ctx.graphRefAll()));
-
-        return drop;
-    }
-
-    @Override
-    public ST visitCreate(SparqlParser.CreateContext ctx) {
-        // create :
-        //   CREATE SILENT? graphRef
-
-        ST create = g.getInstanceOf("create");
-
-        if (ctx.SILENT() != null) {
-            create.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
-        }
-
-        create.add("graphRef", visitGraphRef(ctx.graphRef()));
-
-        return create;
-    }
-
-    @Override
-    public ST visitAdd(SparqlParser.AddContext ctx) {
-        // add :
-        //   ADD SILENT? graphOrDefault TO graphOrDefault
-
-        ST add = g.getInstanceOf("add");
-
-        if (ctx.SILENT() != null) {
-            add.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
-        }
-
-        add.add("graphOrDefault1", visitGraphOrDefault(ctx.graphOrDefault(0)));
-        add.add("graphOrDefault2", visitGraphOrDefault(ctx.graphOrDefault(1)));
-
-        return add;
-    }
-
-    @Override
-    public ST visitMove(SparqlParser.MoveContext ctx) {
-        // move :
-        //   MOVE SILENT? graphOrDefault TO graphOrDefault
-
-        ST move = g.getInstanceOf("move");
-
-        if (ctx.SILENT() != null) {
-            move.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
-        }
-
-        move.add("graphOrDefault1", visitGraphOrDefault(ctx.graphOrDefault(0)));
-        move.add("graphOrDefault2", visitGraphOrDefault(ctx.graphOrDefault(1)));
-
-        return move;
-    }
-
-    @Override
-    public ST visitCopy(SparqlParser.CopyContext ctx) {
-        // copy :
-        //   COPY SILENT? graphOrDefault TO graphOrDefault
-
-        ST copy = g.getInstanceOf("copy");
-
-        if (ctx.SILENT() != null) {
-            copy.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
-        }
-
-        copy.add("graphOrDefault1", visitGraphOrDefault(ctx.graphOrDefault(0)));
-        copy.add("graphOrDefault2", visitGraphOrDefault(ctx.graphOrDefault(1)));
-
-        return copy;
-    }
-
-    @Override
-    public ST visitInsertData(SparqlParser.InsertDataContext ctx) {
-        // insertData :
-        //   INSERT DATA quadData
-
-        ST insertData = g.getInstanceOf("insertData");
-
-        insertData.add("quadData", visitQuadData(ctx.quadData()));
-
-        return insertData;
-    }
-
-    @Override
-    public ST visitDeleteData(SparqlParser.DeleteDataContext ctx) {
-        // deleteData :
-        //   DELETE DATA quadData
-
-        ST deleteData = g.getInstanceOf("deleteData");
-
-        deleteData.add("quadData", visitQuadData(ctx.quadData()));
-
-        return deleteData;
-    }
-
-    @Override
-    public ST visitDeleteWhere(SparqlParser.DeleteWhereContext ctx) {
-        // deleteWhere :
-        //   DELETE WHERE quadPattern
-
-        ST deleteWhere = g.getInstanceOf("deleteWhere");
-
-        deleteWhere.add("quadPattern", visitQuadPattern(ctx.quadPattern()));
-
-        return deleteWhere;
-    }
-
-    @Override
-    public ST visitModify(SparqlParser.ModifyContext ctx) {
-        // modify :
-        //   (WITH iri)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern
-
-        ST modify = g.getInstanceOf("modify");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.IriContext) {
-                modify.add("iri", visitIri((SparqlParser.IriContext) c));
-            } else if (c instanceof SparqlParser.DeleteClauseContext) {
-                modify.add("deleteClause", visitDeleteClause((SparqlParser.DeleteClauseContext) c));
-            } else if (c instanceof SparqlParser.InsertClauseContext) {
-                modify.add("insertClause", visitInsertClause((SparqlParser.InsertClauseContext) c));
-            } else if (c instanceof SparqlParser.UsingClauseContext) {
-                modify.add("usingClause", visitUsingClause((SparqlParser.UsingClauseContext) c));
-            } else if (c instanceof SparqlParser.GroupGraphPatternContext) {
-                modify.add("groupGraphPattern", visitGroupGraphPattern((SparqlParser.GroupGraphPatternContext) c));
-            }
-        }
-
-        return modify;
-    }
-
-    @Override
-    public ST visitDeleteClause(SparqlParser.DeleteClauseContext ctx) {
-        // deleteClause :
-        //   DELETE quadPattern
-
-        ST deleteClause = g.getInstanceOf("deleteClause");
-
-        deleteClause.add("quadPattern", visitQuadPattern(ctx.quadPattern()));
-
-        return deleteClause;
-    }
-
-    @Override
-    public ST visitInsertClause(SparqlParser.InsertClauseContext ctx) {
-        // insertClause :
-        //   INSERT quadPattern
+	STGroup g = null;
+
+	public void setSTGroup(STGroup g) {
+		this.g = g;
+	}
+
+	@Override
+	public ST visitQuery(SparqlParser.QueryContext ctx) {
+		// query :
+		//   prologue (selectQuery | constructQuery | describeQuery | askQuery) bindingsClause EOF
+		// | update (SEMICOLON update?)* SEMICOLON? EOF
+
+		ST query = g.getInstanceOf("query");
+
+		if (ctx.prologue() != null) {
+			query.add("prologue", visitPrologue(ctx.prologue()));
+
+			if (ctx.selectQuery() != null) {
+				query.add("selectQuery", visitSelectQuery(ctx.selectQuery()));
+			} else if (ctx.constructQuery() != null) {
+				query.add("constructQuery", visitConstructQuery(ctx.constructQuery()));
+			} else if (ctx.describeQuery() != null) {
+				query.add("describeQuery", visitDescribeQuery(ctx.describeQuery()));
+			} else if (ctx.askQuery() != null) {
+				query.add("askQuery", visitAskQuery(ctx.askQuery()));
+			}
+
+			query.add("valuesClause", visitValuesClause(ctx.valuesClause()));
+		} else {
+			query.add("updateCommand", visitUpdateCommand(ctx.updateCommand()));
+		}
+
+		return query;
+	}
+
+	@Override
+	public ST visitPrologue(SparqlParser.PrologueContext ctx) {
+		// prologue :
+		//   (baseDecl | prefixDecl)*
+
+		ST prologue = g.getInstanceOf("prologue");
+
+		if (ctx.children != null) {
+			for (ParseTree c : ctx.children) {
+				if (c instanceof SparqlParser.BaseDeclContext) {
+					prologue.add("baseDecl", visitBaseDecl((SparqlParser.BaseDeclContext) c));
+				} else if (c instanceof SparqlParser.PrefixDeclContext) {
+					prologue.add("prefixDecl", visitPrefixDecl((SparqlParser.PrefixDeclContext) c));
+				}
+			}
+		}
+
+		return prologue;
+	}
+
+	@Override
+	public ST visitBaseDecl(SparqlParser.BaseDeclContext ctx) {
+		// baseDecl :
+		//   BASE IRIREF
+
+		ST baseDecl = g.getInstanceOf("baseDecl");
+
+		String s = ctx.IRIREF().getSymbol().getText();
+		baseDecl.add("iriref", s.substring(1, s.length() - 1));
+
+		return baseDecl;
+	}
+
+	@Override
+	public ST visitPrefixDecl(SparqlParser.PrefixDeclContext ctx) {
+		// prefixDecl :
+		//   PREFIX PNAME_NS IRIREF
+
+		ST prefixDecl = g.getInstanceOf("prefixDecl");
+
+		prefixDecl.add("pname", ctx.PNAME_NS().getSymbol().getText());
+
+		String s = ctx.IRIREF().getSymbol().getText();
+		prefixDecl.add("iriref", s.substring(1, s.length() - 1));
+
+		return prefixDecl;
+	}
+
+	@Override
+	public ST visitSelectQuery(SparqlParser.SelectQueryContext ctx) {
+		// selectQuery :
+		//   selectClause datasetClause* whereClause solutionModifier
+
+		ST selectQuery = g.getInstanceOf("selectQuery");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.SelectClauseContext) {
+				selectQuery.add("selectClause", visitSelectClause((SparqlParser.SelectClauseContext) c));
+			} else if (c instanceof SparqlParser.DatasetClauseContext) {
+				selectQuery.add("datasetClause", visitDatasetClause((SparqlParser.DatasetClauseContext) c));
+			} else if (c instanceof SparqlParser.WhereClauseContext) {
+				selectQuery.add("whereClause", visitWhereClause((SparqlParser.WhereClauseContext) c));
+			} else if (c instanceof SparqlParser.SolutionModifierContext) {
+				selectQuery.add("solutionModifier", visitSolutionModifier((SparqlParser.SolutionModifierContext) c));
+			}
+		}
+
+		return selectQuery;
+	}
+
+	@Override
+	public ST visitSubSelect(SparqlParser.SubSelectContext ctx) {
+		// subSelect
+		//   selectClause whereClause solutionModifier valuesClause
+
+		ST subSelect = g.getInstanceOf("subSelect");
+
+		subSelect.add("selectClause", visitSelectClause(ctx.selectClause()));
+		subSelect.add("whereClause", visitWhereClause(ctx.whereClause()));
+		subSelect.add("solutionModifier", visitSolutionModifier(ctx.solutionModifier()));
+		subSelect.add("valuesClause", visitValuesClause(ctx.valuesClause()));
+
+		return subSelect;
+	}
+
+	@Override
+	public ST visitSelectClause(SparqlParser.SelectClauseContext ctx) {
+		// selectClause :
+		//   SELECT (DISTINCT | REDUCED)? (selectVariables+ | ASTERISK)
+
+		ST selectClause = g.getInstanceOf("selectClause");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof TerminalNode) {
+				TerminalNode t = (TerminalNode) c;
+				Token to = (Token) (t.getSymbol());
+				if (to.getType() == SparqlParser.ASTERISK) {
+					selectClause.add("ASTERISK", to.getText());
+				} else if (to.getType() == SparqlParser.DISTINCT) {
+					selectClause.add("attribute", to.getText().toUpperCase());
+				} else if (to.getType() == SparqlParser.REDUCED) {
+					selectClause.add("attribute", to.getText().toUpperCase());
+				}
+			} else if (c instanceof SparqlParser.SelectVariablesContext) {
+				selectClause.add("selectVariables", visitSelectVariables((SparqlParser.SelectVariablesContext) c));
+			}
+		}
+
+		return selectClause;
+	}
+
+	@Override
+	public ST visitSelectVariables(SparqlParser.SelectVariablesContext ctx) {
+		// selectVariables :
+		//  var | OPEN_BRACE expression AS var CLOSE_BRACE
+
+		ST selectVariables = g.getInstanceOf("selectVariables");
+
+		if (ctx.expression() != null) {
+			selectVariables.add("expression", visitExpression(ctx.expression()));
+		}
+		if (ctx.var() != null) {
+			selectVariables.add("var", visitVar(ctx.var()));
+		}
+
+		return selectVariables;
+	}
+
+	@Override
+	public ST visitConstructQuery(SparqlParser.ConstructQueryContext ctx) {
+		// constructQuery
+		//   CONSTRUCT (constructTemplate datasetClause* whereClause solutionModifier | datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier)
+
+		ST constructQuery = g.getInstanceOf("constructQuery");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.ConstructTemplateContext) {
+				constructQuery.add("constructTemplate", visitConstructTemplate((SparqlParser.ConstructTemplateContext) c));
+			} else if (c instanceof SparqlParser.DatasetClauseContext) {
+				constructQuery.add("datasetClause", visitDatasetClause((SparqlParser.DatasetClauseContext) c));
+			} else if (c instanceof SparqlParser.WhereClauseContext) {
+				constructQuery.add("whereClause", visitWhereClause((SparqlParser.WhereClauseContext) c));
+			} else if (c instanceof SparqlParser.TriplesTemplateContext) {
+				constructQuery.add("triplesTemplate", visitTriplesTemplate((SparqlParser.TriplesTemplateContext) c));
+			} else if (c instanceof SparqlParser.SolutionModifierContext) {
+				constructQuery.add("solutionModifier", visitSolutionModifier((SparqlParser.SolutionModifierContext) c));
+			}
+		}
+
+		return constructQuery;
+	}
+
+	@Override
+	public ST visitDescribeQuery(SparqlParser.DescribeQueryContext ctx) {
+		// describeQuery
+		//   DESCRIBE (varOrIRI+ | ASTERISK) datasetClause* whereClause? solutionModifier
+
+		ST describeQuery = g.getInstanceOf("describeQuery");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof TerminalNode) {
+				TerminalNode t = (TerminalNode) c;
+				Token to = (Token) (t.getSymbol());
+				if (to.getType() == SparqlParser.ASTERISK) {
+					describeQuery.add("ASTERISK", to.getText());
+				}
+			} else if (c instanceof SparqlParser.VarOrIRIContext) {
+				describeQuery.add("varOrIRI", visitVarOrIRI((SparqlParser.VarOrIRIContext) c));
+			} else if (c instanceof SparqlParser.DatasetClauseContext) {
+				describeQuery.add("datasetClause", visitDatasetClause((SparqlParser.DatasetClauseContext) c));
+			} else if (c instanceof SparqlParser.WhereClauseContext) {
+				describeQuery.add("whereClause", visitWhereClause((SparqlParser.WhereClauseContext) c));
+			} else if (c instanceof SparqlParser.SolutionModifierContext) {
+				describeQuery.add("solutionModifier", visitSolutionModifier((SparqlParser.SolutionModifierContext) c));
+			}
+		}
+
+		return describeQuery;
+	}
+
+	@Override
+	public ST visitAskQuery(SparqlParser.AskQueryContext ctx) {
+		// askQuery
+		//   ASK datasetClause* whereClause solutionModifier
+
+		ST askQuery = g.getInstanceOf("askQuery");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.DatasetClauseContext) {
+				askQuery.add("datasetClause", visitDatasetClause((SparqlParser.DatasetClauseContext) c));
+			} else if (c instanceof SparqlParser.WhereClauseContext) {
+				askQuery.add("whereClause", visitWhereClause((SparqlParser.WhereClauseContext) c));
+			} else if (c instanceof SparqlParser.SolutionModifierContext) {
+				askQuery.add("solutionModifier", visitSolutionModifier((SparqlParser.SolutionModifierContext) c));
+			}
+		}
+
+		return askQuery;
+	}
+
+	@Override
+	public ST visitDatasetClause(SparqlParser.DatasetClauseContext ctx) {
+		// datasetClause
+		//   FROM NAMED? iri
+
+		ST datasetClause = g.getInstanceOf("datasetClause");
+
+		if (ctx.NAMED() != null) {
+			datasetClause.add("NAMED", ctx.NAMED().getSymbol().getText().toUpperCase());
+		}
+
+		datasetClause.add("iri", visitIri(ctx.iri()));
+
+		return datasetClause;
+	}
+
+	@Override
+	public ST visitWhereClause(SparqlParser.WhereClauseContext ctx) {
+		// whereClause :
+		//   WHERE? groupGraphPattern
+
+		ST whereClause = g.getInstanceOf("whereClause");
+
+		whereClause.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
+
+		return whereClause;
+	}
+
+	@Override
+	public ST visitSolutionModifier(SparqlParser.SolutionModifierContext ctx) {
+		// solutionModifier :
+		//   groupClause? havingClause? orderClause? limitOffsetClauses?
+
+		ST solutionModifier = g.getInstanceOf("solutionModifier");
+
+		if (ctx.groupClause() != null) {
+			solutionModifier.add("groupClause", visitGroupClause(ctx.groupClause()));
+		}
+
+		if (ctx.havingClause() != null) {
+			solutionModifier.add("havingClause", visitHavingClause(ctx.havingClause()));
+		}
+
+		if (ctx.orderClause() != null) {
+			solutionModifier.add("orderClause", visitOrderClause(ctx.orderClause()));
+		}
+
+		if (ctx.limitOffsetClauses() != null) {
+			solutionModifier.add("limitOffsetClauses", visitLimitOffsetClauses(ctx.limitOffsetClauses()));
+		}
+
+		return solutionModifier;
+	}
+
+	@Override
+	public ST visitGroupClause(SparqlParser.GroupClauseContext ctx) {
+		// groupClause
+		//   GROUP BY groupCondition+
+
+		ST groupClause = g.getInstanceOf("groupClause");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.GroupConditionContext) {
+				groupClause.add("groupCondition", visitGroupCondition((SparqlParser.GroupConditionContext) c));
+			}
+		}
+
+		return groupClause;
+	}
+
+	@Override
+	public ST visitGroupCondition(SparqlParser.GroupConditionContext ctx) {
+		// groupCondition
+		//   builtInCall | functionCall | OPEN_BRACE expression (AS var)? CLOSE_BRACE | var
+
+		ST groupCondition = g.getInstanceOf("groupCondition");
+
+		if (ctx.builtInCall() != null) {
+			groupCondition.add("builtInCall", visitBuiltInCall(ctx.builtInCall()));
+		} else if (ctx.functionCall() != null) {
+			groupCondition.add("functionCall", visitFunctionCall(ctx.functionCall()));
+		} else if (ctx.expression() != null) {
+			groupCondition.add("expression", visitExpression(ctx.expression()));
+			if (ctx.var() != null) {
+				groupCondition.add("var", visitVar(ctx.var()));
+			}
+		} else if (ctx.var() != null) {
+			groupCondition.add("var", visitVar(ctx.var()));
+		}
+
+		return groupCondition;
+	}
+
+	@Override
+	public ST visitHavingClause(SparqlParser.HavingClauseContext ctx) {
+		// havingClause
+		//   HAVING havingCondition+
+
+		ST havingClause = g.getInstanceOf("havingClause");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.HavingConditionContext) {
+				havingClause.add("havingCondition", visitHavingCondition((SparqlParser.HavingConditionContext) c));
+			}
+		}
+
+		return havingClause;
+	}
+
+	@Override
+	public ST visitHavingCondition(SparqlParser.HavingConditionContext ctx) {
+		// havingCondition
+		//   constraint
+
+		ST havingCondition = g.getInstanceOf("havingCondition");
+
+		havingCondition.add("constraint", visitConstraint(ctx.constraint()));
+
+		return havingCondition;
+	}
+
+	@Override
+	public ST visitOrderClause(SparqlParser.OrderClauseContext ctx) {
+		// orderClause
+		//   ORDER BY orderCondition+
+
+		ST orderClause = g.getInstanceOf("orderClause");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.OrderConditionContext) {
+				orderClause.add("orderCondition", visitOrderCondition((SparqlParser.OrderConditionContext) c));
+			}
+		}
+
+		return orderClause;
+	}
+
+	@Override
+	public ST visitOrderCondition(SparqlParser.OrderConditionContext ctx) {
+		// orderCondition
+		//   ASC brackettedExpression | DESC brackettedExpression | constraint | var
+
+		ST orderCondition = g.getInstanceOf("orderCondition");
+
+		if (ctx.ASC() != null) {
+			orderCondition.add("ASC", ctx.ASC().getSymbol().getText().toUpperCase());
+			orderCondition.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
+		} else if (ctx.DESC() != null) {
+			orderCondition.add("DESC", ctx.DESC().getSymbol().getText().toUpperCase());
+			orderCondition.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
+		} else if (ctx.constraint() != null) {
+			orderCondition.add("constraint", visitConstraint(ctx.constraint()));
+		} else if (ctx.var() != null) {
+			orderCondition.add("var", visitVar(ctx.var()));
+		}
+
+		return orderCondition;
+	}
+
+	@Override
+	public ST visitLimitOffsetClauses(SparqlParser.LimitOffsetClausesContext ctx) {
+		// limitOffsetClauses
+		//   limitClause offsetClause? | offsetClause limitClause?
+
+		ST limitOffsetClauses = g.getInstanceOf("limitOffsetClauses");
+
+		if (ctx.limitClause() != null) {
+			limitOffsetClauses.add("limitClause", visitLimitClause(ctx.limitClause()));
+		}
+
+		if (ctx.offsetClause() != null) {
+			limitOffsetClauses.add("offsetClause", visitOffsetClause(ctx.offsetClause()));
+		}
+
+		return limitOffsetClauses;
+	}
+
+	@Override
+	public ST visitLimitClause(SparqlParser.LimitClauseContext ctx) {
+		// limitClause
+		//   LIMIT INTEGER
+
+		ST limitClause = g.getInstanceOf("limitClause");
+
+		limitClause.add("limit", ctx.INTEGER().getSymbol().getText());
+
+		return limitClause;
+	}
+
+	@Override
+	public ST visitOffsetClause(SparqlParser.OffsetClauseContext ctx) {
+		// offsetClause
+		//   OFFSET INTEGER
+
+		ST offsetClause = g.getInstanceOf("offsetClause");
+
+		offsetClause.add("offset", ctx.INTEGER().getSymbol().getText());
+
+		return offsetClause;
+	}
+
+	@Override
+	public ST visitValuesClause(SparqlParser.ValuesClauseContext ctx) {
+		// valuesClause :
+		//  (VALUES dataBlock)?
+
+		ST valuesClause = g.getInstanceOf("valuesClause");
+
+		if (ctx.dataBlock() != null) {
+			valuesClause.add("dataBlock", visitDataBlock(ctx.dataBlock()));
+		}
+
+		return valuesClause;
+	}
+
+	@Override
+	public ST visitUpdateCommand(SparqlParser.UpdateCommandContext ctx) {
+		// updateCommand :
+		//  prologue (update (SEMICOLON updateCommand)?)?
+
+		ST updateCommand = g.getInstanceOf("updateCommand");
+
+		updateCommand.add("prologue", visitPrologue(ctx.prologue()));
+
+		if (ctx.update() != null) {
+			updateCommand.add("update", visitUpdate(ctx.update()));
+			if (ctx.updateCommand() != null) {
+				updateCommand.add("updateCommand", visitUpdateCommand(ctx.updateCommand()));
+			}
+		}
+
+		return updateCommand;
+	}
+
+	@Override
+	public ST visitUpdate(SparqlParser.UpdateContext ctx) {
+		// update :
+		//   load | clear | drop | add | move | copy | create | insertData | deleteData | deleteWhere | modify
+
+		ST update = g.getInstanceOf("update");
+
+		if (ctx.load() != null) {
+			update.add("load", visitLoad(ctx.load()));
+		} else if (ctx.clear() != null) {
+			update.add("clear", visitClear(ctx.clear()));
+		} else if (ctx.drop() != null) {
+			update.add("drop", visitDrop(ctx.drop()));
+		} else if (ctx.add() != null) {
+			update.add("add", visitAdd(ctx.add()));
+		} else if (ctx.move() != null) {
+			update.add("move", visitMove(ctx.move()));
+		} else if (ctx.copy() != null) {
+			update.add("copy", visitCopy(ctx.copy()));
+		} else if (ctx.create() != null) {
+			update.add("create", visitCreate(ctx.create()));
+		} else if (ctx.insertData() != null) {
+			update.add("insertData", visitInsertData(ctx.insertData()));
+		} else if (ctx.deleteData() != null) {
+			update.add("deleteData", visitDeleteData(ctx.deleteData()));
+		} else if (ctx.deleteWhere() != null) {
+			update.add("deleteWhere", visitDeleteWhere(ctx.deleteWhere()));
+		} else if (ctx.modify() != null) {
+			update.add("modify", visitModify(ctx.modify()));
+		}
+
+		return update;
+	}
+
+	@Override
+	public ST visitLoad(SparqlParser.LoadContext ctx) {
+		// load :	  
+		//   LOAD SILENT? iri (INTO graphRef)?
+
+		ST load = g.getInstanceOf("load");
+
+		if (ctx.SILENT() != null) {
+			load.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
+		}
+
+		load.add("iri", visitIri(ctx.iri()));
+
+		if (ctx.graphRef() != null) {
+			load.add("graphRef", visitGraphRef(ctx.graphRef()));
+		}
+
+		return load;
+	}
+
+	@Override
+	public ST visitClear(SparqlParser.ClearContext ctx) {
+		// clear :
+		//   CLEAR  SILENT? graphRefAll
+
+		ST clear = g.getInstanceOf("clear");
+
+		if (ctx.SILENT() != null) {
+			clear.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
+		}
+
+		clear.add("graphRefAll", visitGraphRefAll(ctx.graphRefAll()));
+
+		return clear;
+	}
+
+	@Override
+	public ST visitDrop(SparqlParser.DropContext ctx) {
+		// drop :
+		//   DROP SILENT? graphRefAll
+
+		ST drop = g.getInstanceOf("drop");
+
+		if (ctx.SILENT() != null) {
+			drop.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
+		}
+
+		drop.add("graphRefAll", visitGraphRefAll(ctx.graphRefAll()));
+
+		return drop;
+	}
+
+	@Override
+	public ST visitCreate(SparqlParser.CreateContext ctx) {
+		// create :
+		//   CREATE SILENT? graphRef
 
-        ST insertClause = g.getInstanceOf("insertClause");
+		ST create = g.getInstanceOf("create");
+
+		if (ctx.SILENT() != null) {
+			create.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
+		}
 
-        insertClause.add("quadPattern", visitQuadPattern(ctx.quadPattern()));
+		create.add("graphRef", visitGraphRef(ctx.graphRef()));
 
-        return insertClause;
-    }
+		return create;
+	}
+
+	@Override
+	public ST visitAdd(SparqlParser.AddContext ctx) {
+		// add :
+		//   ADD SILENT? graphOrDefault TO graphOrDefault
+
+		ST add = g.getInstanceOf("add");
+
+		if (ctx.SILENT() != null) {
+			add.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
+		}
+
+		add.add("graphOrDefault1", visitGraphOrDefault(ctx.graphOrDefault(0)));
+		add.add("graphOrDefault2", visitGraphOrDefault(ctx.graphOrDefault(1)));
+
+		return add;
+	}
+
+	@Override
+	public ST visitMove(SparqlParser.MoveContext ctx) {
+		// move :
+		//   MOVE SILENT? graphOrDefault TO graphOrDefault
+
+		ST move = g.getInstanceOf("move");
+
+		if (ctx.SILENT() != null) {
+			move.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
+		}
+
+		move.add("graphOrDefault1", visitGraphOrDefault(ctx.graphOrDefault(0)));
+		move.add("graphOrDefault2", visitGraphOrDefault(ctx.graphOrDefault(1)));
+
+		return move;
+	}
 
-    @Override
-    public ST visitUsingClause(SparqlParser.UsingClauseContext ctx) {
-        // usingClause :
-        //   USING NAMED? iri
+	@Override
+	public ST visitCopy(SparqlParser.CopyContext ctx) {
+		// copy :
+		//   COPY SILENT? graphOrDefault TO graphOrDefault
+
+		ST copy = g.getInstanceOf("copy");
 
-        ST usingClause = g.getInstanceOf("usingClause");
+		if (ctx.SILENT() != null) {
+			copy.add("SILENT", ctx.SILENT().getSymbol().getText().toUpperCase());
+		}
 
-        if (ctx.NAMED() != null) {
-            usingClause.add("NAMED", ctx.NAMED().getSymbol().getText().toUpperCase());
-        }
+		copy.add("graphOrDefault1", visitGraphOrDefault(ctx.graphOrDefault(0)));
+		copy.add("graphOrDefault2", visitGraphOrDefault(ctx.graphOrDefault(1)));
 
-        usingClause.add("iri", visitIri(ctx.iri()));
+		return copy;
+	}
 
-        return usingClause;
-    }
-
-    @Override
-    public ST visitGraphOrDefault(SparqlParser.GraphOrDefaultContext ctx) {
-        // graphOrDefault :	  
-        //   DEFAULT | GRAPH? iri
+	@Override
+	public ST visitInsertData(SparqlParser.InsertDataContext ctx) {
+		// insertData :
+		//   INSERT DATA quadData
 
-        ST graphOrDefault = g.getInstanceOf("graphOrDefault");
+		ST insertData = g.getInstanceOf("insertData");
 
-        if (ctx.DEFAULT() != null) {
-            graphOrDefault.add("DEFAULT", ctx.DEFAULT().getSymbol().getText().toUpperCase());
-        } else {
-            if (ctx.GRAPH() != null) {
-                graphOrDefault.add("GRAPH", ctx.GRAPH().getSymbol().getText().toUpperCase());
-            }
-            graphOrDefault.add("iri", visitIri(ctx.iri()));
-        }
-
-        return graphOrDefault;
-    }
+		insertData.add("quadData", visitQuadData(ctx.quadData()));
 
-    @Override
-    public ST visitGraphRef(SparqlParser.GraphRefContext ctx) {
-        // graphRef :	  
-        //   GRAPH iri
-
-        ST graphRef = g.getInstanceOf("graphRef");
+		return insertData;
+	}
 
-        graphRef.add("iri", visitIri(ctx.iri()));
+	@Override
+	public ST visitDeleteData(SparqlParser.DeleteDataContext ctx) {
+		// deleteData :
+		//   DELETE DATA quadData
 
-        return graphRef;
-    }
+		ST deleteData = g.getInstanceOf("deleteData");
 
-    @Override
-    public ST visitGraphRefAll(SparqlParser.GraphRefAllContext ctx) {
-        // graphRefAll :
-        //   graphRef | DEFAULT | NAMED | ALL
+		deleteData.add("quadData", visitQuadData(ctx.quadData()));
 
-        ST graphRefAll = g.getInstanceOf("graphRefAll");
+		return deleteData;
+	}
+
+	@Override
+	public ST visitDeleteWhere(SparqlParser.DeleteWhereContext ctx) {
+		// deleteWhere :
+		//   DELETE WHERE quadPattern
 
-        if (ctx.graphRef() != null) {
-            graphRefAll.add("graphRef", visitGraphRef(ctx.graphRef()));
-        } else if (ctx.DEFAULT() != null) {
-            graphRefAll.add("DEFAULT", ctx.DEFAULT().getSymbol().getText().toUpperCase());
-        } else if (ctx.NAMED() != null) {
-            graphRefAll.add("NAMED", ctx.NAMED().getSymbol().getText().toUpperCase());
-        } else if (ctx.ALL() != null) {
-            graphRefAll.add("ALL", ctx.ALL().getSymbol().getText().toUpperCase());
-        }
+		ST deleteWhere = g.getInstanceOf("deleteWhere");
 
-        return graphRefAll;
-    }
+		deleteWhere.add("quadPattern", visitQuadPattern(ctx.quadPattern()));
 
-    @Override
-    public ST visitQuadPattern(SparqlParser.QuadPatternContext ctx) {
-        // quadPattern :
-        //   OPEN_CURLY_BRACE quads CLOSE_CURLY_BRACE
+		return deleteWhere;
+	}
 
-        ST quadPattern = g.getInstanceOf("quadPattern");
+	@Override
+	public ST visitModify(SparqlParser.ModifyContext ctx) {
+		// modify :
+		//   (WITH iri)? (deleteClause insertClause? | insertClause) usingClause* WHERE groupGraphPattern
 
-        quadPattern.add("quads", visitQuads(ctx.quads()));
+		ST modify = g.getInstanceOf("modify");
 
-        return quadPattern;
-    }
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.IriContext) {
+				modify.add("iri", visitIri((SparqlParser.IriContext) c));
+			} else if (c instanceof SparqlParser.DeleteClauseContext) {
+				modify.add("deleteClause", visitDeleteClause((SparqlParser.DeleteClauseContext) c));
+			} else if (c instanceof SparqlParser.InsertClauseContext) {
+				modify.add("insertClause", visitInsertClause((SparqlParser.InsertClauseContext) c));
+			} else if (c instanceof SparqlParser.UsingClauseContext) {
+				modify.add("usingClause", visitUsingClause((SparqlParser.UsingClauseContext) c));
+			} else if (c instanceof SparqlParser.GroupGraphPatternContext) {
+				modify.add("groupGraphPattern", visitGroupGraphPattern((SparqlParser.GroupGraphPatternContext) c));
+			}
+		}
 
-    @Override
-    public ST visitQuadData(SparqlParser.QuadDataContext ctx) {
-        // quadData :
-        //   OPEN_CURLY_BRACE quads CLOSE_CURLY_BRACE
+		return modify;
+	}
 
-        ST quadData = g.getInstanceOf("quadData");
+	@Override
+	public ST visitDeleteClause(SparqlParser.DeleteClauseContext ctx) {
+		// deleteClause :
+		//   DELETE quadPattern
 
-        quadData.add("quads", visitQuads(ctx.quads()));
+		ST deleteClause = g.getInstanceOf("deleteClause");
 
-        return quadData;
-    }
+		deleteClause.add("quadPattern", visitQuadPattern(ctx.quadPattern()));
 
-    @Override
-    public ST visitQuads(SparqlParser.QuadsContext ctx) {
-        // quads :
-        //   triplesTemplate? quadsDetails*
+		return deleteClause;
+	}
 
-        ST quads = g.getInstanceOf("quads");
+	@Override
+	public ST visitInsertClause(SparqlParser.InsertClauseContext ctx) {
+		// insertClause :
+		//   INSERT quadPattern
 
-        int i = 0;
+		ST insertClause = g.getInstanceOf("insertClause");
 
-        while (i < ctx.getChildCount()) {
-            ParseTree c = ctx.getChild(i++);
-            if (c instanceof SparqlParser.TriplesTemplateContext) {
-                quads.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
-            } else if (c instanceof SparqlParser.QuadsDetailsContext) {
-                quads.add("quadsDetails", visitQuadsDetails(ctx.quadsDetails()));
-            }
-        }
+		insertClause.add("quadPattern", visitQuadPattern(ctx.quadPattern()));
 
-        return quads;
-    }
+		return insertClause;
+	}
 
-    @Override
-    public ST visitQuadsDetails(SparqlParser.QuadsDetailsContext ctx) {
-        // quads :
-        //   quadsNotTriples DOT? triplesTemplate?
+	@Override
+	public ST visitUsingClause(SparqlParser.UsingClauseContext ctx) {
+		// usingClause :
+		//   USING NAMED? iri
 
-        ST quadsDetails = g.getInstanceOf("quadsDetails");
+		ST usingClause = g.getInstanceOf("usingClause");
 
-        int i = 0;
+		if (ctx.NAMED() != null) {
+			usingClause.add("NAMED", ctx.NAMED().getSymbol().getText().toUpperCase());
+		}
 
-        while (i < ctx.getChildCount()) {
-            ParseTree c = ctx.getChild(i++);
-            if (c instanceof SparqlParser.QuadsNotTriplesContext) {
-                quadsDetails.add("quadsNotTriples", visitQuadsNotTriples((SparqlParser.QuadsNotTriplesContext) c));
-            } else if (c instanceof SparqlParser.TriplesTemplateContext) {
-                quadsDetails.add("triplesTemplate", visitTriplesTemplate((SparqlParser.TriplesTemplateContext) c));
-            }
-        }
+		usingClause.add("iri", visitIri(ctx.iri()));
 
-        return quadsDetails;
-    }
+		return usingClause;
+	}
 
-    @Override
-    public ST visitQuadsNotTriples(SparqlParser.QuadsNotTriplesContext ctx) {
-        // quadsNotTriples :
-        //   GRAPH varOrIRI OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE
+	@Override
+	public ST visitGraphOrDefault(SparqlParser.GraphOrDefaultContext ctx) {
+		// graphOrDefault :	  
+		//   DEFAULT | GRAPH? iri
 
-        ST quadsNotTriples = g.getInstanceOf("quadsNotTriples");
+		ST graphOrDefault = g.getInstanceOf("graphOrDefault");
 
-        quadsNotTriples.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
+		if (ctx.DEFAULT() != null) {
+			graphOrDefault.add("DEFAULT", ctx.DEFAULT().getSymbol().getText().toUpperCase());
+		} else {
+			if (ctx.GRAPH() != null) {
+				graphOrDefault.add("GRAPH", ctx.GRAPH().getSymbol().getText().toUpperCase());
+			}
+			graphOrDefault.add("iri", visitIri(ctx.iri()));
+		}
 
-        if (ctx.triplesTemplate() != null) {
-            quadsNotTriples.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
-        }
+		return graphOrDefault;
+	}
 
-        return quadsNotTriples;
-    }
+	@Override
+	public ST visitGraphRef(SparqlParser.GraphRefContext ctx) {
+		// graphRef :	  
+		//   GRAPH iri
 
-    @Override
-    public ST visitTriplesTemplate(SparqlParser.TriplesTemplateContext ctx) {
-        // triplesTemplate :
-        //   triplesSameSubject (DOT triplesTemplate?)?
-
-        ST triplesTemplate = g.getInstanceOf("triplesTemplate");
-
-        triplesTemplate.add("triplesSameSubject", visitTriplesSameSubject(ctx.triplesSameSubject()));
-
-        if (ctx.triplesTemplate() != null) {
-            triplesTemplate.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
-        }
-
-        return triplesTemplate;
-    }
-
-    @Override
-    public ST visitGroupGraphPattern(SparqlParser.GroupGraphPatternContext ctx) {
-        // groupGraphPattern :
-        //   OPEN_CURLY_BRACE (subSelect | groupGraphPatternSub) CLOSE_CURLY_BRACE
+		ST graphRef = g.getInstanceOf("graphRef");
 
-        ST groupGraphPattern = g.getInstanceOf("groupGraphPattern");
-
-        if (ctx.subSelect() != null) {
-            groupGraphPattern.add("subSelect", visitSubSelect(ctx.subSelect()));
-        } else if (ctx.groupGraphPatternSub() != null) {
-            groupGraphPattern.add("groupGraphPatternSub", visitGroupGraphPatternSub(ctx.groupGraphPatternSub()));
-        }
+		graphRef.add("iri", visitIri(ctx.iri()));
 
-        return groupGraphPattern;
-    }
+		return graphRef;
+	}
 
-    @Override
-    public ST visitGroupGraphPatternSub(SparqlParser.GroupGraphPatternSubContext ctx) {
-        // groupGraphPatternSub :
-        //   triplesBlock? groupGraphPatternSubList*
+	@Override
+	public ST visitGraphRefAll(SparqlParser.GraphRefAllContext ctx) {
+		// graphRefAll :
+		//   graphRef | DEFAULT | NAMED | ALL
 
-        ST groupGraphPatternSub = g.getInstanceOf("groupGraphPatternSub");
+		ST graphRefAll = g.getInstanceOf("graphRefAll");
 
-        if (ctx.children != null) {
-            for (ParseTree c : ctx.children) {
-                if (c instanceof SparqlParser.GroupGraphPatternSubListContext) {
-                    groupGraphPatternSub.add("groupGraphPatternSubList", visitGroupGraphPatternSubList((SparqlParser.GroupGraphPatternSubListContext) c));
-                } else if (c instanceof SparqlParser.TriplesBlockContext) {
-                    groupGraphPatternSub.add("triplesBlock", visitTriplesBlock((SparqlParser.TriplesBlockContext) c));
-                }
-            }
-        }
+		if (ctx.graphRef() != null) {
+			graphRefAll.add("graphRef", visitGraphRef(ctx.graphRef()));
+		} else if (ctx.DEFAULT() != null) {
+			graphRefAll.add("DEFAULT", ctx.DEFAULT().getSymbol().getText().toUpperCase());
+		} else if (ctx.NAMED() != null) {
+			graphRefAll.add("NAMED", ctx.NAMED().getSymbol().getText().toUpperCase());
+		} else if (ctx.ALL() != null) {
+			graphRefAll.add("ALL", ctx.ALL().getSymbol().getText().toUpperCase());
+		}
 
-        return groupGraphPatternSub;
-    }
+		return graphRefAll;
+	}
 
-    @Override
-    public ST visitGroupGraphPatternSubList(SparqlParser.GroupGraphPatternSubListContext ctx) {
-        // groupGraphPatternSubList :
-        //    graphPatternNotTriples DOT? triplesBlock?
+	@Override
+	public ST visitQuadPattern(SparqlParser.QuadPatternContext ctx) {
+		// quadPattern :
+		//   OPEN_CURLY_BRACE quads CLOSE_CURLY_BRACE
 
-        ST groupGraphPatternSubList = g.getInstanceOf("groupGraphPatternSubList");
+		ST quadPattern = g.getInstanceOf("quadPattern");
 
-        groupGraphPatternSubList.add("graphPatternNotTriples", visitGraphPatternNotTriples(ctx.graphPatternNotTriples()));
+		quadPattern.add("quads", visitQuads(ctx.quads()));
 
-        if (ctx.triplesBlock() != null) {
-            groupGraphPatternSubList.add("triplesBlock", visitTriplesBlock(ctx.triplesBlock()));
-        }
+		return quadPattern;
+	}
 
-        return groupGraphPatternSubList;
-    }
+	@Override
+	public ST visitQuadData(SparqlParser.QuadDataContext ctx) {
+		// quadData :
+		//   OPEN_CURLY_BRACE quads CLOSE_CURLY_BRACE
 
-    @Override
-    public ST visitTriplesBlock(SparqlParser.TriplesBlockContext ctx) {
-        // triplesBlock :
-        //   triplesSameSubjectPath (DOT triplesBlock?)?
+		ST quadData = g.getInstanceOf("quadData");
 
-        ST triplesBlock = g.getInstanceOf("triplesBlock");
+		quadData.add("quads", visitQuads(ctx.quads()));
 
-        triplesBlock.add("triplesSameSubjectPath", visitTriplesSameSubjectPath(ctx.triplesSameSubjectPath()));
-        if (ctx.triplesBlock() != null) {
-            triplesBlock.add("triplesBlock", visitTriplesBlock(ctx.triplesBlock()));
-        }
+		return quadData;
+	}
 
-        return triplesBlock;
-    }
+	@Override
+	public ST visitQuads(SparqlParser.QuadsContext ctx) {
+		// quads :
+		//   triplesTemplate? quadsDetails*
 
-    @Override
-    public ST visitGraphPatternNotTriples(SparqlParser.GraphPatternNotTriplesContext ctx) {
-        // graphPatternNotTriples :
-        //   groupOrUnionGraphPattern | optionalGraphPattern | minusGraphPattern | graphGraphPattern | serviceGraphPattern | filter | bind | inlineData
+		ST quads = g.getInstanceOf("quads");
 
-        ST graphPatternNotTriples = g.getInstanceOf("graphPatternNotTriples");
+		int i = 0;
 
-        if (ctx.groupOrUnionGraphPattern() != null) {
-            graphPatternNotTriples.add("groupOrUnionGraphPattern", visitGroupOrUnionGraphPattern(ctx.groupOrUnionGraphPattern()));
-        } else if (ctx.optionalGraphPattern() != null) {
-            graphPatternNotTriples.add("optionalGraphPattern", visitOptionalGraphPattern(ctx.optionalGraphPattern()));
-        } else if (ctx.minusGraphPattern() != null) {
-            graphPatternNotTriples.add("minusGraphPattern", visitMinusGraphPattern(ctx.minusGraphPattern()));
-        } else if (ctx.graphGraphPattern() != null) {
-            graphPatternNotTriples.add("graphGraphPattern", visitGraphGraphPattern(ctx.graphGraphPattern()));
-        } else if (ctx.serviceGraphPattern() != null) {
-            graphPatternNotTriples.add("serviceGraphPattern", visitServiceGraphPattern(ctx.serviceGraphPattern()));
-        } else if (ctx.filter() != null) {
-            graphPatternNotTriples.add("filter", visitFilter(ctx.filter()));
-        } else if (ctx.bind() != null) {
-            graphPatternNotTriples.add("bind", visitBind(ctx.bind()));
-        } else if (ctx.inlineData() != null) {
-            graphPatternNotTriples.add("inlineData", visitInlineData(ctx.inlineData()));
-        }
+		while (i < ctx.getChildCount()) {
+			ParseTree c = ctx.getChild(i++);
+			if (c instanceof SparqlParser.TriplesTemplateContext) {
+				quads.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
+			} else if (c instanceof SparqlParser.QuadsDetailsContext) {
+				quads.add("quadsDetails", visitQuadsDetails(ctx.quadsDetails()));
+			}
+		}
 
-        return graphPatternNotTriples;
-    }
+		return quads;
+	}
 
-    @Override
-    public ST visitOptionalGraphPattern(SparqlParser.OptionalGraphPatternContext ctx) {
-        // optionalGraphPattern :
-        //   OPTIONAL groupGraphPattern
+	@Override
+	public ST visitQuadsDetails(SparqlParser.QuadsDetailsContext ctx) {
+		// quads :
+		//   quadsNotTriples DOT? triplesTemplate?
 
-        ST optionalGraphPattern = g.getInstanceOf("optionalGraphPattern");
+		ST quadsDetails = g.getInstanceOf("quadsDetails");
 
-        optionalGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
+		int i = 0;
 
-        return optionalGraphPattern;
-    }
+		while (i < ctx.getChildCount()) {
+			ParseTree c = ctx.getChild(i++);
+			if (c instanceof SparqlParser.QuadsNotTriplesContext) {
+				quadsDetails.add("quadsNotTriples", visitQuadsNotTriples((SparqlParser.QuadsNotTriplesContext) c));
+			} else if (c instanceof SparqlParser.TriplesTemplateContext) {
+				quadsDetails.add("triplesTemplate", visitTriplesTemplate((SparqlParser.TriplesTemplateContext) c));
+			}
+		}
 
-    @Override
-    public ST visitGraphGraphPattern(SparqlParser.GraphGraphPatternContext ctx) {
-        // graphGraphPattern :
-        //   GRAPH varOrIRIref groupGraphPattern
+		return quadsDetails;
+	}
 
-        ST graphGraphPattern = g.getInstanceOf("graphGraphPattern");
+	@Override
+	public ST visitQuadsNotTriples(SparqlParser.QuadsNotTriplesContext ctx) {
+		// quadsNotTriples :
+		//   GRAPH varOrIRI OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE
 
-        graphGraphPattern.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
+		ST quadsNotTriples = g.getInstanceOf("quadsNotTriples");
 
-        graphGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
+		quadsNotTriples.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
 
-        return graphGraphPattern;
-    }
+		if (ctx.triplesTemplate() != null) {
+			quadsNotTriples.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
+		}
 
-    @Override
-    public ST visitServiceGraphPattern(SparqlParser.ServiceGraphPatternContext ctx) {
-        // serviceGraphPattern :
-        //   SERVICE SILENT? varOrIRI groupGraphPattern
+		return quadsNotTriples;
+	}
 
-        ST serviceGraphPattern = g.getInstanceOf("serviceGraphPattern");
+	@Override
+	public ST visitTriplesTemplate(SparqlParser.TriplesTemplateContext ctx) {
+		// triplesTemplate :
+		//   triplesSameSubject (DOT triplesTemplate?)?
 
-        if (ctx.SILENT() != null) {
-            serviceGraphPattern.add("SILENT", ctx.SILENT().getSymbol().getText());
-        }
+		ST triplesTemplate = g.getInstanceOf("triplesTemplate");
 
-        serviceGraphPattern.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
+		triplesTemplate.add("triplesSameSubject", visitTriplesSameSubject(ctx.triplesSameSubject()));
 
-        serviceGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
+		if (ctx.triplesTemplate() != null) {
+			triplesTemplate.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
+		}
 
-        return serviceGraphPattern;
-    }
+		return triplesTemplate;
+	}
 
-    @Override
-    public ST visitBind(SparqlParser.BindContext ctx) {
-        // bind :
-        //  BIND OPEN_BRACE expression AS var CLOSE_BRACE
+	@Override
+	public ST visitGroupGraphPattern(SparqlParser.GroupGraphPatternContext ctx) {
+		// groupGraphPattern :
+		//   OPEN_CURLY_BRACE (subSelect | groupGraphPatternSub) CLOSE_CURLY_BRACE
 
-        ST bind = g.getInstanceOf("bind");
+		ST groupGraphPattern = g.getInstanceOf("groupGraphPattern");
 
-        bind.add("expression", visitExpression(ctx.expression()));
+		if (ctx.subSelect() != null) {
+			groupGraphPattern.add("subSelect", visitSubSelect(ctx.subSelect()));
+		} else if (ctx.groupGraphPatternSub() != null) {
+			groupGraphPattern.add("groupGraphPatternSub", visitGroupGraphPatternSub(ctx.groupGraphPatternSub()));
+		}
 
-        bind.add("var", visitVar(ctx.var()));
+		return groupGraphPattern;
+	}
 
-        return bind;
-    }
+	@Override
+	public ST visitGroupGraphPatternSub(SparqlParser.GroupGraphPatternSubContext ctx) {
+		// groupGraphPatternSub :
+		//   triplesBlock? groupGraphPatternSubList*
 
-    @Override
-    public ST visitInlineData(SparqlParser.InlineDataContext ctx) {
-        // inlineData :
-        //  VALUES dataBlock
+		ST groupGraphPatternSub = g.getInstanceOf("groupGraphPatternSub");
 
-        ST inlineData = g.getInstanceOf("inlineData");
+		if (ctx.children != null) {
+			for (ParseTree c : ctx.children) {
+				if (c instanceof SparqlParser.GroupGraphPatternSubListContext) {
+					groupGraphPatternSub.add("groupGraphPatternSubList", visitGroupGraphPatternSubList((SparqlParser.GroupGraphPatternSubListContext) c));
+				} else if (c instanceof SparqlParser.TriplesBlockContext) {
+					groupGraphPatternSub.add("triplesBlock", visitTriplesBlock((SparqlParser.TriplesBlockContext) c));
+				}
+			}
+		}
 
-        inlineData.add("dataBlock", visitDataBlock(ctx.dataBlock()));
+		return groupGraphPatternSub;
+	}
 
-        return inlineData;
-    }
+	@Override
+	public ST visitGroupGraphPatternSubList(SparqlParser.GroupGraphPatternSubListContext ctx) {
+		// groupGraphPatternSubList :
+		//    graphPatternNotTriples DOT? triplesBlock?
 
-    @Override
-    public ST visitDataBlock(SparqlParser.DataBlockContext ctx) {
-        // dataBlock :
-        //  inlineDataOneVar | inlineDataFull
+		ST groupGraphPatternSubList = g.getInstanceOf("groupGraphPatternSubList");
 
-        ST dataBlock = g.getInstanceOf("dataBlock");
+		groupGraphPatternSubList.add("graphPatternNotTriples", visitGraphPatternNotTriples(ctx.graphPatternNotTriples()));
 
-        if (ctx.inlineDataOneVar() != null) {
-            dataBlock.add("inlineDataOneVar", visitInlineDataOneVar(ctx.inlineDataOneVar()));
-        } else if (ctx.inlineDataFull() != null) {
-            dataBlock.add("inlineDataFull", visitInlineDataFull(ctx.inlineDataFull()));
-        }
+		if (ctx.triplesBlock() != null) {
+			groupGraphPatternSubList.add("triplesBlock", visitTriplesBlock(ctx.triplesBlock()));
+		}
 
-        return dataBlock;
-    }
+		return groupGraphPatternSubList;
+	}
 
-    @Override
-    public ST visitInlineDataOneVar(SparqlParser.InlineDataOneVarContext ctx) {
-        // inlineDataOneVar :
-        //  var OPEN_CURLY_BRACE dataBlockValue* CLOSE_CURLY_BRACE
+	@Override
+	public ST visitTriplesBlock(SparqlParser.TriplesBlockContext ctx) {
+		// triplesBlock :
+		//   triplesSameSubjectPath (DOT triplesBlock?)?
 
-        ST inlineDataOneVar = g.getInstanceOf("inlineDataOneVar");
+		ST triplesBlock = g.getInstanceOf("triplesBlock");
 
-        if (ctx.children != null) {
-            for (ParseTree c : ctx.children) {
-                if (c instanceof SparqlParser.DataBlockValueContext) {
-                    inlineDataOneVar.add("dataBlockValue", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
-                } else if (c instanceof SparqlParser.VarContext) {
-                    inlineDataOneVar.add("var", visitVar((SparqlParser.VarContext) c));
-                }
-            }
-        }
-        return inlineDataOneVar;
-    }
+		triplesBlock.add("triplesSameSubjectPath", visitTriplesSameSubjectPath(ctx.triplesSameSubjectPath()));
+		if (ctx.triplesBlock() != null) {
+			triplesBlock.add("triplesBlock", visitTriplesBlock(ctx.triplesBlock()));
+		}
 
-    @Override
-    public ST visitInlineDataFull(SparqlParser.InlineDataFullContext ctx) {
-        // inlineDataFull :
-        //  (OPEN_BRACE var* CLOSE_BRACE) OPEN_CURLY_BRACE dataBlockValues* CLOSE_CURLY_BRACE
+		return triplesBlock;
+	}
 
-        ST inlineDataFull = g.getInstanceOf("inlineDataFull");
+	@Override
+	public ST visitGraphPatternNotTriples(SparqlParser.GraphPatternNotTriplesContext ctx) {
+		// graphPatternNotTriples :
+		//   groupOrUnionGraphPattern | optionalGraphPattern | minusGraphPattern | graphGraphPattern | serviceGraphPattern | filter | bind | inlineData
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.VarContext) {
-                inlineDataFull.add("var", visitVar((SparqlParser.VarContext) c));
-            } else if (c instanceof SparqlParser.DataBlockValuesContext) {
-                inlineDataFull.add("dataBlockValues", visitDataBlockValues((SparqlParser.DataBlockValuesContext) c));
-            }
-        }
+		ST graphPatternNotTriples = g.getInstanceOf("graphPatternNotTriples");
 
-        return inlineDataFull;
-    }
+		if (ctx.groupOrUnionGraphPattern() != null) {
+			graphPatternNotTriples.add("groupOrUnionGraphPattern", visitGroupOrUnionGraphPattern(ctx.groupOrUnionGraphPattern()));
+		} else if (ctx.optionalGraphPattern() != null) {
+			graphPatternNotTriples.add("optionalGraphPattern", visitOptionalGraphPattern(ctx.optionalGraphPattern()));
+		} else if (ctx.minusGraphPattern() != null) {
+			graphPatternNotTriples.add("minusGraphPattern", visitMinusGraphPattern(ctx.minusGraphPattern()));
+		} else if (ctx.graphGraphPattern() != null) {
+			graphPatternNotTriples.add("graphGraphPattern", visitGraphGraphPattern(ctx.graphGraphPattern()));
+		} else if (ctx.serviceGraphPattern() != null) {
+			graphPatternNotTriples.add("serviceGraphPattern", visitServiceGraphPattern(ctx.serviceGraphPattern()));
+		} else if (ctx.filter() != null) {
+			graphPatternNotTriples.add("filter", visitFilter(ctx.filter()));
+		} else if (ctx.bind() != null) {
+			graphPatternNotTriples.add("bind", visitBind(ctx.bind()));
+		} else if (ctx.inlineData() != null) {
+			graphPatternNotTriples.add("inlineData", visitInlineData(ctx.inlineData()));
+		}
 
-    @Override
-    public ST visitDataBlockValues(SparqlParser.DataBlockValuesContext ctx) {
-        // dataBlockValues :
-        //  OPEN_BRACE dataBlockValue* CLOSE_BRACE
+		return graphPatternNotTriples;
+	}
 
-        ST dataBlockValues = g.getInstanceOf("dataBlockValues");
+	@Override
+	public ST visitOptionalGraphPattern(SparqlParser.OptionalGraphPatternContext ctx) {
+		// optionalGraphPattern :
+		//   OPTIONAL groupGraphPattern
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.DataBlockValueContext) {
-                dataBlockValues.add("dataBlockValue", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
-            }
-        }
+		ST optionalGraphPattern = g.getInstanceOf("optionalGraphPattern");
 
-        return dataBlockValues;
-    }
+		optionalGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
 
-    @Override
-    public ST visitDataBlockValue(SparqlParser.DataBlockValueContext ctx) {
-        // dataBlockValue :
-        //  iri | rdfLiteral | numericLiteral | booleanLiteral | UNDEF
+		return optionalGraphPattern;
+	}
 
-        ST dataBlockValue = g.getInstanceOf("dataBlockValue");
+	@Override
+	public ST visitGraphGraphPattern(SparqlParser.GraphGraphPatternContext ctx) {
+		// graphGraphPattern :
+		//   GRAPH varOrIRIref groupGraphPattern
 
-        if (ctx.iri() != null) {
-            dataBlockValue.add("iri", visitIri(ctx.iri()));
-        } else if (ctx.rdfLiteral() != null) {
-            dataBlockValue.add("rdfLiteral", visitRdfLiteral(ctx.rdfLiteral()));
-        } else if (ctx.numericLiteral() != null) {
-            dataBlockValue.add("numericLiteral", visitNumericLiteral(ctx.numericLiteral()));
-        } else if (ctx.booleanLiteral() != null) {
-            dataBlockValue.add("booleanLiteral", visitBooleanLiteral(ctx.booleanLiteral()));
-        } else if (ctx.UNDEF() != null) {
-            dataBlockValue.add("UNDEF", ctx.UNDEF().getSymbol().getText());
-        }
+		ST graphGraphPattern = g.getInstanceOf("graphGraphPattern");
 
-        return dataBlockValue;
-    }
+		graphGraphPattern.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
 
-    @Override
-    public ST visitMinusGraphPattern(SparqlParser.MinusGraphPatternContext ctx) {
-        // minusGraphPattern :
-        //   MINUS_KEYWORD groupGraphPattern
+		graphGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
 
-        ST minusGraphPattern = g.getInstanceOf("minusGraphPattern");
+		return graphGraphPattern;
+	}
 
-        minusGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
+	@Override
+	public ST visitServiceGraphPattern(SparqlParser.ServiceGraphPatternContext ctx) {
+		// serviceGraphPattern :
+		//   SERVICE SILENT? varOrIRI groupGraphPattern
 
-        return minusGraphPattern;
-    }
+		ST serviceGraphPattern = g.getInstanceOf("serviceGraphPattern");
 
-    @Override
-    public ST visitGroupOrUnionGraphPattern(SparqlParser.GroupOrUnionGraphPatternContext ctx) {
-        // groupOrUnionGraphPattern :
-        //   groupGraphPattern (UNION groupGraphPattern)*
+		if (ctx.SILENT() != null) {
+			serviceGraphPattern.add("SILENT", ctx.SILENT().getSymbol().getText());
+		}
 
-        ST groupOrUnionGraphPattern = g.getInstanceOf("groupOrUnionGraphPattern");
+		serviceGraphPattern.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.GroupGraphPatternContext) {
-                groupOrUnionGraphPattern.add("groupGraphPattern", visitGroupGraphPattern((SparqlParser.GroupGraphPatternContext) c));
-            }
-        }
+		serviceGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
 
-        return groupOrUnionGraphPattern;
-    }
+		return serviceGraphPattern;
+	}
 
-    @Override
-    public ST visitFilter(SparqlParser.FilterContext ctx) {
-        // filter :
-        //   FILTER constraint
+	@Override
+	public ST visitBind(SparqlParser.BindContext ctx) {
+		// bind :
+		//  BIND OPEN_BRACE expression AS var CLOSE_BRACE
 
-        ST filter = g.getInstanceOf("filter");
+		ST bind = g.getInstanceOf("bind");
 
-        filter.add("constraint", visitConstraint(ctx.constraint()));
+		bind.add("expression", visitExpression(ctx.expression()));
 
-        return filter;
-    }
+		bind.add("var", visitVar(ctx.var()));
 
-    @Override
-    public ST visitConstraint(SparqlParser.ConstraintContext ctx) {
-        // constraint :
-        //   brackettedExpression | builtInCall | functionCall
+		return bind;
+	}
 
-        ST constraint = g.getInstanceOf("constraint");
+	@Override
+	public ST visitInlineData(SparqlParser.InlineDataContext ctx) {
+		// inlineData :
+		//  VALUES dataBlock
 
-        if (ctx.brackettedExpression() != null) {
-            constraint.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
-        } else if (ctx.builtInCall() != null) {
-            constraint.add("builtInCall", visitBuiltInCall(ctx.builtInCall()));
-        } else if (ctx.functionCall() != null) {
-            constraint.add("functionCall", visitFunctionCall(ctx.functionCall()));
-        }
+		ST inlineData = g.getInstanceOf("inlineData");
 
-        return constraint;
-    }
+		inlineData.add("dataBlock", visitDataBlock(ctx.dataBlock()));
 
-    @Override
-    public ST visitFunctionCall(SparqlParser.FunctionCallContext ctx) {
-        // functionCall :
-        //   iri argList
+		return inlineData;
+	}
 
-        ST functionCall = g.getInstanceOf("functionCall");
+	@Override
+	public ST visitDataBlock(SparqlParser.DataBlockContext ctx) {
+		// dataBlock :
+		//  inlineDataOneVar | inlineDataFull
 
-        functionCall.add("iri", visitIri(ctx.iri()));
+		ST dataBlock = g.getInstanceOf("dataBlock");
 
-        functionCall.add("argList", visitArgList(ctx.argList()));
+		if (ctx.inlineDataOneVar() != null) {
+			dataBlock.add("inlineDataOneVar", visitInlineDataOneVar(ctx.inlineDataOneVar()));
+		} else if (ctx.inlineDataFull() != null) {
+			dataBlock.add("inlineDataFull", visitInlineDataFull(ctx.inlineDataFull()));
+		}
 
-        return functionCall;
-    }
+		return dataBlock;
+	}
 
-    @Override
-    public ST visitArgList(SparqlParser.ArgListContext ctx) {
-        // argList :
-        //   nil | OPEN_BRACE DISTINCT? expression (COMMA expression)* CLOSE_BRACE
+	@Override
+	public ST visitInlineDataOneVar(SparqlParser.InlineDataOneVarContext ctx) {
+		// inlineDataOneVar :
+		//  var OPEN_CURLY_BRACE dataBlockValue* CLOSE_CURLY_BRACE
 
-        ST argList = g.getInstanceOf("argList");
+		ST inlineDataOneVar = g.getInstanceOf("inlineDataOneVar");
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ExpressionContext) {
-                argList.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
-            } else if (c instanceof SparqlParser.NilContext) {
-                argList.add("nil", visitNil((SparqlParser.NilContext) c));
-            } else if (c instanceof TerminalNode) {
-                TerminalNode t = (TerminalNode) c;
-                Token to = (Token) (t.getSymbol());
-                if (to.getType() == SparqlParser.DISTINCT) {
-                    argList.add("DISTINCT", to.getText().toUpperCase());
-                }
-            }
-        }
+		if (ctx.children != null) {
+			for (ParseTree c : ctx.children) {
+				if (c instanceof SparqlParser.DataBlockValueContext) {
+					inlineDataOneVar.add("dataBlockValue", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
+				} else if (c instanceof SparqlParser.VarContext) {
+					inlineDataOneVar.add("var", visitVar((SparqlParser.VarContext) c));
+				}
+			}
+		}
+		return inlineDataOneVar;
+	}
 
-        return argList;
-    }
+	@Override
+	public ST visitInlineDataFull(SparqlParser.InlineDataFullContext ctx) {
+		// inlineDataFull :
+		//  (OPEN_BRACE var* CLOSE_BRACE) OPEN_CURLY_BRACE dataBlockValues* CLOSE_CURLY_BRACE
 
-    @Override
-    public ST visitExpressionList(SparqlParser.ExpressionListContext ctx) {
-        // expressionList :
-        //   nil | OPEN_BRACE expression (COMMA expression)* CLOSE_BRACE
+		ST inlineDataFull = g.getInstanceOf("inlineDataFull");
 
-        ST expressionList = g.getInstanceOf("expressionList");
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.VarContext) {
+				inlineDataFull.add("var", visitVar((SparqlParser.VarContext) c));
+			} else if (c instanceof SparqlParser.DataBlockValuesContext) {
+				inlineDataFull.add("dataBlockValues", visitDataBlockValues((SparqlParser.DataBlockValuesContext) c));
+			}
+		}
 
-        if (ctx.children != null) {
-            for (ParseTree c : ctx.children) {
-                if (c instanceof SparqlParser.ExpressionContext) {
-                    expressionList.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
-                } else if (c instanceof SparqlParser.NilContext) {
-                    expressionList.add("nil", visitNil((SparqlParser.NilContext) c));
-                }
-            }
-        }
+		return inlineDataFull;
+	}
 
-        return expressionList;
-    }
+	@Override
+	public ST visitDataBlockValues(SparqlParser.DataBlockValuesContext ctx) {
+		// dataBlockValues :
+		//  OPEN_BRACE dataBlockValue* CLOSE_BRACE
 
-    @Override
-    public ST visitConstructTemplate(SparqlParser.ConstructTemplateContext ctx) {
-        // constructTemplate :
-        //   OPEN_CURLY_BRACE constructTriples? CLOSE_CURLY_BRACE
+		ST dataBlockValues = g.getInstanceOf("dataBlockValues");
 
-        ST constructTemplate = g.getInstanceOf("constructTemplate");
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.DataBlockValueContext) {
+				dataBlockValues.add("dataBlockValue", visitDataBlockValue((SparqlParser.DataBlockValueContext) c));
+			}
+		}
 
-        if (ctx.constructTriples() != null) {
-            constructTemplate.add("constructTriples", visitConstructTriples(ctx.constructTriples()));
-        }
+		return dataBlockValues;
+	}
 
-        return constructTemplate;
-    }
+	@Override
+	public ST visitDataBlockValue(SparqlParser.DataBlockValueContext ctx) {
+		// dataBlockValue :
+		//  iri | rdfLiteral | numericLiteral | booleanLiteral | UNDEF
 
-    @Override
-    public ST visitConstructTriples(SparqlParser.ConstructTriplesContext ctx) {
-        // constructTriples :
-        //   triplesSameSubject (DOT constructTriples?)* 
-
-        ST constructTriples = g.getInstanceOf("constructTriples");
+		ST dataBlockValue = g.getInstanceOf("dataBlockValue");
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ConstructTriplesContext) {
-                constructTriples.add("constructTriples", visitConstructTriples((SparqlParser.ConstructTriplesContext) c));
-            } else if (c instanceof SparqlParser.TriplesSameSubjectContext) {
-                constructTriples.add("triplesSameSubject", visitTriplesSameSubject((SparqlParser.TriplesSameSubjectContext) c));
-            }
-        }
+		if (ctx.iri() != null) {
+			dataBlockValue.add("iri", visitIri(ctx.iri()));
+		} else if (ctx.rdfLiteral() != null) {
+			dataBlockValue.add("rdfLiteral", visitRdfLiteral(ctx.rdfLiteral()));
+		} else if (ctx.numericLiteral() != null) {
+			dataBlockValue.add("numericLiteral", visitNumericLiteral(ctx.numericLiteral()));
+		} else if (ctx.booleanLiteral() != null) {
+			dataBlockValue.add("booleanLiteral", visitBooleanLiteral(ctx.booleanLiteral()));
+		} else if (ctx.UNDEF() != null) {
+			dataBlockValue.add("UNDEF", ctx.UNDEF().getSymbol().getText());
+		}
 
-        return constructTriples;
-    }
+		return dataBlockValue;
+	}
 
-    @Override
-    public ST visitTriplesSameSubject(SparqlParser.TriplesSameSubjectContext ctx) {
-        // triplesSameSubject :
-        //   varOrTerm propertyListNotEmpty | triplesNode propertyList 
+	@Override
+	public ST visitMinusGraphPattern(SparqlParser.MinusGraphPatternContext ctx) {
+		// minusGraphPattern :
+		//   MINUS_KEYWORD groupGraphPattern
 
-        ST triplesSameSubject = g.getInstanceOf("triplesSameSubject");
+		ST minusGraphPattern = g.getInstanceOf("minusGraphPattern");
 
-        if (ctx.varOrTerm() != null) {
-            triplesSameSubject.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
-            triplesSameSubject.add("propertyListNotEmpty", visitPropertyListNotEmpty(ctx.propertyListNotEmpty()));
-        } else {
-            triplesSameSubject.add("triplesNode", visitTriplesNode(ctx.triplesNode()));
-            triplesSameSubject.add("propertyList", visitPropertyList(ctx.propertyList()));
-        }
+		minusGraphPattern.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
 
-        return triplesSameSubject;
-    }
+		return minusGraphPattern;
+	}
 
-    @Override
-    public ST visitPropertyList(SparqlParser.PropertyListContext ctx) {
-        // propertyList
-        //   propertyListNotEmpty?
+	@Override
+	public ST visitGroupOrUnionGraphPattern(SparqlParser.GroupOrUnionGraphPatternContext ctx) {
+		// groupOrUnionGraphPattern :
+		//   groupGraphPattern (UNION groupGraphPattern)*
 
-        ST propertyList = g.getInstanceOf("propertyList");
+		ST groupOrUnionGraphPattern = g.getInstanceOf("groupOrUnionGraphPattern");
 
-        if (ctx.propertyListNotEmpty() != null) {
-            propertyList.add("propertyListNotEmpty", visitPropertyListNotEmpty(ctx.propertyListNotEmpty()));
-        }
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.GroupGraphPatternContext) {
+				groupOrUnionGraphPattern.add("groupGraphPattern", visitGroupGraphPattern((SparqlParser.GroupGraphPatternContext) c));
+			}
+		}
 
-        return propertyList;
-    }
+		return groupOrUnionGraphPattern;
+	}
 
-    @Override
-    public ST visitPropertyListNotEmpty(SparqlParser.PropertyListNotEmptyContext ctx) {
-        // propertyListNotEmpty :
-        //   verb objectList (SEMICOLON (verb objectList)?)* 
+	@Override
+	public ST visitFilter(SparqlParser.FilterContext ctx) {
+		// filter :
+		//   FILTER constraint
 
-        ST propertyListNotEmpty = g.getInstanceOf("propertyListNotEmpty");
+		ST filter = g.getInstanceOf("filter");
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.VerbContext) {
-                propertyListNotEmpty.add("verb", visitVerb((SparqlParser.VerbContext) c));
-            } else if (c instanceof SparqlParser.ObjectListContext) {
-                propertyListNotEmpty.add("objectList", visitObjectList((SparqlParser.ObjectListContext) c));
-            }
-        }
+		filter.add("constraint", visitConstraint(ctx.constraint()));
 
-        return propertyListNotEmpty;
-    }
+		return filter;
+	}
 
-    @Override
-    public ST visitVerb(SparqlParser.VerbContext ctx) {
-        // verb :
-        //   varOrIRI | A
+	@Override
+	public ST visitConstraint(SparqlParser.ConstraintContext ctx) {
+		// constraint :
+		//   brackettedExpression | builtInCall | functionCall
 
-        ST verb = g.getInstanceOf("verb");
+		ST constraint = g.getInstanceOf("constraint");
 
-        if (ctx.varOrIRI() != null) {
-            verb.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
-        } else if (ctx.A() != null) {
-            verb.add("A", ctx.A().getSymbol().getText());
-        }
+		if (ctx.brackettedExpression() != null) {
+			constraint.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
+		} else if (ctx.builtInCall() != null) {
+			constraint.add("builtInCall", visitBuiltInCall(ctx.builtInCall()));
+		} else if (ctx.functionCall() != null) {
+			constraint.add("functionCall", visitFunctionCall(ctx.functionCall()));
+		}
 
-        return verb;
-    }
+		return constraint;
+	}
 
-    @Override
-    public ST visitObjectList(SparqlParser.ObjectListContext ctx) {
-        // objectList :
-        //   object (COMMA object)*
+	@Override
+	public ST visitFunctionCall(SparqlParser.FunctionCallContext ctx) {
+		// functionCall :
+		//   iri argList
 
-        ST objectList = g.getInstanceOf("objectList");
+		ST functionCall = g.getInstanceOf("functionCall");
 
-        if (ctx != null) {
-            for (ParseTree c : ctx.children) {
-                if (c instanceof SparqlParser.ObjectContext) {
-                    objectList.add("object", visitObject((SparqlParser.ObjectContext) c));
-                }
-            }
-        }
-        return objectList;
-    }
+		functionCall.add("iri", visitIri(ctx.iri()));
 
-    @Override
-    public ST visitObject(SparqlParser.ObjectContext ctx) {
-        // object :
-        //   graphNode
+		functionCall.add("argList", visitArgList(ctx.argList()));
 
-        ST object = g.getInstanceOf("object");
+		return functionCall;
+	}
 
-        object.add("graphNode", visitGraphNode(ctx.graphNode()));
+	@Override
+	public ST visitArgList(SparqlParser.ArgListContext ctx) {
+		// argList :
+		//   OPEN_BRACE (DISTINCT? expressionList|) CLOSE_BRACE
 
-        return object;
-    }
+		ST argList = g.getInstanceOf("argList");
 
-    @Override
-    public ST visitTriplesSameSubjectPath(SparqlParser.TriplesSameSubjectPathContext ctx) {
-        // triplesSameSubjectPath :
-        //   varOrTerm propertyListPathNotEmpty | triplesNodePath propertyListPath
+		if (ctx.DISTINCT() != null) {
+			argList.add("DISTINCT", ctx.DISTINCT().getSymbol().getText());
+		}
 
-        ST triplesSameSubjectPath = g.getInstanceOf("triplesSameSubjectPath");
+		if (ctx.expressionList() != null) {
+			argList.add("expressionList", visitExpressionList(ctx.expressionList()));
+		}
 
-        if (ctx.varOrTerm() != null) {
-            triplesSameSubjectPath.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
-            triplesSameSubjectPath.add("propertyListPathNotEmpty", visitPropertyListPathNotEmpty(ctx.propertyListPathNotEmpty()));
-        } else {
-            triplesSameSubjectPath.add("triplesNodePath", visitTriplesNodePath(ctx.triplesNodePath()));
-            triplesSameSubjectPath.add("propertyListPath", visitPropertyListPath(ctx.propertyListPath()));
-        }
+		return argList;
+	}
 
-        return triplesSameSubjectPath;
-    }
+	@Override
+	public ST visitExpressionList(SparqlParser.ExpressionListContext ctx) {
+		// expressionList :
+		//   expression (COMMA expression)*
 
-    @Override
-    public ST visitPropertyListPath(SparqlParser.PropertyListPathContext ctx) {
-        // propertyListPath :
-        //   propertyListPathNotEmpty?
+		ST expressionList = g.getInstanceOf("expressionList");
 
-        ST propertyListPath = g.getInstanceOf("propertyListPath");
+		if (ctx.children != null) {
+			for (ParseTree c : ctx.children) {
+				if (c instanceof SparqlParser.ExpressionContext) {
+					expressionList.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
+				}
+			}
+		}
 
-        if (ctx.propertyListPathNotEmpty() != null) {
-            propertyListPath.add("propertyListPathNotEmpty", visitPropertyListPathNotEmpty(ctx.propertyListPathNotEmpty()));
-        }
+		return expressionList;
+	}
 
-        return propertyListPath;
-    }
+	@Override
+	public ST visitConstructTemplate(SparqlParser.ConstructTemplateContext ctx) {
+		// constructTemplate :
+		//   OPEN_CURLY_BRACE constructTriples? CLOSE_CURLY_BRACE
 
-    @Override
-    public ST visitPropertyListPathNotEmpty(SparqlParser.PropertyListPathNotEmptyContext ctx) {
-        // propertyListPathNotEmpty :
-        //  (verbPath|verbSimple) objectListPath (SEMICOLON propertyListPathNotEmptyList)* SEMICOLON?
+		ST constructTemplate = g.getInstanceOf("constructTemplate");
 
-        ST propertyListPathNotEmpty = g.getInstanceOf("propertyListPathNotEmpty");
+		if (ctx.constructTriples() != null) {
+			constructTemplate.add("constructTriples", visitConstructTriples(ctx.constructTriples()));
+		}
 
-        if (ctx.verbPath() != null) {
-            propertyListPathNotEmpty.add("verbPath", visitVerbPath(ctx.verbPath()));
-        } else if (ctx.verbSimple() != null) {
-            propertyListPathNotEmpty.add("verbSimple", visitVerbSimple(ctx.verbSimple()));
-        }
+		return constructTemplate;
+	}
 
-        propertyListPathNotEmpty.add("objectListPath", visitObjectListPath(ctx.objectListPath()));
+	@Override
+	public ST visitConstructTriples(SparqlParser.ConstructTriplesContext ctx) {
+		// constructTriples :
+		//   triplesSameSubject (DOT constructTriples?)* 
 
-        for (int i = 3; i < ctx.getChildCount(); i++) {
-            ParseTree c = ctx.getChild(i);
-            if (c instanceof SparqlParser.PropertyListPathNotEmptyListContext) {
-                propertyListPathNotEmpty.add("propertyListPathNotEmptyList", visitPropertyListPathNotEmptyList((SparqlParser.PropertyListPathNotEmptyListContext) c));
-            }
-        }
+		ST constructTriples = g.getInstanceOf("constructTriples");
 
-        return propertyListPathNotEmpty;
-    }
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.ConstructTriplesContext) {
+				constructTriples.add("constructTriples", visitConstructTriples((SparqlParser.ConstructTriplesContext) c));
+			} else if (c instanceof SparqlParser.TriplesSameSubjectContext) {
+				constructTriples.add("triplesSameSubject", visitTriplesSameSubject((SparqlParser.TriplesSameSubjectContext) c));
+			}
+		}
 
-    @Override
-    public ST visitPropertyListPathNotEmptyList(SparqlParser.PropertyListPathNotEmptyListContext ctx) {
-        // propertyListPathNotEmptyList :
-        //  (verbPath|verbSimple) objectList
+		return constructTriples;
+	}
 
-        ST propertyListPathNotEmptyList = g.getInstanceOf("propertyListPathNotEmptyList");
+	@Override
+	public ST visitTriplesSameSubject(SparqlParser.TriplesSameSubjectContext ctx) {
+		// triplesSameSubject :
+		//   varOrTerm propertyListNotEmpty | triplesNode propertyList 
 
-        if (ctx.verbPath() != null) {
-            propertyListPathNotEmptyList.add("verbPath", visitVerbPath(ctx.verbPath()));
-        } else if (ctx.verbSimple() != null) {
-            propertyListPathNotEmptyList.add("verbSimple", visitVerbSimple(ctx.verbSimple()));
-        }
+		ST triplesSameSubject = g.getInstanceOf("triplesSameSubject");
 
-        propertyListPathNotEmptyList.add("objectList", visitObjectList(ctx.objectList()));
+		if (ctx.varOrTerm() != null) {
+			triplesSameSubject.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
+			triplesSameSubject.add("propertyListNotEmpty", visitPropertyListNotEmpty(ctx.propertyListNotEmpty()));
+		} else {
+			triplesSameSubject.add("triplesNode", visitTriplesNode(ctx.triplesNode()));
+			triplesSameSubject.add("propertyList", visitPropertyList(ctx.propertyList()));
+		}
 
-        return propertyListPathNotEmptyList;
-    }
+		return triplesSameSubject;
+	}
 
-    @Override
-    public ST visitVerbPath(SparqlParser.VerbPathContext ctx) {
-        // verbPath :
-        //   path
+	@Override
+	public ST visitPropertyList(SparqlParser.PropertyListContext ctx) {
+		// propertyList
+		//   propertyListNotEmpty?
 
-        ST verbPath = g.getInstanceOf("verbPath");
+		ST propertyList = g.getInstanceOf("propertyList");
 
-        verbPath.add("path", visitPath(ctx.path()));
+		if (ctx.propertyListNotEmpty() != null) {
+			propertyList.add("propertyListNotEmpty", visitPropertyListNotEmpty(ctx.propertyListNotEmpty()));
+		}
 
-        return verbPath;
-    }
+		return propertyList;
+	}
 
-    @Override
-    public ST visitVerbSimple(SparqlParser.VerbSimpleContext ctx) {
-        // verbSimple :
-        //   var
+	@Override
+	public ST visitPropertyListNotEmpty(SparqlParser.PropertyListNotEmptyContext ctx) {
+		// propertyListNotEmpty :
+		//   verb objectList (SEMICOLON (verb objectList)?)* 
 
-        ST verbSimple = g.getInstanceOf("verbSimple");
+		ST propertyListNotEmpty = g.getInstanceOf("propertyListNotEmpty");
 
-        verbSimple.add("var", visitVar(ctx.var()));
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.VerbContext) {
+				propertyListNotEmpty.add("verb", visitVerb((SparqlParser.VerbContext) c));
+			} else if (c instanceof SparqlParser.ObjectListContext) {
+				propertyListNotEmpty.add("objectList", visitObjectList((SparqlParser.ObjectListContext) c));
+			}
+		}
 
-        return verbSimple;
-    }
+		return propertyListNotEmpty;
+	}
 
-    @Override
-    public ST visitObjectListPath(SparqlParser.ObjectListPathContext ctx) {
-        // objectListPath :
-        //   objectPath (COMMA objectPath)*
+	@Override
+	public ST visitVerb(SparqlParser.VerbContext ctx) {
+		// verb :
+		//   varOrIRI | A
 
-        ST objectListPath = g.getInstanceOf("objectListPath");
+		ST verb = g.getInstanceOf("verb");
 
-        if (ctx != null) {
-            for (ParseTree c : ctx.children) {
-                if (c instanceof SparqlParser.ObjectPathContext) {
-                    objectListPath.add("objectPath", visitObjectPath((SparqlParser.ObjectPathContext) c));
-                }
-            }
-        }
-        return objectListPath;
-    }
+		if (ctx.varOrIRI() != null) {
+			verb.add("varOrIRI", visitVarOrIRI(ctx.varOrIRI()));
+		} else if (ctx.A() != null) {
+			verb.add("A", ctx.A().getSymbol().getText());
+		}
 
-    @Override
-    public ST visitObjectPath(SparqlParser.ObjectPathContext ctx) {
-        // objectPath :
-        //   graphNodePath
+		return verb;
+	}
 
-        ST objectPath = g.getInstanceOf("objectPath");
+	@Override
+	public ST visitObjectList(SparqlParser.ObjectListContext ctx) {
+		// objectList :
+		//   object (COMMA object)*
 
-        objectPath.add("graphNodePath", visitGraphNodePath(ctx.graphNodePath()));
+		ST objectList = g.getInstanceOf("objectList");
 
-        return objectPath;
-    }
+		if (ctx != null) {
+			for (ParseTree c : ctx.children) {
+				if (c instanceof SparqlParser.ObjectContext) {
+					objectList.add("object", visitObject((SparqlParser.ObjectContext) c));
+				}
+			}
+		}
+		return objectList;
+	}
 
-    @Override
-    public ST visitPath(SparqlParser.PathContext ctx) {
-        // path :
-        //   pathAlternative
+	@Override
+	public ST visitObject(SparqlParser.ObjectContext ctx) {
+		// object :
+		//   graphNode
 
-        ST path = g.getInstanceOf("path");
+		ST object = g.getInstanceOf("object");
 
-        path.add("pathAlternative", visitPathAlternative(ctx.pathAlternative()));
+		object.add("graphNode", visitGraphNode(ctx.graphNode()));
 
-        return path;
-    }
+		return object;
+	}
 
-    @Override
-    public ST visitPathAlternative(SparqlParser.PathAlternativeContext ctx) {
-        // pathAlternative :
-        //   pathSequence (PIPE pathSequence)*
+	@Override
+	public ST visitTriplesSameSubjectPath(SparqlParser.TriplesSameSubjectPathContext ctx) {
+		// triplesSameSubjectPath :
+		//   varOrTerm propertyListPathNotEmpty | triplesNodePath propertyListPath
 
-        ST pathAlternative = g.getInstanceOf("pathAlternative");
+		ST triplesSameSubjectPath = g.getInstanceOf("triplesSameSubjectPath");
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.PathSequenceContext) {
-                pathAlternative.add("pathSequence", visitPathSequence((SparqlParser.PathSequenceContext) c));
-            }
-        }
+		if (ctx.varOrTerm() != null) {
+			triplesSameSubjectPath.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
+			triplesSameSubjectPath.add("propertyListPathNotEmpty", visitPropertyListPathNotEmpty(ctx.propertyListPathNotEmpty()));
+		} else {
+			triplesSameSubjectPath.add("triplesNodePath", visitTriplesNodePath(ctx.triplesNodePath()));
+			triplesSameSubjectPath.add("propertyListPath", visitPropertyListPath(ctx.propertyListPath()));
+		}
 
-        return pathAlternative;
-    }
+		return triplesSameSubjectPath;
+	}
 
-    @Override
-    public ST visitPathSequence(SparqlParser.PathSequenceContext ctx) {
-        // pathSequence :
-        //   pathEltOrInverse (DIVIDE pathEltOrInverse)*
+	@Override
+	public ST visitPropertyListPath(SparqlParser.PropertyListPathContext ctx) {
+		// propertyListPath :
+		//   propertyListPathNotEmpty?
 
-        ST pathSequence = g.getInstanceOf("pathSequence");
+		ST propertyListPath = g.getInstanceOf("propertyListPath");
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.PathEltOrInverseContext) {
-                pathSequence.add("pathEltOrInverse", visitPathEltOrInverse((SparqlParser.PathEltOrInverseContext) c));
-            }
-        }
+		if (ctx.propertyListPathNotEmpty() != null) {
+			propertyListPath.add("propertyListPathNotEmpty", visitPropertyListPathNotEmpty(ctx.propertyListPathNotEmpty()));
+		}
 
-        return pathSequence;
-    }
+		return propertyListPath;
+	}
 
-    @Override
-    public ST visitPathElt(SparqlParser.PathEltContext ctx) {
-        // pathElt :
-        //   pathPrimary pathMod?
+	@Override
+	public ST visitPropertyListPathNotEmpty(SparqlParser.PropertyListPathNotEmptyContext ctx) {
+		// propertyListPathNotEmpty :
+		//  (verbPath|verbSimple) objectListPath (SEMICOLON propertyListPathNotEmptyList?)* SEMICOLON?
 
-        ST pathElt = g.getInstanceOf("pathElt");
+		ST propertyListPathNotEmpty = g.getInstanceOf("propertyListPathNotEmpty");
 
-        pathElt.add("pathPrimary", visitPathPrimary(ctx.pathPrimary()));
+		if (ctx.verbPath() != null) {
+			propertyListPathNotEmpty.add("verbPath", visitVerbPath(ctx.verbPath()));
+		} else if (ctx.verbSimple() != null) {
+			propertyListPathNotEmpty.add("verbSimple", visitVerbSimple(ctx.verbSimple()));
+		}
 
-        if (ctx.pathMod() != null) {
-            pathElt.add("pathMod", visitPathMod(ctx.pathMod()));
-        }
+		propertyListPathNotEmpty.add("objectListPath", visitObjectListPath(ctx.objectListPath()));
 
-        return pathElt;
-    }
+		for (int i = 3; i < ctx.getChildCount(); i++) {
+			ParseTree c = ctx.getChild(i);
+			if (c instanceof SparqlParser.PropertyListPathNotEmptyListContext) {
+				propertyListPathNotEmpty.add("propertyListPathNotEmptyList", visitPropertyListPathNotEmptyList((SparqlParser.PropertyListPathNotEmptyListContext) c));
+			}
+		}
 
-    @Override
-    public ST visitPathEltOrInverse(SparqlParser.PathEltOrInverseContext ctx) {
-        // pathEltOrInverse :
-        //   INVERSE? pathElt
+		return propertyListPathNotEmpty;
+	}
 
-        ST pathEltOrInverse = g.getInstanceOf("pathEltOrInverse");
+	@Override
+	public ST visitPropertyListPathNotEmptyList(SparqlParser.PropertyListPathNotEmptyListContext ctx) {
+		// propertyListPathNotEmptyList :
+		//  (verbPath|verbSimple) objectList
 
-        if (ctx.INVERSE() != null) {
-            pathEltOrInverse.add("INVERSE", ctx.INVERSE().getSymbol().getText());
-        }
+		ST propertyListPathNotEmptyList = g.getInstanceOf("propertyListPathNotEmptyList");
 
-        pathEltOrInverse.add("pathElt", visitPathElt(ctx.pathElt()));
+		if (ctx.verbPath() != null) {
+			propertyListPathNotEmptyList.add("verbPath", visitVerbPath(ctx.verbPath()));
+		} else if (ctx.verbSimple() != null) {
+			propertyListPathNotEmptyList.add("verbSimple", visitVerbSimple(ctx.verbSimple()));
+		}
 
-        return pathEltOrInverse;
-    }
+		propertyListPathNotEmptyList.add("objectList", visitObjectList(ctx.objectList()));
 
-    @Override
-    public ST visitPathMod(SparqlParser.PathModContext ctx) {
-        // pathMod :
-        //   QUESTION_MARK | ASTERISK | PLUS 
+		return propertyListPathNotEmptyList;
+	}
 
-        ST pathMod = g.getInstanceOf("pathMod");
+	@Override
+	public ST visitVerbPath(SparqlParser.VerbPathContext ctx) {
+		// verbPath :
+		//   path
 
-        if (ctx.QUESTION_MARK() != null) {
-            pathMod.add("QUESTION_MARK", ctx.QUESTION_MARK().getSymbol().getText());
-        } else if (ctx.ASTERISK() != null) {
-            pathMod.add("ASTERISK", ctx.ASTERISK().getSymbol().getText());
-        } else if (ctx.PLUS() != null) {
-            pathMod.add("PLUS", ctx.PLUS().getSymbol().getText());
-        }
+		ST verbPath = g.getInstanceOf("verbPath");
 
-        return pathMod;
-    }
+		verbPath.add("path", visitPath(ctx.path()));
 
-    @Override
-    public ST visitPathPrimary(SparqlParser.PathPrimaryContext ctx) {
-        // pathPrimary :
-        //   iri | A | NEGATION pathNegatedPropertySet | DISTINCT? OPEN_BRACE path CLOSE_BRACE
+		return verbPath;
+	}
 
-        ST pathPrimary = g.getInstanceOf("pathPrimary");
+	@Override
+	public ST visitVerbSimple(SparqlParser.VerbSimpleContext ctx) {
+		// verbSimple :
+		//   var
 
-        if (ctx.iri() != null) {
-            pathPrimary.add("iri", visitIri(ctx.iri()));
-        } else if (ctx.A() != null) {
-            pathPrimary.add("A", ctx.A().getSymbol().getText());
-        } else if (ctx.pathNegatedPropertySet() != null) {
-            pathPrimary.add("pathNegatedPropertySet", visitPathNegatedPropertySet(ctx.pathNegatedPropertySet()));
-        } else if (ctx.path() != null) {
-            if (ctx.DISTINCT() != null) {
-                pathPrimary.add("DISTINCT", ctx.DISTINCT().getSymbol().getText());
-            }
-            pathPrimary.add("path", visitPath(ctx.path()));
-        }
+		ST verbSimple = g.getInstanceOf("verbSimple");
 
-        return pathPrimary;
-    }
+		verbSimple.add("var", visitVar(ctx.var()));
 
-    @Override
-    public ST visitPathNegatedPropertySet(SparqlParser.PathNegatedPropertySetContext ctx) {
-        // pathNegatedPropertySet
-        //   pathOneInPropertySet | OPEN_BRACE (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? CLOSE_BRACE
+		return verbSimple;
+	}
 
-        ST pathNegatedPropertySet = g.getInstanceOf("pathNegatedPropertySet");
+	@Override
+	public ST visitObjectListPath(SparqlParser.ObjectListPathContext ctx) {
+		// objectListPath :
+		//   objectPath (COMMA objectPath)*
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.PathOneInPropertySetContext) {
-                pathNegatedPropertySet.add("pathOneInPropertySet", visitPathOneInPropertySet((SparqlParser.PathOneInPropertySetContext) c));
-            }
-        }
+		ST objectListPath = g.getInstanceOf("objectListPath");
 
-        return pathNegatedPropertySet;
-    }
+		if (ctx != null) {
+			for (ParseTree c : ctx.children) {
+				if (c instanceof SparqlParser.ObjectPathContext) {
+					objectListPath.add("objectPath", visitObjectPath((SparqlParser.ObjectPathContext) c));
+				}
+			}
+		}
+		return objectListPath;
+	}
 
-    @Override
-    public ST visitPathOneInPropertySet(SparqlParser.PathOneInPropertySetContext ctx) {
-        // pathOneInPropertySet :
-        //   INVERSE? (iri | A)
+	@Override
+	public ST visitObjectPath(SparqlParser.ObjectPathContext ctx) {
+		// objectPath :
+		//   graphNodePath
 
-        ST pathOneInPropertySet = g.getInstanceOf("pathOneInPropertySet");
+		ST objectPath = g.getInstanceOf("objectPath");
 
-        if (ctx.INVERSE() != null) {
-            pathOneInPropertySet.add("INVERSE", ctx.INVERSE().getSymbol().getText());
-        }
+		objectPath.add("graphNodePath", visitGraphNodePath(ctx.graphNodePath()));
 
-        if (ctx.iri() != null) {
-            pathOneInPropertySet.add("iri", visitIri(ctx.iri()));
-        } else if (ctx.A() != null) {
-            pathOneInPropertySet.add("A", ctx.A().getSymbol().getText());
-        }
+		return objectPath;
+	}
 
-        return pathOneInPropertySet;
-    }
+	@Override
+	public ST visitPath(SparqlParser.PathContext ctx) {
+		// path :
+		//   pathAlternative
 
-    @Override
-    public ST visitInteger(SparqlParser.IntegerContext ctx) {
-        // integer :
-        //   INTEGER
+		ST path = g.getInstanceOf("path");
 
-        ST integer = g.getInstanceOf("integer");
+		path.add("pathAlternative", visitPathAlternative(ctx.pathAlternative()));
 
-        integer.add("INTEGER", ctx.INTEGER().getSymbol().getText());
+		return path;
+	}
 
-        return integer;
-    }
+	@Override
+	public ST visitPathAlternative(SparqlParser.PathAlternativeContext ctx) {
+		// pathAlternative :
+		//   pathSequence (PIPE pathSequence)*
 
-    @Override
-    public ST visitTriplesNode(SparqlParser.TriplesNodeContext ctx) {
-        // triplesNode :
-        //   collection | blankNodePropertyList
+		ST pathAlternative = g.getInstanceOf("pathAlternative");
 
-        ST triplesNode = g.getInstanceOf("triplesNode");
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.PathSequenceContext) {
+				pathAlternative.add("pathSequence", visitPathSequence((SparqlParser.PathSequenceContext) c));
+			}
+		}
 
-        if (ctx.collection() != null) {
-            triplesNode.add("collection", visitCollection(ctx.collection()));
-        } else if (ctx.blankNodePropertyList() != null) {
-            triplesNode.add("blankNodePropertyList", visitBlankNodePropertyList(ctx.blankNodePropertyList()));
-        }
+		return pathAlternative;
+	}
 
-        return triplesNode;
-    }
+	@Override
+	public ST visitPathSequence(SparqlParser.PathSequenceContext ctx) {
+		// pathSequence :
+		//   pathEltOrInverse (DIVIDE pathEltOrInverse)*
 
-    @Override
-    public ST visitBlankNodePropertyList(SparqlParser.BlankNodePropertyListContext ctx) {
-        // blankNodePropertyList :
-        //   OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET
+		ST pathSequence = g.getInstanceOf("pathSequence");
 
-        ST blankNodePropertyList = g.getInstanceOf("blankNodePropertyList");
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.PathEltOrInverseContext) {
+				pathSequence.add("pathEltOrInverse", visitPathEltOrInverse((SparqlParser.PathEltOrInverseContext) c));
+			}
+		}
 
-        blankNodePropertyList.add("propertyListNotEmpty", visitPropertyListNotEmpty(ctx.propertyListNotEmpty()));
+		return pathSequence;
+	}
 
-        return blankNodePropertyList;
-    }
+	@Override
+	public ST visitPathElt(SparqlParser.PathEltContext ctx) {
+		// pathElt :
+		//   pathPrimary pathMod?
 
-    @Override
-    public ST visitTriplesNodePath(SparqlParser.TriplesNodePathContext ctx) {
-        // triplesNodePath :
-        //   collectionPath | blankNodePropertyListPath
+		ST pathElt = g.getInstanceOf("pathElt");
 
-        ST triplesNodePath = g.getInstanceOf("triplesNodePath");
+		pathElt.add("pathPrimary", visitPathPrimary(ctx.pathPrimary()));
 
-        if (ctx.collectionPath() != null) {
-            triplesNodePath.add("collectionPath", visitCollectionPath(ctx.collectionPath()));
-        } else if (ctx.blankNodePropertyListPath() != null) {
-            triplesNodePath.add("blankNodePropertyListPath", visitBlankNodePropertyListPath(ctx.blankNodePropertyListPath()));
-        }
+		if (ctx.pathMod() != null) {
+			pathElt.add("pathMod", visitPathMod(ctx.pathMod()));
+		}
 
-        return triplesNodePath;
-    }
+		return pathElt;
+	}
 
-    @Override
-    public ST visitBlankNodePropertyListPath(SparqlParser.BlankNodePropertyListPathContext ctx) {
-        // blankNodePropertyListPath :
-        //   OPEN_SQUARE_BRACKET propertyListPathNotEmpty CLOSE_SQUARE_BRACKET
+	@Override
+	public ST visitPathEltOrInverse(SparqlParser.PathEltOrInverseContext ctx) {
+		// pathEltOrInverse :
+		//   INVERSE? pathElt
 
-        ST blankNodePropertyListPath = g.getInstanceOf("blankNodePropertyListPath");
+		ST pathEltOrInverse = g.getInstanceOf("pathEltOrInverse");
 
-        blankNodePropertyListPath.add("propertyListPathNotEmpty", visitPropertyListPathNotEmpty(ctx.propertyListPathNotEmpty()));
+		if (ctx.INVERSE() != null) {
+			pathEltOrInverse.add("INVERSE", ctx.INVERSE().getSymbol().getText());
+		}
 
-        return blankNodePropertyListPath;
-    }
+		pathEltOrInverse.add("pathElt", visitPathElt(ctx.pathElt()));
 
-    @Override
-    public ST visitCollection(SparqlParser.CollectionContext ctx) {
-        // collection :
-        //   OPEN_BRACE graphNode+ CLOSE_BRACE
+		return pathEltOrInverse;
+	}
 
-        ST collection = g.getInstanceOf("collection");
+	@Override
+	public ST visitPathMod(SparqlParser.PathModContext ctx) {
+		// pathMod :
+		//   QUESTION_MARK | ASTERISK | PLUS 
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.GraphNodeContext) {
-                collection.add("graphNode", visitGraphNode((SparqlParser.GraphNodeContext) c));
-            }
-        }
+		ST pathMod = g.getInstanceOf("pathMod");
 
-        return collection;
-    }
+		if (ctx.QUESTION_MARK() != null) {
+			pathMod.add("QUESTION_MARK", ctx.QUESTION_MARK().getSymbol().getText());
+		} else if (ctx.ASTERISK() != null) {
+			pathMod.add("ASTERISK", ctx.ASTERISK().getSymbol().getText());
+		} else if (ctx.PLUS() != null) {
+			pathMod.add("PLUS", ctx.PLUS().getSymbol().getText());
+		}
 
-    @Override
-    public ST visitCollectionPath(SparqlParser.CollectionPathContext ctx) {
-        // collectionPath :
-        //   OPEN_BRACE graphNodePath+ CLOSE_BRACE
+		return pathMod;
+	}
 
-        ST collectionPath = g.getInstanceOf("collectionPath");
+	@Override
+	public ST visitPathPrimary(SparqlParser.PathPrimaryContext ctx) {
+		// pathPrimary :
+		//   iri | A | NEGATION pathNegatedPropertySet | DISTINCT? OPEN_BRACE path CLOSE_BRACE
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.GraphNodePathContext) {
-                collectionPath.add("graphNodePath", visitGraphNodePath((SparqlParser.GraphNodePathContext) c));
-            }
-        }
+		ST pathPrimary = g.getInstanceOf("pathPrimary");
 
-        return collectionPath;
-    }
+		if (ctx.iri() != null) {
+			pathPrimary.add("iri", visitIri(ctx.iri()));
+		} else if (ctx.A() != null) {
+			pathPrimary.add("A", ctx.A().getSymbol().getText());
+		} else if (ctx.pathNegatedPropertySet() != null) {
+			pathPrimary.add("pathNegatedPropertySet", visitPathNegatedPropertySet(ctx.pathNegatedPropertySet()));
+		} else if (ctx.path() != null) {
+			if (ctx.DISTINCT() != null) {
+				pathPrimary.add("DISTINCT", ctx.DISTINCT().getSymbol().getText());
+			}
+			pathPrimary.add("path", visitPath(ctx.path()));
+		}
 
-    @Override
-    public ST visitGraphNode(SparqlParser.GraphNodeContext ctx) {
-        // graphNode :
-        //   varOrTerm | triplesNode
+		return pathPrimary;
+	}
 
-        ST graphNode = g.getInstanceOf("graphNode");
+	@Override
+	public ST visitPathNegatedPropertySet(SparqlParser.PathNegatedPropertySetContext ctx) {
+		// pathNegatedPropertySet
+		//   pathOneInPropertySet | OPEN_BRACE (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? CLOSE_BRACE
 
-        if (ctx.varOrTerm() != null) {
-            graphNode.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
-        } else if (ctx.triplesNode() != null) {
-            graphNode.add("triplesNode", visitTriplesNode(ctx.triplesNode()));
-        }
+		ST pathNegatedPropertySet = g.getInstanceOf("pathNegatedPropertySet");
 
-        return graphNode;
-    }
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.PathOneInPropertySetContext) {
+				pathNegatedPropertySet.add("pathOneInPropertySet", visitPathOneInPropertySet((SparqlParser.PathOneInPropertySetContext) c));
+			}
+		}
 
-    @Override
-    public ST visitGraphNodePath(SparqlParser.GraphNodePathContext ctx) {
-        // graphNodePath :
-        //   varOrTerm | triplesNodePath
+		return pathNegatedPropertySet;
+	}
 
-        ST graphNodePath = g.getInstanceOf("graphNodePath");
+	@Override
+	public ST visitPathOneInPropertySet(SparqlParser.PathOneInPropertySetContext ctx) {
+		// pathOneInPropertySet :
+		//   INVERSE? (iri | A)
 
-        if (ctx.varOrTerm() != null) {
-            graphNodePath.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
-        } else if (ctx.triplesNodePath() != null) {
-            graphNodePath.add("triplesNodePath", visitTriplesNodePath(ctx.triplesNodePath()));
-        }
+		ST pathOneInPropertySet = g.getInstanceOf("pathOneInPropertySet");
 
-        return graphNodePath;
-    }
+		if (ctx.INVERSE() != null) {
+			pathOneInPropertySet.add("INVERSE", ctx.INVERSE().getSymbol().getText());
+		}
 
-    @Override
-    public ST visitVarOrTerm(SparqlParser.VarOrTermContext ctx) {
-        // varOrTerm :
-        //   var | graphTerm
+		if (ctx.iri() != null) {
+			pathOneInPropertySet.add("iri", visitIri(ctx.iri()));
+		} else if (ctx.A() != null) {
+			pathOneInPropertySet.add("A", ctx.A().getSymbol().getText());
+		}
 
-        ST varOrTerm = g.getInstanceOf("varOrTerm");
+		return pathOneInPropertySet;
+	}
 
-        if (ctx.var() != null) {
-            varOrTerm.add("var", visitVar(ctx.var()));
-        } else if (ctx.graphTerm() != null) {
-            varOrTerm.add("graphTerm", visitGraphTerm(ctx.graphTerm()));
-        }
+	@Override
+	public ST visitInteger(SparqlParser.IntegerContext ctx) {
+		// integer :
+		//   INTEGER
 
-        return varOrTerm;
-    }
+		ST integer = g.getInstanceOf("integer");
 
-    @Override
-    public ST visitVarOrIRI(SparqlParser.VarOrIRIContext ctx) {
-        // varOrIRI :
-        //   var | iri
+		integer.add("INTEGER", ctx.INTEGER().getSymbol().getText());
 
-        ST varOrIRI = g.getInstanceOf("varOrIRI");
+		return integer;
+	}
 
-        if (ctx.var() != null) {
-            varOrIRI.add("var", visitVar(ctx.var()));
-        } else if (ctx.iri() != null) {
-            varOrIRI.add("iri", visitIri(ctx.iri()));
-        }
+	@Override
+	public ST visitTriplesNode(SparqlParser.TriplesNodeContext ctx) {
+		// triplesNode :
+		//   collection | blankNodePropertyList
 
-        return varOrIRI;
-    }
+		ST triplesNode = g.getInstanceOf("triplesNode");
 
-    @Override
-    public ST visitVar(SparqlParser.VarContext ctx) {
-        // var :
-        //   VAR1 | VAR2
+		if (ctx.collection() != null) {
+			triplesNode.add("collection", visitCollection(ctx.collection()));
+		} else if (ctx.blankNodePropertyList() != null) {
+			triplesNode.add("blankNodePropertyList", visitBlankNodePropertyList(ctx.blankNodePropertyList()));
+		}
 
-        ST var = g.getInstanceOf("var");
+		return triplesNode;
+	}
 
-        if (ctx.VAR1() != null) {
-            var.add("value", ctx.VAR1().getSymbol().getText());
-        } else if (ctx.VAR2() != null) {
-            var.add("value", ctx.VAR2().getSymbol().getText());
-        }
+	@Override
+	public ST visitBlankNodePropertyList(SparqlParser.BlankNodePropertyListContext ctx) {
+		// blankNodePropertyList :
+		//   OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET
 
-        return var;
-    }
+		ST blankNodePropertyList = g.getInstanceOf("blankNodePropertyList");
 
-    @Override
-    public ST visitGraphTerm(SparqlParser.GraphTermContext ctx) {
-        // graphTerm
-        //   iri | rdfLiteral | numericLiteral | booleanLiteral | blankNode | nil
+		blankNodePropertyList.add("propertyListNotEmpty", visitPropertyListNotEmpty(ctx.propertyListNotEmpty()));
 
-        ST graphTerm = g.getInstanceOf("graphTerm");
+		return blankNodePropertyList;
+	}
 
-        if (ctx.iri() != null) {
-            graphTerm.add("iri", visitIri(ctx.iri()));
-        } else if (ctx.rdfLiteral() != null) {
-            graphTerm.add("rdfLiteral", visitRdfLiteral(ctx.rdfLiteral()));
-        } else if (ctx.numericLiteral() != null) {
-            graphTerm.add("numericLiteral", visitNumericLiteral(ctx.numericLiteral()));
-        } else if (ctx.booleanLiteral() != null) {
-            graphTerm.add("booleanLiteral", visitBooleanLiteral(ctx.booleanLiteral()));
-        } else if (ctx.blankNode() != null) {
-            graphTerm.add("blankNode", visitBlankNode(ctx.blankNode()));
-        } else if (ctx.nil() != null) {
-            graphTerm.add("nil", visitNil(ctx.nil()));
-        }
+	@Override
+	public ST visitTriplesNodePath(SparqlParser.TriplesNodePathContext ctx) {
+		// triplesNodePath :
+		//   collectionPath | blankNodePropertyListPath
 
-        return graphTerm;
-    }
+		ST triplesNodePath = g.getInstanceOf("triplesNodePath");
 
-    @Override
-    public ST visitNil(SparqlParser.NilContext ctx) {
-        // nil :
-        //   OPEN_BRACE CLOSE_BRACE
+		if (ctx.collectionPath() != null) {
+			triplesNodePath.add("collectionPath", visitCollectionPath(ctx.collectionPath()));
+		} else if (ctx.blankNodePropertyListPath() != null) {
+			triplesNodePath.add("blankNodePropertyListPath", visitBlankNodePropertyListPath(ctx.blankNodePropertyListPath()));
+		}
 
-        ST nil = g.getInstanceOf("nil");
+		return triplesNodePath;
+	}
 
-        return nil;
-    }
+	@Override
+	public ST visitBlankNodePropertyListPath(SparqlParser.BlankNodePropertyListPathContext ctx) {
+		// blankNodePropertyListPath :
+		//   OPEN_SQUARE_BRACKET propertyListPathNotEmpty CLOSE_SQUARE_BRACKET
 
-    @Override
-    public ST visitExpression(SparqlParser.ExpressionContext ctx) {
-        // expression :
-        //   conditionalOrExpression
+		ST blankNodePropertyListPath = g.getInstanceOf("blankNodePropertyListPath");
 
-        ST expression = g.getInstanceOf("expression");
+		blankNodePropertyListPath.add("propertyListPathNotEmpty", visitPropertyListPathNotEmpty(ctx.propertyListPathNotEmpty()));
 
-        expression.add("conditionalOrExpression", visitConditionalOrExpression(ctx.conditionalOrExpression()));
+		return blankNodePropertyListPath;
+	}
 
-        return expression;
-    }
+	@Override
+	public ST visitCollection(SparqlParser.CollectionContext ctx) {
+		// collection :
+		//   OPEN_BRACE graphNode+ CLOSE_BRACE
 
-    @Override
-    public ST visitConditionalOrExpression(SparqlParser.ConditionalOrExpressionContext ctx) {
-        // conditionalOrExpression :
-        //   conditionalAndExpression (OR conditionalAndExpression)*
+		ST collection = g.getInstanceOf("collection");
 
-        ST conditionalOrExpression = g.getInstanceOf("conditionalOrExpression");
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.GraphNodeContext) {
+				collection.add("graphNode", visitGraphNode((SparqlParser.GraphNodeContext) c));
+			}
+		}
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ConditionalAndExpressionContext) {
-                conditionalOrExpression.add("conditionalAndExpression", visitConditionalAndExpression((SparqlParser.ConditionalAndExpressionContext) c));
-            }
-        }
+		return collection;
+	}
 
-        return conditionalOrExpression;
-    }
+	@Override
+	public ST visitCollectionPath(SparqlParser.CollectionPathContext ctx) {
+		// collectionPath :
+		//   OPEN_BRACE graphNodePath+ CLOSE_BRACE
 
-    @Override
-    public ST visitConditionalAndExpression(SparqlParser.ConditionalAndExpressionContext ctx) {
-        // conditionalAndExpression :
-        //   valueLogical (AND valueLogical)*
+		ST collectionPath = g.getInstanceOf("collectionPath");
 
-        ST conditionalAndExpression = g.getInstanceOf("conditionalAndExpression");
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.GraphNodePathContext) {
+				collectionPath.add("graphNodePath", visitGraphNodePath((SparqlParser.GraphNodePathContext) c));
+			}
+		}
 
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ValueLogicalContext) {
-                conditionalAndExpression.add("valueLogical", visitValueLogical((SparqlParser.ValueLogicalContext) c));
-            }
-        }
-
-        return conditionalAndExpression;
-    }
-
-    @Override
-    public ST visitValueLogical(SparqlParser.ValueLogicalContext ctx) {
-        // valueLogical :
-        //   relationalExpression
-
-        ST valueLogical = g.getInstanceOf("valueLogical");
-
-        valueLogical.add("relationalExpression", visitRelationalExpression(ctx.relationalExpression()));
-
-        return valueLogical;
-    }
-
-    @Override
-    public ST visitRelationalExpression(SparqlParser.RelationalExpressionContext ctx) {
-        // relationalExpression :
-        //   numericExpression (EQUAL numericExpression
-        //                    | NOT_EQUAL numericExpression 
-        //                    | LESS numericExpression 
-        //                    | GREATER numericExpression
-        //                    | LESS_EQUAL numericExpression
-        //                    | GREATER_EQUAL numericExpression  
-        //                    | IN el1=expressionList
-        //                    | NOT IN el2=expressionList)?
-
-        ST relationalExpression = g.getInstanceOf("relationalExpression");
-
-        relationalExpression.add("numericExpression", visitNumericExpression(ctx.numericExpression(0)));
-
-        if (ctx.EQUAL() != null) {
-            relationalExpression.add("operator", ctx.EQUAL().getSymbol().getText());
-            relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-        } else if (ctx.NOT_EQUAL() != null) {
-            relationalExpression.add("operator", ctx.NOT_EQUAL().getSymbol().getText());
-            relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-        } else if (ctx.LESS() != null) {
-            relationalExpression.add("operator", ctx.LESS().getSymbol().getText());
-            relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-        } else if (ctx.GREATER() != null) {
-            relationalExpression.add("operator", ctx.GREATER().getSymbol().getText());
-            relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-        } else if (ctx.LESS_EQUAL() != null) {
-            relationalExpression.add("operator", ctx.LESS_EQUAL().getSymbol().getText());
-            relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-        } else if (ctx.GREATER_EQUAL() != null) {
-            relationalExpression.add("operator", ctx.GREATER_EQUAL().getSymbol().getText());
-            relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-        } else if (ctx.el1 != null) {
-            relationalExpression.add("operator", "IN");
-            relationalExpression.add("operand", visitExpressionList(ctx.el1));
-        } else if (ctx.el2 != null) {
-            relationalExpression.add("operator", "NOT IN");
-            relationalExpression.add("operand", visitExpressionList(ctx.el2));
-        }
-
-        return relationalExpression;
-    }
-
-    @Override
-    public ST visitNumericExpression(SparqlParser.NumericExpressionContext ctx) {
-        // numericExpression :
-        //   additiveExpression
-
-        ST numericExpression = g.getInstanceOf("numericExpression");
-
-        numericExpression.add("additiveExpression", visitAdditiveExpression(ctx.additiveExpression()));
-
-        return numericExpression;
-    }
-
-    @Override
-    public ST visitAdditiveExpression(SparqlParser.AdditiveExpressionContext ctx) {
-        // additiveExpression : 
-        //   multiplicativeExpression (PLUS multiplicativeExpression | MINUS multiplicativeExpression | (numericLiteralPositive | numericLiteralNegative) 
-        //                            (ASTERISK unaryExpression | DIVIDE unaryExpression)?)*
-
-        boolean first = true;
-
-        ST additiveExpression = g.getInstanceOf("additiveExpression");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof TerminalNode) {
-                TerminalNode t = (TerminalNode) c;
-                Token to = (Token) (t.getSymbol());
-                if (to.getType() == SparqlParser.PLUS || to.getType() == SparqlParser.MINUS) {
-                    additiveExpression.add("additiveOperator", ((Token) (t.getSymbol())).getText());
-                } else if (to.getType() == SparqlParser.ASTERISK || to.getType() == SparqlParser.DIVIDE) {
-                    additiveExpression.add("multiplicativeOperator", ((Token) (t.getSymbol())).getText());
-                }
-            } else if (c instanceof SparqlParser.MultiplicativeExpressionContext) {
-                if (first) {
-                    first = false;
-                    additiveExpression.add("multiplicativeExpression", visitMultiplicativeExpression((SparqlParser.MultiplicativeExpressionContext) c));
-                } else {
-                    additiveExpression.add("multiplicand", visitMultiplicativeExpression((SparqlParser.MultiplicativeExpressionContext) c));
-                }
-            } else if (c instanceof SparqlParser.NumericLiteralPositiveContext) {
-                additiveExpression.add("numericLiteral", visitNumericLiteralPositive((SparqlParser.NumericLiteralPositiveContext) c));
-            } else if (c instanceof SparqlParser.NumericLiteralNegativeContext) {
-                additiveExpression.add("numericLiteral", visitNumericLiteralNegative((SparqlParser.NumericLiteralNegativeContext) c));
-            } else if (c instanceof SparqlParser.UnaryExpressionContext) {
-                additiveExpression.add("unaryExpression", visitUnaryExpression((SparqlParser.UnaryExpressionContext) c));
-            }
-        }
-
-        return additiveExpression;
-    }
-
-    @Override
-    public ST visitMultiplicativeExpression(SparqlParser.MultiplicativeExpressionContext ctx) {
-        // multiplicativeExpression :
-        //   unaryExpression (ASTERISK unaryExpression | DIVIDE unaryExpression)*        
-
-        ST multiplicativeExpression = g.getInstanceOf("multiplicativeExpression");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof TerminalNode) {
-                TerminalNode t = (TerminalNode) c;
-                multiplicativeExpression.add("operator", ((Token) (t.getSymbol())).getText());
-            } else if (c instanceof SparqlParser.UnaryExpressionContext) {
-                multiplicativeExpression.add("unaryExpression", visitUnaryExpression((SparqlParser.UnaryExpressionContext) c));
-            }
-        }
-
-        return multiplicativeExpression;
-    }
-
-    @Override
-    public ST visitUnaryExpression(SparqlParser.UnaryExpressionContext ctx) {
-        // unaryExpression :
-        //   NEGATION primaryExpression
-        // | PLUS primaryExpression
-        // | MINUS primaryExpression
-        // | primaryExpression
-
-        ST unaryExpression = g.getInstanceOf("unaryExpression");
-
-        if (ctx.NEGATION() != null) {
-            unaryExpression.add("operator", ctx.NEGATION().getSymbol().getText());
-        } else if (ctx.PLUS() != null) {
-            unaryExpression.add("operator", ctx.PLUS().getSymbol().getText());
-        } else if (ctx.MINUS() != null) {
-            unaryExpression.add("operator", ctx.MINUS().getSymbol().getText());
-        }
-
-        if (ctx.primaryExpression() != null) {
-            unaryExpression.add("primaryExpression", visitPrimaryExpression(ctx.primaryExpression()));
-        }
-
-        return unaryExpression;
-    }
-
-    @Override
-    public ST visitPrimaryExpression(SparqlParser.PrimaryExpressionContext ctx) {
-        // primaryExpression :
-        //   brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
-
-        ST primaryExpression = g.getInstanceOf("primaryExpression");
-
-        if (ctx.brackettedExpression() != null) {
-            primaryExpression.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
-        } else if (ctx.builtInCall() != null) {
-            primaryExpression.add("builtInCall", visitBuiltInCall(ctx.builtInCall()));
-        } else if (ctx.iriRefOrFunction() != null) {
-            primaryExpression.add("iriRefOrFunction", visitIriRefOrFunction(ctx.iriRefOrFunction()));
-        } else if (ctx.rdfLiteral() != null) {
-            primaryExpression.add("rdfLiteral", visitRdfLiteral(ctx.rdfLiteral()));
-        } else if (ctx.numericLiteral() != null) {
-            primaryExpression.add("numericLiteral", visitNumericLiteral(ctx.numericLiteral()));
-        } else if (ctx.booleanLiteral() != null) {
-            primaryExpression.add("booleanLiteral", visitBooleanLiteral(ctx.booleanLiteral()));
-        } else if (ctx.var() != null) {
-            primaryExpression.add("var", visitVar(ctx.var()));
-        }
-
-        return primaryExpression;
-    }
-
-    @Override
-    public ST visitBrackettedExpression(SparqlParser.BrackettedExpressionContext ctx) {
-        // brackettedExpression :
-        //   OPEN_BRACE expression CLOSE_BRACE
-
-        ST brackettedExpression = g.getInstanceOf("brackettedExpression");
-
-        brackettedExpression.add("expression", visitExpression(ctx.expression()));
-
-        return brackettedExpression;
-    }
-
-    @Override
-    public ST visitBuiltInCall(SparqlParser.BuiltInCallContext ctx) {
-        // builtInCall :
-        //   aggregate
-        //   | STR OPEN_BRACE expression CLOSE_BRACE
-        //   | LANG OPEN_BRACE expression CLOSE_BRACE
-        //   | LANGMATCHES OPEN_BRACE expression COMMA expression CLOSE_BRACE
-        //   | DATATYPE OPEN_BRACE expression CLOSE_BRACE
-        //   | BOUND OPEN_BRACE var CLOSE_BRACE
-        //   | IRI OPEN_BRACE expression CLOSE_BRACE
-        //   | URI OPEN_BRACE expression CLOSE_BRACE
-        //   | BNODE OPEN_BRACE expression CLOSE_BRACE
-        //   | BNODE nil
-        //   | RAND nil
-        //   | ABS OPEN_BRACE expression CLOSE_BRACE
-        //   | CEIL OPEN_BRACE expression CLOSE_BRACE
-        //   | FLOOR OPEN_BRACE expression CLOSE_BRACE
-        //   | ROUND OPEN_BRACE expression CLOSE_BRACE
-        //   | CONCAT expressionList
-        //   | subStringExpression
-        //   | strReplaceExpression
-        //   | STRLEN OPEN_BRACE expression CLOSE_BRACE
-        //   | UCASE OPEN_BRACE expression CLOSE_BRACE
-        //   | LCASE OPEN_BRACE expression CLOSE_BRACE
-        //   | ENCODE_FOR_URI OPEN_BRACE expression CLOSE_BRACE
-        //   | CONTAINS OPEN_BRACE expression COMMA expression CLOSE_BRACE
-        //   | STRSTARTS OPEN_BRACE expression COMMA expression CLOSE_BRACE
-        //   | STRENDS OPEN_BRACE expression COMMA expression CLOSE_BRACE
-        //   | STRBEFORE OPEN_BRACE expression COMMA expression CLOSE_BRACE
-        //   | STRAFTER OPEN_BRACE expression COMMA expression CLOSE_BRACE
-        //   | YEAR OPEN_BRACE expression CLOSE_BRACE
-        //   | MONTH OPEN_BRACE expression CLOSE_BRACE
-        //   | DAY OPEN_BRACE expression CLOSE_BRACE
-        //   | HOURS OPEN_BRACE expression CLOSE_BRACE
-        //   | MINUTES OPEN_BRACE expression CLOSE_BRACE
-        //   | SECONDS OPEN_BRACE expression CLOSE_BRACE
-        //   | TIMEZONE OPEN_BRACE expression CLOSE_BRACE
-        //   | TZ OPEN_BRACE expression CLOSE_BRACE
-        //   | NOW nil
-        //   | UUID nil
-        //   | STRUUID nil
-        //   | MD5 OPEN_BRACE expression CLOSE_BRACE
-        //   | SHA1 OPEN_BRACE expression CLOSE_BRACE
-        //   | SHA256 OPEN_BRACE expression CLOSE_BRACE
-        //   | SHA384 OPEN_BRACE expression CLOSE_BRACE
-        //   | SHA512 OPEN_BRACE expression CLOSE_BRACE
-        //   | COALESCE expressionList
-        //   | IF OPEN_BRACE e1=expression COMMA e2=expression COMMA e3=expression CLOSE_BRACE
-        //   | STRLANG OPEN_BRACE expression COMMA expression CLOSE_BRACE
-        //   | STRDT OPEN_BRACE expression COMMA expression CLOSE_BRACE
-        //   | SAMETERM OPEN_BRACE expression COMMA expression CLOSE_BRACE
-        //   | ISIRI OPEN_BRACE expression CLOSE_BRACE
-        //   | ISURI OPEN_BRACE expression CLOSE_BRACE
-        //   | ISBLANK OPEN_BRACE expression CLOSE_BRACE
-        //   | ISLITERAL OPEN_BRACE expression CLOSE_BRACE
-        //   | ISNUMERIC OPEN_BRACE expression CLOSE_BRACE
-        //   | regexExpression
-        //   | existsFunction
-        //   | notExistsFunction
-
-        ST builtInCall = g.getInstanceOf("builtInCall");
-
-        if (ctx.aggregate() != null) {
-            builtInCall.add("aggregate", visitAggregate(ctx.aggregate()));
-        } else if (ctx.STR() != null) {
-            builtInCall.add("builtInFunction", ctx.STR().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.LANG() != null) {
-            builtInCall.add("builtInFunction", ctx.LANG().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.LANGMATCHES() != null) {
-            builtInCall.add("builtInFunction", ctx.LANGMATCHES().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-        } else if (ctx.DATATYPE() != null) {
-            builtInCall.add("builtInFunction", ctx.DATATYPE().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.BOUND() != null) {
-            builtInCall.add("builtInFunction", ctx.BOUND().getSymbol().getText().toUpperCase());
-            builtInCall.add("var", visitVar((SparqlParser.VarContext) ctx.var()));
-        } else if (ctx.IRI() != null) {
-            builtInCall.add("builtInFunction", ctx.IRI().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.URI() != null) {
-            builtInCall.add("builtInFunction", ctx.URI().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.BNODE() != null) {
-            builtInCall.add("builtInFunction", ctx.BNODE().getSymbol().getText().toUpperCase());
-            if (ctx.expression(0) != null) {
-                builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            }
-        } else if (ctx.RAND() != null) {
-            builtInCall.add("builtInFunction", ctx.RAND().getSymbol().getText().toUpperCase());
-        } else if (ctx.ABS() != null) {
-            builtInCall.add("builtInFunction", ctx.ABS().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.CEIL() != null) {
-            builtInCall.add("builtInFunction", ctx.CEIL().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.FLOOR() != null) {
-            builtInCall.add("builtInFunction", ctx.FLOOR().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.ROUND() != null) {
-            builtInCall.add("builtInFunction", ctx.ROUND().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.CONCAT() != null) {
-            builtInCall.add("builtInFunction", ctx.CONCAT().getSymbol().getText().toUpperCase());
-            builtInCall.add("expressionList", visitExpressionList(ctx.expressionList()));
-        } else if (ctx.STRLEN() != null) {
-            builtInCall.add("builtInFunction", ctx.STRLEN().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.UCASE() != null) {
-            builtInCall.add("builtInFunction", ctx.UCASE().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.LCASE() != null) {
-            builtInCall.add("builtInFunction", ctx.LCASE().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.ENCODE_FOR_URI() != null) {
-            builtInCall.add("builtInFunction", ctx.ENCODE_FOR_URI().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.CONTAINS() != null) {
-            builtInCall.add("builtInFunction", ctx.CONTAINS().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-        } else if (ctx.STRSTARTS() != null) {
-            builtInCall.add("builtInFunction", ctx.STRSTARTS().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-        } else if (ctx.STRENDS() != null) {
-            builtInCall.add("builtInFunction", ctx.STRENDS().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-        } else if (ctx.STRBEFORE() != null) {
-            builtInCall.add("builtInFunction", ctx.STRBEFORE().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-        } else if (ctx.STRAFTER() != null) {
-            builtInCall.add("builtInFunction", ctx.STRAFTER().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-        } else if (ctx.YEAR() != null) {
-            builtInCall.add("builtInFunction", ctx.YEAR().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.MONTH() != null) {
-            builtInCall.add("builtInFunction", ctx.MONTH().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.DAY() != null) {
-            builtInCall.add("builtInFunction", ctx.DAY().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.HOURS() != null) {
-            builtInCall.add("builtInFunction", ctx.HOURS().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.MINUTES() != null) {
-            builtInCall.add("builtInFunction", ctx.MINUTES().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.SECONDS() != null) {
-            builtInCall.add("builtInFunction", ctx.SECONDS().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.TIMEZONE() != null) {
-            builtInCall.add("builtInFunction", ctx.TIMEZONE().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.TZ() != null) {
-            builtInCall.add("builtInFunction", ctx.TZ().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.NOW() != null) {
-            builtInCall.add("builtInFunction", ctx.NOW().getSymbol().getText().toUpperCase());
-        } else if (ctx.UUID() != null) {
-            builtInCall.add("builtInFunction", ctx.UUID().getSymbol().getText().toUpperCase());
-        } else if (ctx.STRUUID() != null) {
-            builtInCall.add("builtInFunction", ctx.STRUUID().getSymbol().getText().toUpperCase());
-        } else if (ctx.MD5() != null) {
-            builtInCall.add("builtInFunction", ctx.MD5().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.SHA1() != null) {
-            builtInCall.add("builtInFunction", ctx.SHA1().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.SHA256() != null) {
-            builtInCall.add("builtInFunction", ctx.SHA256().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.SHA384() != null) {
-            builtInCall.add("builtInFunction", ctx.SHA384().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.SHA512() != null) {
-            builtInCall.add("builtInFunction", ctx.SHA512().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.COALESCE() != null) {
-            builtInCall.add("builtInFunction", ctx.COALESCE().getSymbol().getText().toUpperCase());
-            builtInCall.add("expressionList", visitExpressionList(ctx.expressionList()));
-        } else if (ctx.IF() != null) {
-            builtInCall.add("builtInFunction", ctx.IF().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-            builtInCall.add("expression", visitExpression(ctx.expression(2)));
-        } else if (ctx.STRLANG() != null) {
-            builtInCall.add("builtInFunction", ctx.STRLANG().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-        } else if (ctx.STRDT() != null) {
-            builtInCall.add("builtInFunction", ctx.STRDT().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-        } else if (ctx.SAMETERM() != null) {
-            builtInCall.add("builtInFunction", ctx.SAMETERM().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-            builtInCall.add("expression", visitExpression(ctx.expression(1)));
-        } else if (ctx.ISIRI() != null) {
-            builtInCall.add("builtInFunction", ctx.ISIRI().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.ISURI() != null) {
-            builtInCall.add("builtInFunction", ctx.ISURI().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.ISBLANK() != null) {
-            builtInCall.add("builtInFunction", ctx.ISBLANK().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.ISLITERAL() != null) {
-            builtInCall.add("builtInFunction", ctx.ISLITERAL().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.ISNUMERIC() != null) {
-            builtInCall.add("builtInFunction", ctx.ISNUMERIC().getSymbol().getText().toUpperCase());
-            builtInCall.add("expression", visitExpression(ctx.expression(0)));
-        } else if (ctx.subStringExpression() != null) {
-            builtInCall.add("subStringExpression", visitSubStringExpression(ctx.subStringExpression()));
-        } else if (ctx.strReplaceExpression() != null) {
-            builtInCall.add("strReplaceExpression", visitStrReplaceExpression(ctx.strReplaceExpression()));
-        } else if (ctx.regexExpression() != null) {
-            builtInCall.add("regexExpression", visitRegexExpression(ctx.regexExpression()));
-        } else if (ctx.existsFunction() != null) {
-            builtInCall.add("existsFunction", visitExistsFunction(ctx.existsFunction()));
-        } else if (ctx.notExistsFunction() != null) {
-            builtInCall.add("notExistsFunction", visitNotExistsFunction(ctx.notExistsFunction()));
-        }
-
-        return builtInCall;
-    }
-
-    @Override
-    public ST visitRegexExpression(SparqlParser.RegexExpressionContext ctx) {
-        // regexExpression :
-        //   REGEX OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE
-
-        ST regexExpression = g.getInstanceOf("regexExpression");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ExpressionContext) {
-                regexExpression.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
-            }
-        }
-
-        return regexExpression;
-    }
-
-    @Override
-    public ST visitSubStringExpression(SparqlParser.SubStringExpressionContext ctx) {
-        // subStringExpression :
-        //   SUBSTR OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE
-
-        ST subStringExpression = g.getInstanceOf("subStringExpression");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ExpressionContext) {
-                subStringExpression.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
-            }
-        }
-
-        return subStringExpression;
-    }
-
-    @Override
-    public ST visitStrReplaceExpression(SparqlParser.StrReplaceExpressionContext ctx) {
-        // strReplaceExpression :
-        //   REPLACE OPEN_BRACE expression COMMA expression COMMA expression (COMMA expression)? CLOSE_BRACE
-
-        ST strReplaceExpression = g.getInstanceOf("strReplaceExpression");
-
-        for (ParseTree c : ctx.children) {
-            if (c instanceof SparqlParser.ExpressionContext) {
-                strReplaceExpression.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
-            }
-        }
-
-        return strReplaceExpression;
-    }
-
-    @Override
-    public ST visitExistsFunction(SparqlParser.ExistsFunctionContext ctx) {
-        // existsFunction :
-        //   EXISTS groupGraphPattern
-
-        ST existsFunction = g.getInstanceOf("existsFunction");
-
-        existsFunction.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
-
-        return existsFunction;
-    }
-
-    @Override
-    public ST visitNotExistsFunction(SparqlParser.NotExistsFunctionContext ctx) {
-        // notExistsFunction :
-        //   NOT EXISTS groupGraphPattern
-
-        ST notExistsFunction = g.getInstanceOf("notExistsFunction");
-
-        notExistsFunction.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
-
-        return notExistsFunction;
-    }
-
-    @Override
-    public ST visitAggregate(SparqlParser.AggregateContext ctx) {
-        // aggregate :
-        //    COUNT OPEN_BRACE DISTINCT? (ASTERISK | expression) CLOSE_BRACE
-        //  | SUM OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-        //  | MIN OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-        //  | MAX OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-        //  | AVG OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-        //  | SAMPLE OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-        //  | GROUP_CONCAT OPEN_BRACE DISTINCT? expression (SEMICOLON SEPARATOR EQUAL string)? CLOSE_BRACE
-
-        ST aggregate = g.getInstanceOf("aggregate");
-
-        if (ctx.COUNT() != null) {
-            aggregate.add("operation", ctx.COUNT().getSymbol().getText().toUpperCase());
-            if (ctx.DISTINCT() != null) {
-                aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
-            }
-            if (ctx.ASTERISK() != null) {
-                aggregate.add("whatever", ctx.ASTERISK().getSymbol().getText());
-            } else if (ctx.expression() != null) {
-                aggregate.add("expression", visitExpression(ctx.expression()));
-            }
-        } else if (ctx.SUM() != null) {
-            aggregate.add("operation", ctx.SUM().getSymbol().getText().toUpperCase());
-            if (ctx.DISTINCT() != null) {
-                aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
-            }
-            aggregate.add("expression", visitExpression(ctx.expression()));
-        } else if (ctx.MIN() != null) {
-            aggregate.add("operation", ctx.MIN().getSymbol().getText().toUpperCase());
-            if (ctx.DISTINCT() != null) {
-                aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
-            }
-            aggregate.add("expression", visitExpression(ctx.expression()));
-        } else if (ctx.MAX() != null) {
-            aggregate.add("operation", ctx.MAX().getSymbol().getText().toUpperCase());
-            if (ctx.DISTINCT() != null) {
-                aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
-            }
-            aggregate.add("expression", visitExpression(ctx.expression()));
-        } else if (ctx.AVG() != null) {
-            aggregate.add("operation", ctx.AVG().getSymbol().getText().toUpperCase());
-            if (ctx.DISTINCT() != null) {
-                aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
-            }
-            aggregate.add("expression", visitExpression(ctx.expression()));
-        } else if (ctx.SAMPLE() != null) {
-            aggregate.add("operation", ctx.SAMPLE().getSymbol().getText().toUpperCase());
-            if (ctx.DISTINCT() != null) {
-                aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
-            }
-            aggregate.add("expression", visitExpression(ctx.expression()));
-        } else if (ctx.GROUP_CONCAT() != null) {
-            aggregate.add("operation", ctx.GROUP_CONCAT().getSymbol().getText().toUpperCase());
-            if (ctx.DISTINCT() != null) {
-                aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
-            }
-            aggregate.add("expression", visitExpression(ctx.expression()));
-            if (ctx.string() != null) {
-                aggregate.add("string", visitString(ctx.string()));
-            }
-        }
-
-        return aggregate;
-    }
-
-    @Override
-    public ST visitIriRefOrFunction(SparqlParser.IriRefOrFunctionContext ctx) {
-        // iriRefOrFunction :
-        //   iri argList?
-
-        ST iriRefOrFunction = g.getInstanceOf("iriRefOrFunction");
-
-        iriRefOrFunction.add("iri", visitIri(ctx.iri()));
-
-        if (ctx.argList() != null) {
-            iriRefOrFunction.add("argList", visitArgList(ctx.argList()));
-        }
-
-        return iriRefOrFunction;
-    }
-
-    @Override
-    public ST visitRdfLiteral(SparqlParser.RdfLiteralContext ctx) {
-        // rdfLiteral :
-        //   string (LANGTAG | (REFERENCE iri))?
-
-        ST rdfLiteral = g.getInstanceOf("rdfLiteral");
-
-        rdfLiteral.add("string", visitString(ctx.string()));
-
-        if (ctx.LANGTAG() != null) {
-            rdfLiteral.add("langTag", ctx.LANGTAG().getSymbol().getText());
-        } else if (ctx.iri() != null) {
-            rdfLiteral.add("iri", visitIri(ctx.iri()));
-        }
-
-        return rdfLiteral;
-    }
-
-    @Override
-    public ST visitNumericLiteral(SparqlParser.NumericLiteralContext ctx) {
-        // numericLiteral :
-        //   numericLiteralUnsigned | numericLiteralPositive | numericLiteralNegative
-
-        ST numericLiteral = g.getInstanceOf("numericLiteral");
-
-        if (ctx.numericLiteralUnsigned() != null) {
-            numericLiteral.add("numericLiteralUnsigned", visitNumericLiteralUnsigned(ctx.numericLiteralUnsigned()));
-        } else if (ctx.numericLiteralPositive() != null) {
-            numericLiteral.add("numericLiteralPositive", visitNumericLiteralPositive(ctx.numericLiteralPositive()));
-        } else if (ctx.numericLiteralNegative() != null) {
-            numericLiteral.add("numericLiteralPositive", visitNumericLiteralNegative(ctx.numericLiteralNegative()));
-        }
-
-        return numericLiteral;
-    }
-
-    @Override
-    public ST visitNumericLiteralUnsigned(SparqlParser.NumericLiteralUnsignedContext ctx) {
-        // numericLiteralUnsigned :
-        //  INTEGER | DECIMAL | DOUBLE
-
-        ST numericLiteralUnsigned = g.getInstanceOf("numericLiteralUnsigned");
-
-        if (ctx.INTEGER() != null) {
-            numericLiteralUnsigned.add("value", ctx.INTEGER().getSymbol().getText());
-        } else if (ctx.DECIMAL() != null) {
-            numericLiteralUnsigned.add("value", ctx.DECIMAL().getSymbol().getText());
-        } else if (ctx.DOUBLE() != null) {
-            numericLiteralUnsigned.add("value", ctx.DOUBLE().getSymbol().getText());
-        }
-
-        return numericLiteralUnsigned;
-    }
-
-    @Override
-    public ST visitNumericLiteralPositive(SparqlParser.NumericLiteralPositiveContext ctx) {
-        // numericLiteralPositive :
-        //   INTEGER_POSITIVE | DECIMAL_POSITIVE | DOUBLE_POSITIVE
-
-        ST numericLiteralPositive = g.getInstanceOf("numericLiteralPositive");
-
-        if (ctx.INTEGER_POSITIVE() != null) {
-            numericLiteralPositive.add("value", ctx.INTEGER_POSITIVE().getSymbol().getText());
-        } else if (ctx.DECIMAL_POSITIVE() != null) {
-            numericLiteralPositive.add("value", ctx.DECIMAL_POSITIVE().getSymbol().getText());
-        } else if (ctx.DOUBLE_POSITIVE() != null) {
-            numericLiteralPositive.add("value", ctx.DOUBLE_POSITIVE().getSymbol().getText());
-        }
-
-        return numericLiteralPositive;
-    }
-
-    @Override
-    public ST visitNumericLiteralNegative(SparqlParser.NumericLiteralNegativeContext ctx) {
-        // numericLiteralNegative :
-        //   INTEGER_NEGATIVE | DECIMAL_NEGATIVE | DOUBLE_NEGATIVE
-
-        ST numericLiteralNegative = g.getInstanceOf("numericLiteralNegative");
-
-        if (ctx.INTEGER_NEGATIVE() != null) {
-            numericLiteralNegative.add("value", ctx.INTEGER_NEGATIVE().getSymbol().getText());
-        } else if (ctx.DECIMAL_NEGATIVE() != null) {
-            numericLiteralNegative.add("value", ctx.DECIMAL_NEGATIVE().getSymbol().getText());
-        } else if (ctx.DOUBLE_NEGATIVE() != null) {
-            numericLiteralNegative.add("value", ctx.DOUBLE_NEGATIVE().getSymbol().getText());
-        }
-
-        return numericLiteralNegative;
-    }
-
-    @Override
-    public ST visitBooleanLiteral(SparqlParser.BooleanLiteralContext ctx) {
-        // booleanLiteral :
-        //   TRUE | FALSE
-
-        ST booleanLiteral = g.getInstanceOf("booleanLiteral");
-
-        if (ctx.TRUE() != null) {
-            booleanLiteral.add("value", ctx.TRUE().getSymbol().getText().toUpperCase());
-        } else if (ctx.FALSE() != null) {
-            booleanLiteral.add("value", ctx.FALSE().getSymbol().getText().toUpperCase());
-        }
-
-        return booleanLiteral;
-    }
-
-    @Override
-    public ST visitString(SparqlParser.StringContext ctx) {
-        // string :
-        //   STRING_LITERAL1 | STRING_LITERAL2 | STRING_LITERAL_LONG1 | STRING_LITERAL_LONG2
-
-        ST string = g.getInstanceOf("string");
-
-        if (ctx.STRING_LITERAL1() != null) {
-            string.add("value", ctx.STRING_LITERAL1().getSymbol().getText());
-        } else if (ctx.STRING_LITERAL2() != null) {
-            string.add("value", ctx.STRING_LITERAL2().getSymbol().getText());
-        } else if (ctx.STRING_LITERAL_LONG1() != null) {
-            string.add("value", ctx.STRING_LITERAL_LONG1().getSymbol().getText());
-        } else if (ctx.STRING_LITERAL_LONG2() != null) {
-            string.add("value", ctx.STRING_LITERAL_LONG2().getSymbol().getText());
-        }
-
-        return string;
-    }
-
-    @Override
-    public ST visitIri(SparqlParser.IriContext ctx) {
-        // iri :
-        //   IRIREF | prefixedName
-
-        ST iri = g.getInstanceOf("iri");
-
-        if (ctx.IRIREF() != null) {
-            String s = ctx.IRIREF().getSymbol().getText();
-            iri.add("IRIREF", s.substring(1, s.length() - 1));
-        } else if (ctx.prefixedName() != null) {
-            iri.add("prefixedName", visitPrefixedName(ctx.prefixedName()));
-        }
-
-        return iri;
-    }
-
-    @Override
-    public ST visitPrefixedName(SparqlParser.PrefixedNameContext ctx) {
-        // prefixedName :
-        //   PNAME_LN | PNAME_NS
-
-        ST prefixedName = g.getInstanceOf("prefixedName");
-
-        if (ctx.PNAME_LN() != null) {
-            prefixedName.add("value", ctx.PNAME_LN().getSymbol().getText());
-        } else if (ctx.PNAME_NS() != null) {
-            prefixedName.add("value", ctx.PNAME_NS().getSymbol().getText());
-        }
-
-        return prefixedName;
-    }
-
-    @Override
-    public ST visitBlankNode(SparqlParser.BlankNodeContext ctx) {
-        // blankNode :
-        //   BLANK_NODE_LABEL | anon
-
-        ST blankNode = g.getInstanceOf("blankNode");
-
-        if (ctx.BLANK_NODE_LABEL() != null) {
-            blankNode.add("value", ctx.BLANK_NODE_LABEL().getSymbol().getText());
-        } else if (ctx.anon() != null) {
-            blankNode.add("anon", visitAnon(ctx.anon()));
-        }
-
-        return blankNode;
-    }
-
-    @Override
-    public ST visitAnon(SparqlParser.AnonContext ctx) {
-        // anon :
-        //   OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
-
-        ST anon = g.getInstanceOf("anon");
-
-        return anon;
-    }
+		return collectionPath;
+	}
+
+	@Override
+	public ST visitGraphNode(SparqlParser.GraphNodeContext ctx) {
+		// graphNode :
+		//   varOrTerm | triplesNode
+
+		ST graphNode = g.getInstanceOf("graphNode");
+
+		if (ctx.varOrTerm() != null) {
+			graphNode.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
+		} else if (ctx.triplesNode() != null) {
+			graphNode.add("triplesNode", visitTriplesNode(ctx.triplesNode()));
+		}
+
+		return graphNode;
+	}
+
+	@Override
+	public ST visitGraphNodePath(SparqlParser.GraphNodePathContext ctx) {
+		// graphNodePath :
+		//   varOrTerm | triplesNodePath
+
+		ST graphNodePath = g.getInstanceOf("graphNodePath");
+
+		if (ctx.varOrTerm() != null) {
+			graphNodePath.add("varOrTerm", visitVarOrTerm(ctx.varOrTerm()));
+		} else if (ctx.triplesNodePath() != null) {
+			graphNodePath.add("triplesNodePath", visitTriplesNodePath(ctx.triplesNodePath()));
+		}
+
+		return graphNodePath;
+	}
+
+	@Override
+	public ST visitVarOrTerm(SparqlParser.VarOrTermContext ctx) {
+		// varOrTerm :
+		//   var | graphTerm
+
+		ST varOrTerm = g.getInstanceOf("varOrTerm");
+
+		if (ctx.var() != null) {
+			varOrTerm.add("var", visitVar(ctx.var()));
+		} else if (ctx.graphTerm() != null) {
+			varOrTerm.add("graphTerm", visitGraphTerm(ctx.graphTerm()));
+		}
+
+		return varOrTerm;
+	}
+
+	@Override
+	public ST visitVarOrIRI(SparqlParser.VarOrIRIContext ctx) {
+		// varOrIRI :
+		//   var | iri
+
+		ST varOrIRI = g.getInstanceOf("varOrIRI");
+
+		if (ctx.var() != null) {
+			varOrIRI.add("var", visitVar(ctx.var()));
+		} else if (ctx.iri() != null) {
+			varOrIRI.add("iri", visitIri(ctx.iri()));
+		}
+
+		return varOrIRI;
+	}
+
+	@Override
+	public ST visitVar(SparqlParser.VarContext ctx) {
+		// var :
+		//   VAR1 | VAR2
+
+		ST var = g.getInstanceOf("var");
+
+		if (ctx.VAR1() != null) {
+			var.add("value", ctx.VAR1().getSymbol().getText());
+		} else if (ctx.VAR2() != null) {
+			var.add("value", ctx.VAR2().getSymbol().getText());
+		}
+
+		return var;
+	}
+
+	@Override
+	public ST visitGraphTerm(SparqlParser.GraphTermContext ctx) {
+		// graphTerm
+		//   iri | rdfLiteral | numericLiteral | booleanLiteral | blankNode | nil
+
+		ST graphTerm = g.getInstanceOf("graphTerm");
+
+		if (ctx.iri() != null) {
+			graphTerm.add("iri", visitIri(ctx.iri()));
+		} else if (ctx.rdfLiteral() != null) {
+			graphTerm.add("rdfLiteral", visitRdfLiteral(ctx.rdfLiteral()));
+		} else if (ctx.numericLiteral() != null) {
+			graphTerm.add("numericLiteral", visitNumericLiteral(ctx.numericLiteral()));
+		} else if (ctx.booleanLiteral() != null) {
+			graphTerm.add("booleanLiteral", visitBooleanLiteral(ctx.booleanLiteral()));
+		} else if (ctx.blankNode() != null) {
+			graphTerm.add("blankNode", visitBlankNode(ctx.blankNode()));
+		} else if (ctx.nil() != null) {
+			graphTerm.add("nil", visitNil(ctx.nil()));
+		}
+
+		return graphTerm;
+	}
+
+	@Override
+	public ST visitNil(SparqlParser.NilContext ctx) {
+		// nil :
+		//   OPEN_BRACE CLOSE_BRACE
+
+		ST nil = g.getInstanceOf("nil");
+
+		return nil;
+	}
+
+	@Override
+	public ST visitExpression(SparqlParser.ExpressionContext ctx) {
+		// expression :
+		//   conditionalOrExpression
+
+		ST expression = g.getInstanceOf("expression");
+
+		expression.add("conditionalOrExpression", visitConditionalOrExpression(ctx.conditionalOrExpression()));
+
+		return expression;
+	}
+
+	@Override
+	public ST visitConditionalOrExpression(SparqlParser.ConditionalOrExpressionContext ctx) {
+		// conditionalOrExpression :
+		//   conditionalAndExpression (OR conditionalAndExpression)*
+
+		ST conditionalOrExpression = g.getInstanceOf("conditionalOrExpression");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.ConditionalAndExpressionContext) {
+				conditionalOrExpression.add("conditionalAndExpression", visitConditionalAndExpression((SparqlParser.ConditionalAndExpressionContext) c));
+			}
+		}
+
+		return conditionalOrExpression;
+	}
+
+	@Override
+	public ST visitConditionalAndExpression(SparqlParser.ConditionalAndExpressionContext ctx) {
+		// conditionalAndExpression :
+		//   valueLogical (AND valueLogical)*
+
+		ST conditionalAndExpression = g.getInstanceOf("conditionalAndExpression");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.ValueLogicalContext) {
+				conditionalAndExpression.add("valueLogical", visitValueLogical((SparqlParser.ValueLogicalContext) c));
+			}
+		}
+
+		return conditionalAndExpression;
+	}
+
+	@Override
+	public ST visitValueLogical(SparqlParser.ValueLogicalContext ctx) {
+		// valueLogical :
+		//   relationalExpression
+
+		ST valueLogical = g.getInstanceOf("valueLogical");
+
+		valueLogical.add("relationalExpression", visitRelationalExpression(ctx.relationalExpression()));
+
+		return valueLogical;
+	}
+
+	@Override
+	public ST visitRelationalExpression(SparqlParser.RelationalExpressionContext ctx) {
+		// relationalExpression :
+		//   numericExpression (EQUAL numericExpression
+		//                    | NOT_EQUAL numericExpression 
+		//                    | LESS numericExpression 
+		//                    | GREATER numericExpression
+		//                    | LESS_EQUAL numericExpression
+		//                    | GREATER_EQUAL numericExpression  
+		//                    | IN OPEN_BRACE (el1=expressionList)? CLOSE_BRACE
+		//                    | NOT IN OPEN_BRACE (el2=expressionList)? CLOSE_BRACE)?
+
+		ST relationalExpression = g.getInstanceOf("relationalExpression");
+
+		relationalExpression.add("numericExpression", visitNumericExpression(ctx.numericExpression(0)));
+
+		if (ctx.EQUAL() != null) {
+			relationalExpression.add("operator", ctx.EQUAL().getSymbol().getText());
+			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
+		} else if (ctx.NOT_EQUAL() != null) {
+			relationalExpression.add("operator", ctx.NOT_EQUAL().getSymbol().getText());
+			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
+		} else if (ctx.LESS() != null) {
+			relationalExpression.add("operator", ctx.LESS().getSymbol().getText());
+			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
+		} else if (ctx.GREATER() != null) {
+			relationalExpression.add("operator", ctx.GREATER().getSymbol().getText());
+			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
+		} else if (ctx.LESS_EQUAL() != null) {
+			relationalExpression.add("operator", ctx.LESS_EQUAL().getSymbol().getText());
+			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
+		} else if (ctx.GREATER_EQUAL() != null) {
+			relationalExpression.add("operator", ctx.GREATER_EQUAL().getSymbol().getText());
+			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
+		} else if (ctx.el1 != null) {
+			relationalExpression.add("operator", "IN");
+			if (ctx.el1 != null) {
+				relationalExpression.add("element", visitExpressionList(ctx.el1));
+			}
+		} else if (ctx.el2 != null) {
+			relationalExpression.add("operator", "NOT IN");
+			if (ctx.el2 != null) {
+				relationalExpression.add("element", visitExpressionList(ctx.el2));
+			}
+		}
+
+		return relationalExpression;
+	}
+
+	@Override
+	public ST visitNumericExpression(SparqlParser.NumericExpressionContext ctx) {
+		// numericExpression :
+		//   additiveExpression
+
+		ST numericExpression = g.getInstanceOf("numericExpression");
+
+		numericExpression.add("additiveExpression", visitAdditiveExpression(ctx.additiveExpression()));
+
+		return numericExpression;
+	}
+
+	@Override
+	public ST visitAdditiveExpression(SparqlParser.AdditiveExpressionContext ctx) {
+		// additiveExpression : 
+		//   multiplicativeExpression (PLUS multiplicativeExpression | MINUS multiplicativeExpression | (numericLiteralPositive | numericLiteralNegative) 
+		//                            (ASTERISK unaryExpression | DIVIDE unaryExpression)?)*
+
+		boolean first = true;
+
+		ST additiveExpression = g.getInstanceOf("additiveExpression");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof TerminalNode) {
+				TerminalNode t = (TerminalNode) c;
+				Token to = (Token) (t.getSymbol());
+				if (to.getType() == SparqlParser.PLUS || to.getType() == SparqlParser.MINUS) {
+					additiveExpression.add("additiveOperator", ((Token) (t.getSymbol())).getText());
+				} else if (to.getType() == SparqlParser.ASTERISK || to.getType() == SparqlParser.DIVIDE) {
+					additiveExpression.add("multiplicativeOperator", ((Token) (t.getSymbol())).getText());
+				}
+			} else if (c instanceof SparqlParser.MultiplicativeExpressionContext) {
+				if (first) {
+					first = false;
+					additiveExpression.add("multiplicativeExpression", visitMultiplicativeExpression((SparqlParser.MultiplicativeExpressionContext) c));
+				} else {
+					additiveExpression.add("multiplicand", visitMultiplicativeExpression((SparqlParser.MultiplicativeExpressionContext) c));
+				}
+			} else if (c instanceof SparqlParser.NumericLiteralPositiveContext) {
+				additiveExpression.add("numericLiteral", visitNumericLiteralPositive((SparqlParser.NumericLiteralPositiveContext) c));
+			} else if (c instanceof SparqlParser.NumericLiteralNegativeContext) {
+				additiveExpression.add("numericLiteral", visitNumericLiteralNegative((SparqlParser.NumericLiteralNegativeContext) c));
+			} else if (c instanceof SparqlParser.UnaryExpressionContext) {
+				additiveExpression.add("unaryExpression", visitUnaryExpression((SparqlParser.UnaryExpressionContext) c));
+			}
+		}
+
+		return additiveExpression;
+	}
+
+	@Override
+	public ST visitMultiplicativeExpression(SparqlParser.MultiplicativeExpressionContext ctx) {
+		// multiplicativeExpression :
+		//   unaryExpression (ASTERISK unaryExpression | DIVIDE unaryExpression)*        
+
+		ST multiplicativeExpression = g.getInstanceOf("multiplicativeExpression");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof TerminalNode) {
+				TerminalNode t = (TerminalNode) c;
+				multiplicativeExpression.add("operator", ((Token) (t.getSymbol())).getText());
+			} else if (c instanceof SparqlParser.UnaryExpressionContext) {
+				multiplicativeExpression.add("unaryExpression", visitUnaryExpression((SparqlParser.UnaryExpressionContext) c));
+			}
+		}
+
+		return multiplicativeExpression;
+	}
+
+	@Override
+	public ST visitUnaryExpression(SparqlParser.UnaryExpressionContext ctx) {
+		// unaryExpression :
+		//   NEGATION primaryExpression
+		// | PLUS primaryExpression
+		// | MINUS primaryExpression
+		// | primaryExpression
+
+		ST unaryExpression = g.getInstanceOf("unaryExpression");
+
+		if (ctx.NEGATION() != null) {
+			unaryExpression.add("operator", ctx.NEGATION().getSymbol().getText());
+		} else if (ctx.PLUS() != null) {
+			unaryExpression.add("operator", ctx.PLUS().getSymbol().getText());
+		} else if (ctx.MINUS() != null) {
+			unaryExpression.add("operator", ctx.MINUS().getSymbol().getText());
+		}
+
+		if (ctx.primaryExpression() != null) {
+			unaryExpression.add("primaryExpression", visitPrimaryExpression(ctx.primaryExpression()));
+		}
+
+		return unaryExpression;
+	}
+
+	@Override
+	public ST visitPrimaryExpression(SparqlParser.PrimaryExpressionContext ctx) {
+		// primaryExpression :
+		//   brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
+
+		ST primaryExpression = g.getInstanceOf("primaryExpression");
+
+		if (ctx.brackettedExpression() != null) {
+			primaryExpression.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
+		} else if (ctx.builtInCall() != null) {
+			primaryExpression.add("builtInCall", visitBuiltInCall(ctx.builtInCall()));
+		} else if (ctx.iriRefOrFunction() != null) {
+			primaryExpression.add("iriRefOrFunction", visitIriRefOrFunction(ctx.iriRefOrFunction()));
+		} else if (ctx.rdfLiteral() != null) {
+			primaryExpression.add("rdfLiteral", visitRdfLiteral(ctx.rdfLiteral()));
+		} else if (ctx.numericLiteral() != null) {
+			primaryExpression.add("numericLiteral", visitNumericLiteral(ctx.numericLiteral()));
+		} else if (ctx.booleanLiteral() != null) {
+			primaryExpression.add("booleanLiteral", visitBooleanLiteral(ctx.booleanLiteral()));
+		} else if (ctx.var() != null) {
+			primaryExpression.add("var", visitVar(ctx.var()));
+		}
+
+		return primaryExpression;
+	}
+
+	@Override
+	public ST visitBrackettedExpression(SparqlParser.BrackettedExpressionContext ctx) {
+		// brackettedExpression :
+		//   OPEN_BRACE expression CLOSE_BRACE
+
+		ST brackettedExpression = g.getInstanceOf("brackettedExpression");
+
+		brackettedExpression.add("expression", visitExpression(ctx.expression()));
+
+		return brackettedExpression;
+	}
+
+	@Override
+	public ST visitBuiltInCall(SparqlParser.BuiltInCallContext ctx) {
+		// builtInCall :
+		//   aggregate
+		//   | STR OPEN_BRACE expression CLOSE_BRACE
+		//   | LANG OPEN_BRACE expression CLOSE_BRACE
+		//   | LANGMATCHES OPEN_BRACE expression COMMA expression CLOSE_BRACE
+		//   | DATATYPE OPEN_BRACE expression CLOSE_BRACE
+		//   | BOUND OPEN_BRACE var CLOSE_BRACE
+		//   | IRI OPEN_BRACE expression CLOSE_BRACE
+		//   | URI OPEN_BRACE expression CLOSE_BRACE
+		//   | BNODE OPEN_BRACE expression? CLOSE_BRACE
+		//   | RAND nil
+		//   | ABS OPEN_BRACE expression CLOSE_BRACE
+		//   | CEIL OPEN_BRACE expression CLOSE_BRACE
+		//   | FLOOR OPEN_BRACE expression CLOSE_BRACE
+		//   | ROUND OPEN_BRACE expression CLOSE_BRACE
+		//   | CONCAT (expressionList?)
+		//   | subStringExpression
+		//   | strReplaceExpression
+		//   | STRLEN OPEN_BRACE expression CLOSE_BRACE
+		//   | UCASE OPEN_BRACE expression CLOSE_BRACE
+		//   | LCASE OPEN_BRACE expression CLOSE_BRACE
+		//   | ENCODE_FOR_URI OPEN_BRACE expression CLOSE_BRACE
+		//   | CONTAINS OPEN_BRACE expression COMMA expression CLOSE_BRACE
+		//   | STRSTARTS OPEN_BRACE expression COMMA expression CLOSE_BRACE
+		//   | STRENDS OPEN_BRACE expression COMMA expression CLOSE_BRACE
+		//   | STRBEFORE OPEN_BRACE expression COMMA expression CLOSE_BRACE
+		//   | STRAFTER OPEN_BRACE expression COMMA expression CLOSE_BRACE
+		//   | YEAR OPEN_BRACE expression CLOSE_BRACE
+		//   | MONTH OPEN_BRACE expression CLOSE_BRACE
+		//   | DAY OPEN_BRACE expression CLOSE_BRACE
+		//   | HOURS OPEN_BRACE expression CLOSE_BRACE
+		//   | MINUTES OPEN_BRACE expression CLOSE_BRACE
+		//   | SECONDS OPEN_BRACE expression CLOSE_BRACE
+		//   | TIMEZONE OPEN_BRACE expression CLOSE_BRACE
+		//   | TZ OPEN_BRACE expression CLOSE_BRACE
+		//   | NOW nil
+		//   | UUID nil
+		//   | STRUUID nil
+		//   | MD5 OPEN_BRACE expression CLOSE_BRACE
+		//   | SHA1 OPEN_BRACE expression CLOSE_BRACE
+		//   | SHA256 OPEN_BRACE expression CLOSE_BRACE
+		//   | SHA384 OPEN_BRACE expression CLOSE_BRACE
+		//   | SHA512 OPEN_BRACE expression CLOSE_BRACE
+		//   | COALESCE (expressionList?)
+		//   | IF OPEN_BRACE e1=expression COMMA e2=expression COMMA e3=expression CLOSE_BRACE
+		//   | STRLANG OPEN_BRACE expression COMMA expression CLOSE_BRACE
+		//   | STRDT OPEN_BRACE expression COMMA expression CLOSE_BRACE
+		//   | SAMETERM OPEN_BRACE expression COMMA expression CLOSE_BRACE
+		//   | ISIRI OPEN_BRACE expression CLOSE_BRACE
+		//   | ISURI OPEN_BRACE expression CLOSE_BRACE
+		//   | ISBLANK OPEN_BRACE expression CLOSE_BRACE
+		//   | ISLITERAL OPEN_BRACE expression CLOSE_BRACE
+		//   | ISNUMERIC OPEN_BRACE expression CLOSE_BRACE
+		//   | regexExpression
+		//   | existsFunction
+		//   | notExistsFunction
+
+		ST builtInCall = g.getInstanceOf("builtInCall");
+
+		if (ctx.aggregate() != null) {
+			builtInCall.add("aggregate", visitAggregate(ctx.aggregate()));
+		} else if (ctx.STR() != null) {
+			builtInCall.add("builtInFunction", ctx.STR().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.LANG() != null) {
+			builtInCall.add("builtInFunction", ctx.LANG().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.LANGMATCHES() != null) {
+			builtInCall.add("builtInFunction", ctx.LANGMATCHES().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+		} else if (ctx.DATATYPE() != null) {
+			builtInCall.add("builtInFunction", ctx.DATATYPE().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.BOUND() != null) {
+			builtInCall.add("builtInFunction", ctx.BOUND().getSymbol().getText().toUpperCase());
+			builtInCall.add("var", visitVar((SparqlParser.VarContext) ctx.var()));
+		} else if (ctx.IRI() != null) {
+			builtInCall.add("builtInFunction", ctx.IRI().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.URI() != null) {
+			builtInCall.add("builtInFunction", ctx.URI().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.BNODE() != null) {
+			builtInCall.add("builtInFunction", ctx.BNODE().getSymbol().getText().toUpperCase());
+			if (ctx.expression(0) != null) {
+				builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			}
+		} else if (ctx.RAND() != null) {
+			builtInCall.add("builtInFunction", ctx.RAND().getSymbol().getText().toUpperCase());
+		} else if (ctx.ABS() != null) {
+			builtInCall.add("builtInFunction", ctx.ABS().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.CEIL() != null) {
+			builtInCall.add("builtInFunction", ctx.CEIL().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.FLOOR() != null) {
+			builtInCall.add("builtInFunction", ctx.FLOOR().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.ROUND() != null) {
+			builtInCall.add("builtInFunction", ctx.ROUND().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.CONCAT() != null) {
+			builtInCall.add("builtInFunction", ctx.CONCAT().getSymbol().getText().toUpperCase());
+			if (ctx.expressionList() != null) {
+				builtInCall.add("expressionList", visitExpressionList(ctx.expressionList()));
+			}
+		} else if (ctx.STRLEN() != null) {
+			builtInCall.add("builtInFunction", ctx.STRLEN().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.UCASE() != null) {
+			builtInCall.add("builtInFunction", ctx.UCASE().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.LCASE() != null) {
+			builtInCall.add("builtInFunction", ctx.LCASE().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.ENCODE_FOR_URI() != null) {
+			builtInCall.add("builtInFunction", ctx.ENCODE_FOR_URI().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.CONTAINS() != null) {
+			builtInCall.add("builtInFunction", ctx.CONTAINS().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+		} else if (ctx.STRSTARTS() != null) {
+			builtInCall.add("builtInFunction", ctx.STRSTARTS().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+		} else if (ctx.STRENDS() != null) {
+			builtInCall.add("builtInFunction", ctx.STRENDS().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+		} else if (ctx.STRBEFORE() != null) {
+			builtInCall.add("builtInFunction", ctx.STRBEFORE().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+		} else if (ctx.STRAFTER() != null) {
+			builtInCall.add("builtInFunction", ctx.STRAFTER().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+		} else if (ctx.YEAR() != null) {
+			builtInCall.add("builtInFunction", ctx.YEAR().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.MONTH() != null) {
+			builtInCall.add("builtInFunction", ctx.MONTH().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.DAY() != null) {
+			builtInCall.add("builtInFunction", ctx.DAY().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.HOURS() != null) {
+			builtInCall.add("builtInFunction", ctx.HOURS().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.MINUTES() != null) {
+			builtInCall.add("builtInFunction", ctx.MINUTES().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.SECONDS() != null) {
+			builtInCall.add("builtInFunction", ctx.SECONDS().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.TIMEZONE() != null) {
+			builtInCall.add("builtInFunction", ctx.TIMEZONE().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.TZ() != null) {
+			builtInCall.add("builtInFunction", ctx.TZ().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.NOW() != null) {
+			builtInCall.add("builtInFunction", ctx.NOW().getSymbol().getText().toUpperCase());
+		} else if (ctx.UUID() != null) {
+			builtInCall.add("builtInFunction", ctx.UUID().getSymbol().getText().toUpperCase());
+		} else if (ctx.STRUUID() != null) {
+			builtInCall.add("builtInFunction", ctx.STRUUID().getSymbol().getText().toUpperCase());
+		} else if (ctx.MD5() != null) {
+			builtInCall.add("builtInFunction", ctx.MD5().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.SHA1() != null) {
+			builtInCall.add("builtInFunction", ctx.SHA1().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.SHA256() != null) {
+			builtInCall.add("builtInFunction", ctx.SHA256().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.SHA384() != null) {
+			builtInCall.add("builtInFunction", ctx.SHA384().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.SHA512() != null) {
+			builtInCall.add("builtInFunction", ctx.SHA512().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.COALESCE() != null) {
+			builtInCall.add("builtInFunction", ctx.COALESCE().getSymbol().getText().toUpperCase());
+			if (ctx.expressionList() != null) {
+				builtInCall.add("expressionList", visitExpressionList(ctx.expressionList()));
+			}
+		} else if (ctx.IF() != null) {
+			builtInCall.add("builtInFunction", ctx.IF().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visitExpression(ctx.expression(2)));
+		} else if (ctx.STRLANG() != null) {
+			builtInCall.add("builtInFunction", ctx.STRLANG().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+		} else if (ctx.STRDT() != null) {
+			builtInCall.add("builtInFunction", ctx.STRDT().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+		} else if (ctx.SAMETERM() != null) {
+			builtInCall.add("builtInFunction", ctx.SAMETERM().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+		} else if (ctx.ISIRI() != null) {
+			builtInCall.add("builtInFunction", ctx.ISIRI().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.ISURI() != null) {
+			builtInCall.add("builtInFunction", ctx.ISURI().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.ISBLANK() != null) {
+			builtInCall.add("builtInFunction", ctx.ISBLANK().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.ISLITERAL() != null) {
+			builtInCall.add("builtInFunction", ctx.ISLITERAL().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.ISNUMERIC() != null) {
+			builtInCall.add("builtInFunction", ctx.ISNUMERIC().getSymbol().getText().toUpperCase());
+			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+		} else if (ctx.subStringExpression() != null) {
+			builtInCall.add("subStringExpression", visitSubStringExpression(ctx.subStringExpression()));
+		} else if (ctx.strReplaceExpression() != null) {
+			builtInCall.add("strReplaceExpression", visitStrReplaceExpression(ctx.strReplaceExpression()));
+		} else if (ctx.regexExpression() != null) {
+			builtInCall.add("regexExpression", visitRegexExpression(ctx.regexExpression()));
+		} else if (ctx.existsFunction() != null) {
+			builtInCall.add("existsFunction", visitExistsFunction(ctx.existsFunction()));
+		} else if (ctx.notExistsFunction() != null) {
+			builtInCall.add("notExistsFunction", visitNotExistsFunction(ctx.notExistsFunction()));
+		}
+
+		return builtInCall;
+	}
+
+	@Override
+	public ST visitRegexExpression(SparqlParser.RegexExpressionContext ctx) {
+		// regexExpression :
+		//   REGEX OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE
+
+		ST regexExpression = g.getInstanceOf("regexExpression");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.ExpressionContext) {
+				regexExpression.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
+			}
+		}
+
+		return regexExpression;
+	}
+
+	@Override
+	public ST visitSubStringExpression(SparqlParser.SubStringExpressionContext ctx) {
+		// subStringExpression :
+		//   SUBSTR OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE
+
+		ST subStringExpression = g.getInstanceOf("subStringExpression");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.ExpressionContext) {
+				subStringExpression.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
+			}
+		}
+
+		return subStringExpression;
+	}
+
+	@Override
+	public ST visitStrReplaceExpression(SparqlParser.StrReplaceExpressionContext ctx) {
+		// strReplaceExpression :
+		//   REPLACE OPEN_BRACE expression COMMA expression COMMA expression (COMMA expression)? CLOSE_BRACE
+
+		ST strReplaceExpression = g.getInstanceOf("strReplaceExpression");
+
+		for (ParseTree c : ctx.children) {
+			if (c instanceof SparqlParser.ExpressionContext) {
+				strReplaceExpression.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
+			}
+		}
+
+		return strReplaceExpression;
+	}
+
+	@Override
+	public ST visitExistsFunction(SparqlParser.ExistsFunctionContext ctx) {
+		// existsFunction :
+		//   EXISTS groupGraphPattern
+
+		ST existsFunction = g.getInstanceOf("existsFunction");
+
+		existsFunction.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
+
+		return existsFunction;
+	}
+
+	@Override
+	public ST visitNotExistsFunction(SparqlParser.NotExistsFunctionContext ctx) {
+		// notExistsFunction :
+		//   NOT EXISTS groupGraphPattern
+
+		ST notExistsFunction = g.getInstanceOf("notExistsFunction");
+
+		notExistsFunction.add("groupGraphPattern", visitGroupGraphPattern(ctx.groupGraphPattern()));
+
+		return notExistsFunction;
+	}
+
+	@Override
+	public ST visitAggregate(SparqlParser.AggregateContext ctx) {
+		// aggregate :
+		//    COUNT OPEN_BRACE DISTINCT? (ASTERISK | expression) CLOSE_BRACE
+		//  | SUM OPEN_BRACE DISTINCT? expression CLOSE_BRACE
+		//  | MIN OPEN_BRACE DISTINCT? expression CLOSE_BRACE
+		//  | MAX OPEN_BRACE DISTINCT? expression CLOSE_BRACE
+		//  | AVG OPEN_BRACE DISTINCT? expression CLOSE_BRACE
+		//  | SAMPLE OPEN_BRACE DISTINCT? expression CLOSE_BRACE
+		//  | GROUP_CONCAT OPEN_BRACE DISTINCT? expression (SEMICOLON SEPARATOR EQUAL string)? CLOSE_BRACE
+
+		ST aggregate = g.getInstanceOf("aggregate");
+
+		if (ctx.COUNT() != null) {
+			aggregate.add("operation", ctx.COUNT().getSymbol().getText().toUpperCase());
+			if (ctx.DISTINCT() != null) {
+				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
+			}
+			if (ctx.ASTERISK() != null) {
+				aggregate.add("whatever", ctx.ASTERISK().getSymbol().getText());
+			} else if (ctx.expression() != null) {
+				aggregate.add("expression", visitExpression(ctx.expression()));
+			}
+		} else if (ctx.SUM() != null) {
+			aggregate.add("operation", ctx.SUM().getSymbol().getText().toUpperCase());
+			if (ctx.DISTINCT() != null) {
+				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
+			}
+			aggregate.add("expression", visitExpression(ctx.expression()));
+		} else if (ctx.MIN() != null) {
+			aggregate.add("operation", ctx.MIN().getSymbol().getText().toUpperCase());
+			if (ctx.DISTINCT() != null) {
+				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
+			}
+			aggregate.add("expression", visitExpression(ctx.expression()));
+		} else if (ctx.MAX() != null) {
+			aggregate.add("operation", ctx.MAX().getSymbol().getText().toUpperCase());
+			if (ctx.DISTINCT() != null) {
+				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
+			}
+			aggregate.add("expression", visitExpression(ctx.expression()));
+		} else if (ctx.AVG() != null) {
+			aggregate.add("operation", ctx.AVG().getSymbol().getText().toUpperCase());
+			if (ctx.DISTINCT() != null) {
+				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
+			}
+			aggregate.add("expression", visitExpression(ctx.expression()));
+		} else if (ctx.SAMPLE() != null) {
+			aggregate.add("operation", ctx.SAMPLE().getSymbol().getText().toUpperCase());
+			if (ctx.DISTINCT() != null) {
+				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
+			}
+			aggregate.add("expression", visitExpression(ctx.expression()));
+		} else if (ctx.GROUP_CONCAT() != null) {
+			aggregate.add("operation", ctx.GROUP_CONCAT().getSymbol().getText().toUpperCase());
+			if (ctx.DISTINCT() != null) {
+				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
+			}
+			aggregate.add("expression", visitExpression(ctx.expression()));
+			if (ctx.string() != null) {
+				aggregate.add("string", visitString(ctx.string()));
+			}
+		}
+
+		return aggregate;
+	}
+
+	@Override
+	public ST visitIriRefOrFunction(SparqlParser.IriRefOrFunctionContext ctx) {
+		// iriRefOrFunction :
+		//   iri argList?
+
+		ST iriRefOrFunction = g.getInstanceOf("iriRefOrFunction");
+
+		iriRefOrFunction.add("iri", visitIri(ctx.iri()));
+
+		if (ctx.argList() != null) {
+			iriRefOrFunction.add("argList", visitArgList(ctx.argList()));
+		}
+
+		return iriRefOrFunction;
+	}
+
+	@Override
+	public ST visitRdfLiteral(SparqlParser.RdfLiteralContext ctx) {
+		// rdfLiteral :
+		//   string (LANGTAG | (REFERENCE iri))?
+
+		ST rdfLiteral = g.getInstanceOf("rdfLiteral");
+
+		rdfLiteral.add("string", visitString(ctx.string()));
+
+		if (ctx.LANGTAG() != null) {
+			rdfLiteral.add("langTag", ctx.LANGTAG().getSymbol().getText());
+		} else if (ctx.iri() != null) {
+			rdfLiteral.add("iri", visitIri(ctx.iri()));
+		}
+
+		return rdfLiteral;
+	}
+
+	@Override
+	public ST visitNumericLiteral(SparqlParser.NumericLiteralContext ctx) {
+		// numericLiteral :
+		//   numericLiteralUnsigned | numericLiteralPositive | numericLiteralNegative
+
+		ST numericLiteral = g.getInstanceOf("numericLiteral");
+
+		if (ctx.numericLiteralUnsigned() != null) {
+			numericLiteral.add("numericLiteralUnsigned", visitNumericLiteralUnsigned(ctx.numericLiteralUnsigned()));
+		} else if (ctx.numericLiteralPositive() != null) {
+			numericLiteral.add("numericLiteralPositive", visitNumericLiteralPositive(ctx.numericLiteralPositive()));
+		} else if (ctx.numericLiteralNegative() != null) {
+			numericLiteral.add("numericLiteralPositive", visitNumericLiteralNegative(ctx.numericLiteralNegative()));
+		}
+
+		return numericLiteral;
+	}
+
+	@Override
+	public ST visitNumericLiteralUnsigned(SparqlParser.NumericLiteralUnsignedContext ctx) {
+		// numericLiteralUnsigned :
+		//  INTEGER | DECIMAL | DOUBLE
+
+		ST numericLiteralUnsigned = g.getInstanceOf("numericLiteralUnsigned");
+
+		if (ctx.INTEGER() != null) {
+			numericLiteralUnsigned.add("value", ctx.INTEGER().getSymbol().getText());
+		} else if (ctx.DECIMAL() != null) {
+			numericLiteralUnsigned.add("value", ctx.DECIMAL().getSymbol().getText());
+		} else if (ctx.DOUBLE() != null) {
+			numericLiteralUnsigned.add("value", ctx.DOUBLE().getSymbol().getText());
+		}
+
+		return numericLiteralUnsigned;
+	}
+
+	@Override
+	public ST visitNumericLiteralPositive(SparqlParser.NumericLiteralPositiveContext ctx) {
+		// numericLiteralPositive :
+		//   INTEGER_POSITIVE | DECIMAL_POSITIVE | DOUBLE_POSITIVE
+
+		ST numericLiteralPositive = g.getInstanceOf("numericLiteralPositive");
+
+		if (ctx.INTEGER_POSITIVE() != null) {
+			numericLiteralPositive.add("value", ctx.INTEGER_POSITIVE().getSymbol().getText());
+		} else if (ctx.DECIMAL_POSITIVE() != null) {
+			numericLiteralPositive.add("value", ctx.DECIMAL_POSITIVE().getSymbol().getText());
+		} else if (ctx.DOUBLE_POSITIVE() != null) {
+			numericLiteralPositive.add("value", ctx.DOUBLE_POSITIVE().getSymbol().getText());
+		}
+
+		return numericLiteralPositive;
+	}
+
+	@Override
+	public ST visitNumericLiteralNegative(SparqlParser.NumericLiteralNegativeContext ctx) {
+		// numericLiteralNegative :
+		//   INTEGER_NEGATIVE | DECIMAL_NEGATIVE | DOUBLE_NEGATIVE
+
+		ST numericLiteralNegative = g.getInstanceOf("numericLiteralNegative");
+
+		if (ctx.INTEGER_NEGATIVE() != null) {
+			numericLiteralNegative.add("value", ctx.INTEGER_NEGATIVE().getSymbol().getText());
+		} else if (ctx.DECIMAL_NEGATIVE() != null) {
+			numericLiteralNegative.add("value", ctx.DECIMAL_NEGATIVE().getSymbol().getText());
+		} else if (ctx.DOUBLE_NEGATIVE() != null) {
+			numericLiteralNegative.add("value", ctx.DOUBLE_NEGATIVE().getSymbol().getText());
+		}
+
+		return numericLiteralNegative;
+	}
+
+	@Override
+	public ST visitBooleanLiteral(SparqlParser.BooleanLiteralContext ctx) {
+		// booleanLiteral :
+		//   TRUE | FALSE
+
+		ST booleanLiteral = g.getInstanceOf("booleanLiteral");
+
+		if (ctx.TRUE() != null) {
+			booleanLiteral.add("value", ctx.TRUE().getSymbol().getText().toUpperCase());
+		} else if (ctx.FALSE() != null) {
+			booleanLiteral.add("value", ctx.FALSE().getSymbol().getText().toUpperCase());
+		}
+
+		return booleanLiteral;
+	}
+
+	@Override
+	public ST visitString(SparqlParser.StringContext ctx) {
+		// string :
+		//   STRING_LITERAL1 | STRING_LITERAL2 | STRING_LITERAL_LONG1 | STRING_LITERAL_LONG2
+
+		ST string = g.getInstanceOf("string");
+
+		if (ctx.STRING_LITERAL1() != null) {
+			string.add("value", ctx.STRING_LITERAL1().getSymbol().getText());
+		} else if (ctx.STRING_LITERAL2() != null) {
+			string.add("value", ctx.STRING_LITERAL2().getSymbol().getText());
+		} else if (ctx.STRING_LITERAL_LONG1() != null) {
+			string.add("value", ctx.STRING_LITERAL_LONG1().getSymbol().getText());
+		} else if (ctx.STRING_LITERAL_LONG2() != null) {
+			string.add("value", ctx.STRING_LITERAL_LONG2().getSymbol().getText());
+		}
+
+		return string;
+	}
+
+	@Override
+	public ST visitIri(SparqlParser.IriContext ctx) {
+		// iri :
+		//   IRIREF | prefixedName
+
+		ST iri = g.getInstanceOf("iri");
+
+		if (ctx.IRIREF() != null) {
+			String s = ctx.IRIREF().getSymbol().getText();
+			iri.add("IRIREF", s.substring(1, s.length() - 1));
+		} else if (ctx.prefixedName() != null) {
+			iri.add("prefixedName", visitPrefixedName(ctx.prefixedName()));
+		}
+
+		return iri;
+	}
+
+	@Override
+	public ST visitPrefixedName(SparqlParser.PrefixedNameContext ctx) {
+		// prefixedName :
+		//   PNAME_LN | PNAME_NS
+
+		ST prefixedName = g.getInstanceOf("prefixedName");
+
+		if (ctx.PNAME_LN() != null) {
+			prefixedName.add("value", ctx.PNAME_LN().getSymbol().getText());
+		} else if (ctx.PNAME_NS() != null) {
+			prefixedName.add("value", ctx.PNAME_NS().getSymbol().getText());
+		}
+
+		return prefixedName;
+	}
+
+	@Override
+	public ST visitBlankNode(SparqlParser.BlankNodeContext ctx) {
+		// blankNode :
+		//   BLANK_NODE_LABEL | anon
+
+		ST blankNode = g.getInstanceOf("blankNode");
+
+		if (ctx.BLANK_NODE_LABEL() != null) {
+			blankNode.add("value", ctx.BLANK_NODE_LABEL().getSymbol().getText());
+		} else if (ctx.anon() != null) {
+			blankNode.add("anon", visitAnon(ctx.anon()));
+		}
+
+		return blankNode;
+	}
+
+	@Override
+	public ST visitAnon(SparqlParser.AnonContext ctx) {
+		// anon :
+		//   OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
+
+		ST anon = g.getInstanceOf("anon");
+
+		return anon;
+	}
 }

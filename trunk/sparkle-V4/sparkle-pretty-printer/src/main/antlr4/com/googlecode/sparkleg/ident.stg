@@ -456,12 +456,12 @@ functionCall(iri, argList) ::= <<
 <iri>(<argList>)
 >>
 
-argList(DISTINCT, expression, nil) ::= <<
-<if(DISTINCT)><keywordMap.DISTINCT> <endif><if(expression)><expression; wrap, separator=", "><endif>
+argList(DISTINCT, expressionList) ::= <<
+<if(DISTINCT)><keywordMap.DISTINCT> <endif><if(expressionList)><expressionList; wrap, separator=", "><endif>
 >>
 
-expressionList(nil, expression) ::= <<
-<if(expression)>(<expression; anchor, wrap, separator=", ">)<elseif(nil)><nil><endif>
+expressionList(expression) ::= <<
+<if(expression)><expression; anchor, wrap, separator=", "><endif>
 >>
 
 constructTemplate(constructTriples) ::= <<
@@ -636,8 +636,8 @@ valueLogical(relationalExpression) ::= <<
 <relationalExpression>
 >>
 
-relationalExpression(numericExpression, operator, operand) ::= <<
-<numericExpression><if(operator)> <operator> <operand><endif>
+relationalExpression(numericExpression, operator, operand, element) ::= <<
+<numericExpression><if(operator)> <operator><if(element)>(<element>)<else> <operand><endif><endif>
 >>
 
 numericExpression(additiveExpression) ::= <<
@@ -721,7 +721,7 @@ ROUND(expression) ::= <<
 >>
 
 CONCAT(expressionList) ::= <<
-<builtInMap.CONCAT><expressionList>
+<builtInMap.CONCAT>(<expressionList>)
 >>
 
 subStringExpression(expression) ::= <<
@@ -833,7 +833,7 @@ SHA512(expression) ::= <<
 >>
 
 COALESCE(expressionList) ::=<<
-<builtInMap.COALESCE><expressionList>
+<builtInMap.COALESCE>(<expressionList>)
 >>
 
 IF(expression) ::= <<
