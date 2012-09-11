@@ -29,7 +29,10 @@ import java.util.List;
 import java.util.*;
 
 import com.googlecode.sparkleg.*;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,6 +74,26 @@ public class SparqlMain {
 		}
 		System.out.flush();
 
+		System.out.println("Input from token list: -------------------------------");
+
+		it = tokenList.iterator();
+		while (it.hasNext()) {
+			Token t = (Token) it.next();
+			if (t.getType() != SparqlParser.EOF) {
+				if (t.getType() == SparqlParser.WS || t.getType() == SparqlParser.COMMENT) {
+					String s = t.getText();
+					s = s.replace("\r\n", "\n");
+					if (!System.lineSeparator().equals("\n")) {
+						s = s.replace("\n", System.lineSeparator());
+					}
+					System.out.print(s);
+				} else {
+					System.out.print(t.getText());
+				}
+			}
+		}
+		System.out.flush();
+
 		SparqlParser parser = new SparqlParser(tokens);
 		parser.setBuildParseTree(true);
 
@@ -81,7 +104,7 @@ public class SparqlMain {
 		System.out.println(t.toStringTree(parser));
 
 		// visualize parse tree in dialog box 
-		// t.inspect(parser);
+		t.inspect(parser);
 
 		if (parser.getNumberOfSyntaxErrors() <= 0) {
 
@@ -101,6 +124,48 @@ public class SparqlMain {
 			System.out.println("Emit reformatted query: -------------------------------");
 
 			System.out.println(query.render(lineWidth));
+
+			System.out.println("Emit original query: -------------------------------");
+
+			String q = query.render(lineWidth);
+
+			/* get common token stream */
+			File tmpFile = File.createTempFile("query_", ".rq");
+			FileOutputStream fo = new FileOutputStream(tmpFile);
+			OutputStreamWriter ow = new OutputStreamWriter(fo, "UTF8");
+			ow.write(q);
+			ow.close();
+			/* transformation pipline
+			 * step 1: Unicode pre-processing
+			 * step 2: Lexical analysis
+			 */
+			lex = new SparqlLexer(new ANTLRFileStream(tmpFile.getCanonicalPath(), "UTF8"));
+			tokens = new CommonTokenStream(lex);
+
+			List formattedTokenList = tokens.getTokens();
+
+			it = tokenList.iterator();
+			Iterator fit = formattedTokenList.iterator();			
+
+			boolean lineSeparatorHasToBeModified = !System.lineSeparator().equals("\n");
+
+			while (it.hasNext()) {
+				Token originalToken = (Token) it.next();
+				if (originalToken.getType() != SparqlParser.EOF) {
+					if (originalToken.getType() == SparqlParser.WS || originalToken.getType() == SparqlParser.COMMENT) {
+						String s = originalToken.getText();
+						s = s.replace("\r\n", "\n");
+						if (lineSeparatorHasToBeModified) {
+							s = s.replace("\n", System.lineSeparator());
+						}
+						System.out.print(s);
+					} else {
+						System.out.print(originalToken.getText());
+					}
+				}
+			}
+			System.out.flush();
+
 		}
 		System.out.println("-------------------------------");
 		System.out.println("Number of errors encountered: " + parser.getNumberOfSyntaxErrors());
