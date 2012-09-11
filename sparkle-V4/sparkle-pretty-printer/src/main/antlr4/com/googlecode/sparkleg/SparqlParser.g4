@@ -311,12 +311,12 @@ functionCall
     ;
 
 argList
-    : nil | OPEN_BRACE DISTINCT? expression (COMMA expression)* CLOSE_BRACE
+    : OPEN_BRACE (DISTINCT? expressionList|) CLOSE_BRACE
     ;
 
 expressionList
-    : nil | OPEN_BRACE expression (COMMA expression)* CLOSE_BRACE
-    ;	
+    : expression (COMMA expression)*
+    ;
 
 constructTemplate
     : OPEN_CURLY_BRACE constructTriples? CLOSE_CURLY_BRACE
@@ -359,7 +359,7 @@ propertyListPath
     ;  
 
 propertyListPathNotEmpty
-    : (verbPath|verbSimple) objectListPath (SEMICOLON propertyListPathNotEmptyList)*
+    : (verbPath|verbSimple) objectListPath (SEMICOLON propertyListPathNotEmptyList?)*
     ;
 
 propertyListPathNotEmptyList
@@ -497,8 +497,8 @@ relationalExpression
                         | GREATER numericExpression
                         | LESS_EQUAL numericExpression
                         | GREATER_EQUAL numericExpression  
-                        | IN el1=expressionList
-                        | NOT IN el2=expressionList)?
+                        | IN OPEN_BRACE (el1=expressionList)? CLOSE_BRACE
+                        | NOT IN OPEN_BRACE (el2=expressionList)? CLOSE_BRACE )?
     ;
 
 numericExpression
@@ -539,14 +539,13 @@ builtInCall
     | BOUND OPEN_BRACE var CLOSE_BRACE
     | IRI OPEN_BRACE expression CLOSE_BRACE
     | URI OPEN_BRACE expression CLOSE_BRACE
-    | BNODE OPEN_BRACE expression CLOSE_BRACE
-    | BNODE nil
-    | RAND nil
+    | BNODE OPEN_BRACE expression? CLOSE_BRACE
+    | RAND OPEN_BRACE CLOSE_BRACE
     | ABS OPEN_BRACE expression CLOSE_BRACE
     | CEIL OPEN_BRACE expression CLOSE_BRACE
     | FLOOR OPEN_BRACE expression CLOSE_BRACE
     | ROUND OPEN_BRACE expression CLOSE_BRACE
-    | CONCAT expressionList
+    | CONCAT OPEN_BRACE expressionList? CLOSE_BRACE
     | subStringExpression
     | STRLEN OPEN_BRACE expression CLOSE_BRACE
     | strReplaceExpression
@@ -566,15 +565,15 @@ builtInCall
     | SECONDS OPEN_BRACE expression CLOSE_BRACE
     | TIMEZONE OPEN_BRACE expression CLOSE_BRACE
     | TZ OPEN_BRACE expression CLOSE_BRACE
-    | NOW nil
-    | UUID nil
-    | STRUUID nil
+    | NOW OPEN_BRACE CLOSE_BRACE
+    | UUID OPEN_BRACE CLOSE_BRACE
+    | STRUUID OPEN_BRACE CLOSE_BRACE
     | MD5 OPEN_BRACE expression CLOSE_BRACE
     | SHA1 OPEN_BRACE expression CLOSE_BRACE
     | SHA256 OPEN_BRACE expression CLOSE_BRACE
     | SHA384 OPEN_BRACE expression CLOSE_BRACE
     | SHA512 OPEN_BRACE expression CLOSE_BRACE
-    | COALESCE expressionList
+    | COALESCE OPEN_BRACE expressionList? CLOSE_BRACE
     | IF OPEN_BRACE expression COMMA expression COMMA expression CLOSE_BRACE
     | STRLANG OPEN_BRACE expression COMMA expression CLOSE_BRACE
     | STRDT OPEN_BRACE expression COMMA expression CLOSE_BRACE

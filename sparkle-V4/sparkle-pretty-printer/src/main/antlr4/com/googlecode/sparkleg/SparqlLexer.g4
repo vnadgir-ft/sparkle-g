@@ -359,7 +359,7 @@ PN_LOCAL_ESC : '\\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | '\'' | '(' | ')'
 fragment
 DIGIT : '0'..'9';
 
-COMMENT : '#' .* EOL -> channel(99);
+COMMENT : '#' .* (EOL|EOF) -> channel(99);
 
 fragment
 EOL : '\n' | '\r';
