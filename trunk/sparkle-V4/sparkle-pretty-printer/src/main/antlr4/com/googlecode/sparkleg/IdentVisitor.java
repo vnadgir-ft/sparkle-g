@@ -838,9 +838,9 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 		while (i < ctx.getChildCount()) {
 			ParseTree c = ctx.getChild(i++);
 			if (c instanceof SparqlParser.TriplesTemplateContext) {
-				quads.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
+				quads.add("triplesTemplate", visitTriplesTemplate((SparqlParser.TriplesTemplateContext) c));
 			} else if (c instanceof SparqlParser.QuadsDetailsContext) {
-				quads.add("quadsDetails", visitQuadsDetails(ctx.quadsDetails()));
+				quads.add("quadsDetails", visitQuadsDetails((SparqlParser.QuadsDetailsContext)c));
 			}
 		}
 
