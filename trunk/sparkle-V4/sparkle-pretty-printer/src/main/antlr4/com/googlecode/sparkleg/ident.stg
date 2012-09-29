@@ -240,8 +240,8 @@ orderClause(orderCondition) ::= <<
 <keywordMap.ORDER_BY> <orderCondition; wrap, anchor, separator="\n">
 >>
 
-orderCondition(ASC, DESC, brackettedExpression, constraint, var) ::= <<
-<if(ASC)><keywordMap.ASC> <brackettedExpression><elseif(DESC)><keywordMap.DESC> <brackettedExpression><elseif(constraint)><constraint><elseif(var)><var><endif>
+orderCondition(ASC, DESC, expression, constraint, var) ::= <<
+<if(ASC)><keywordMap.ASC> (<expression>)<elseif(DESC)><keywordMap.DESC> (<expression>)<elseif(constraint)><constraint><elseif(var)><var><endif>
 >>
 
 limitOffsetClauses(limitClause, offsetClause) ::= <<
@@ -448,8 +448,8 @@ filter(constraint) ::= <<
 <keywordMap.FILTER><constraint>
 >>
 
-constraint(brackettedExpression, builtInCall, functionCall) ::= <<
-<if(brackettedExpression)><brackettedExpression><elseif(builtInCall)> <builtInCall><elseif(functionCall)><functionCall><endif>
+constraint(expression, builtInCall, functionCall) ::= <<
+<if(expression)>(<expression>)<elseif(builtInCall)> <builtInCall><elseif(functionCall)><functionCall><endif>
 >>
 
 functionCall(iri, argList) ::= <<
@@ -620,48 +620,60 @@ nil() ::= <<
 ()
 >>
 
-expression(conditionalOrExpression) ::= <<
-<conditionalOrExpression; anchor, wrap>
+baseExpression(primaryExpression) ::= <<
+<primaryExpression>
 >>
 
-conditionalOrExpression(conditionalAndExpression) ::= <<
-<conditionalAndExpression; wrap, separator=" ||\n">
+unaryMultiplicativeExpression(MULTIPLY, DIVIDE, expression) ::= <<
+<if(MULTIPLY)>*<else>/<endif><expression>
 >>
 
-conditionalAndExpression(valueLogical) ::= <<
-<valueLogical; wrap, separator=" &&\n">
+unaryAdditiveExpression(ADD, SUBTRACT, expression) ::= <<
+<if(ADD)>+<else>-<endif><expression>
 >>
 
-valueLogical(relationalExpression) ::= <<
-<relationalExpression>
+unaryNegationExpression(expression) ::= <<
+!<expression>
 >>
 
-relationalExpression(numericExpression, operator, operand, element) ::= <<
-<numericExpression><if(operator)> <operator><if(element)>(<element>)<else> <operand><endif><endif>
+multiplicativeExpression(leftExpression, MULTIPLY, DIVIDE, rightExpression) ::= <<
+<leftExpression><if(MULTIPLY)>*<else>/<endif><rightExpression>
 >>
 
-numericExpression(additiveExpression) ::= <<
-<additiveExpression>
+additiveExpression(leftExpression, ADD, SUBTRACT, rightExpression) ::= <<
+<leftExpression><if(ADD)>+<else>-<endif><rightExpression>
 >>
 
-additiveExpression(multiplicativeExpression, additiveOperator, multiplicand, numericLiteral, multiplicativeOperator, unaryExpression ) ::= <<
-<multiplicativeExpression><additiveOperator, multiplicand, numericLiteral, multiplicativeOperator, unaryExpression : {aO, m, nL, mO, uE |<if(aO)><aO><m><elseif(nL)><nL><if(mO)><mO><uE><endif><endif>}; wrap, separator = "">
+unarySignedLiteralExpression(expression, unaryLiteralExpression) ::= <<
+<expression><unaryLiteralExpression>
 >>
 
-multiplicativeExpression(unaryExpression, operator) ::= <<
-<first(unaryExpression)><operator, rest(unaryExpression) : {o, uO | <o><uO>}; wrap, separator = "">
+relationalSetExpression(leftExpression, NOT, IN, rightExpression) ::= <<
+<leftExpression><if(NOT)> NOT<endif><if(IN)> IN<endif><rightExpression>
+>>
+
+relationalExpression(leftExpression, operator, rightExpression) ::= <<
+<leftExpression> <operator> <rightExpression>
+>>
+
+conditionalAndExpression(leftExpression, rightExpression) ::= <<
+<leftExpression> && <rightExpression>
+>>
+
+conditionalOrExpression(leftExpression, rightExpression) ::= <<
+<leftExpression> || <rightExpression>
+>>
+
+unaryLiteralExpression(numericLiteralPositive, numericLiteralNegative, operator, unaryExpression) ::= <<
+<if(numericLiteralPositive)><numericLiteralPositive><else><numericLiteralNegative><endif><operator><unaryExpression>
 >>
 
 unaryExpression(operator, primaryExpression) ::= <<
 <if(operator)><operator><endif><primaryExpression>
 >>
 
-primaryExpression(brackettedExpression, builtInCall, iriRefOrFunction, rdfLiteral, numericLiteral, booleanLiteral, var) ::= <<
-<if(brackettedExpression)><brackettedExpression><elseif(builtInCall)><builtInCall><elseif(iriRefOrFunction)><iriRefOrFunction><elseif(rdfLiteral)><rdfLiteral><elseif(numericLiteral)><numericLiteral><elseif(booleanLiteral)><booleanLiteral><elseif(var)><var><endif>
->>
-
-brackettedExpression(expression) ::= <<
-(<expression>)
+primaryExpression(expression, builtInCall, iriRefOrFunction, rdfLiteral, numericLiteral, booleanLiteral, var) ::= <<
+<if(expression)><expression><elseif(builtInCall)><builtInCall><elseif(iriRefOrFunction)><iriRefOrFunction><elseif(rdfLiteral)><rdfLiteral><elseif(numericLiteral)><numericLiteral><elseif(booleanLiteral)><booleanLiteral><elseif(var)><var><endif>
 >>
 
 builtInCall(aggregate, builtInFunction, var, expression, expressionList, subStringExpression, strReplaceExpression, regexExpression, existsFunction, notExistsFunction) ::= <<

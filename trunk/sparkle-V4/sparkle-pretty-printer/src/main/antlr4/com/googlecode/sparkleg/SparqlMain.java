@@ -96,6 +96,9 @@ public class SparqlMain {
 
 		SparqlParser parser = new SparqlParser(tokens);
 		parser.setBuildParseTree(true);
+		
+		System.out.println("Start parsing: -------------------------------");
+		System.out.flush();
 
 		ParserRuleContext<Token> t = parser.query();
 

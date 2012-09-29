@@ -149,6 +149,11 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 		return subSelect;
 	}
 
+	/**
+	 *
+	 * @param ctx
+	 * @return ST
+	 */
 	@Override
 	public ST visitSelectClause(SparqlParser.SelectClauseContext ctx) {
 		// selectClause :
@@ -183,7 +188,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 		ST selectVariables = g.getInstanceOf("selectVariables");
 
 		if (ctx.expression() != null) {
-			selectVariables.add("expression", visitExpression(ctx.expression()));
+			selectVariables.add("expression", visit(ctx.expression()));
 		}
 		if (ctx.var() != null) {
 			selectVariables.add("var", visitVar(ctx.var()));
@@ -346,7 +351,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 		} else if (ctx.functionCall() != null) {
 			groupCondition.add("functionCall", visitFunctionCall(ctx.functionCall()));
 		} else if (ctx.expression() != null) {
-			groupCondition.add("expression", visitExpression(ctx.expression()));
+			groupCondition.add("expression", visit(ctx.expression()));
 			if (ctx.var() != null) {
 				groupCondition.add("var", visitVar(ctx.var()));
 			}
@@ -404,16 +409,16 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 	@Override
 	public ST visitOrderCondition(SparqlParser.OrderConditionContext ctx) {
 		// orderCondition
-		//   ASC brackettedExpression | DESC brackettedExpression | constraint | var
+		//   (ASC|DESC) OPEN_BRACE expression CLOSE_BRACE | constraint | var
 
 		ST orderCondition = g.getInstanceOf("orderCondition");
 
 		if (ctx.ASC() != null) {
 			orderCondition.add("ASC", ctx.ASC().getSymbol().getText().toUpperCase());
-			orderCondition.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
+			orderCondition.add("expression", visit(ctx.expression()));
 		} else if (ctx.DESC() != null) {
 			orderCondition.add("DESC", ctx.DESC().getSymbol().getText().toUpperCase());
-			orderCondition.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
+			orderCondition.add("expression", visit(ctx.expression()));
 		} else if (ctx.constraint() != null) {
 			orderCondition.add("constraint", visitConstraint(ctx.constraint()));
 		} else if (ctx.var() != null) {
@@ -840,7 +845,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 			if (c instanceof SparqlParser.TriplesTemplateContext) {
 				quads.add("triplesTemplate", visitTriplesTemplate((SparqlParser.TriplesTemplateContext) c));
 			} else if (c instanceof SparqlParser.QuadsDetailsContext) {
-				quads.add("quadsDetails", visitQuadsDetails((SparqlParser.QuadsDetailsContext)c));
+				quads.add("quadsDetails", visitQuadsDetails((SparqlParser.QuadsDetailsContext) c));
 			}
 		}
 
@@ -1046,7 +1051,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
 		ST bind = g.getInstanceOf("bind");
 
-		bind.add("expression", visitExpression(ctx.expression()));
+		bind.add("expression", visit(ctx.expression()));
 
 		bind.add("var", visitVar(ctx.var()));
 
@@ -1199,12 +1204,12 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 	@Override
 	public ST visitConstraint(SparqlParser.ConstraintContext ctx) {
 		// constraint :
-		//   brackettedExpression | builtInCall | functionCall
+		//   '(' expression ')' | builtInCall | functionCall
 
 		ST constraint = g.getInstanceOf("constraint");
 
-		if (ctx.brackettedExpression() != null) {
-			constraint.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
+		if (ctx.expression() != null) {
+			constraint.add("expression", visit(ctx.expression()));
 		} else if (ctx.builtInCall() != null) {
 			constraint.add("builtInCall", visitBuiltInCall(ctx.builtInCall()));
 		} else if (ctx.functionCall() != null) {
@@ -1256,7 +1261,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 		if (ctx.children != null) {
 			for (ParseTree c : ctx.children) {
 				if (c instanceof SparqlParser.ExpressionContext) {
-					expressionList.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
+					expressionList.add("expression", visit((SparqlParser.ExpressionContext) c));
 				}
 			}
 		}
@@ -1887,213 +1892,253 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 	}
 
 	@Override
-	public ST visitExpression(SparqlParser.ExpressionContext ctx) {
+	public ST visitBaseExpression(SparqlParser.BaseExpressionContext ctx) {
 		// expression :
-		//   conditionalOrExpression
+		//   primaryExpression
 
-		ST expression = g.getInstanceOf("expression");
+		ST baseExpression = g.getInstanceOf("baseExpression");
 
-		expression.add("conditionalOrExpression", visitConditionalOrExpression(ctx.conditionalOrExpression()));
+		baseExpression.add("primaryExpression", visitPrimaryExpression(ctx.primaryExpression()));
 
-		return expression;
+		return baseExpression;
 	}
 
 	@Override
-	public ST visitConditionalOrExpression(SparqlParser.ConditionalOrExpressionContext ctx) {
-		// conditionalOrExpression :
-		//   conditionalAndExpression (OR conditionalAndExpression)*
+	public ST visitUnaryMultiplicativeExpression(SparqlParser.UnaryMultiplicativeExpressionContext ctx) {
+		// expression : 
+		//   (ASTERISK|DIVIDE) expression 
 
-		ST conditionalOrExpression = g.getInstanceOf("conditionalOrExpression");
+		ST unaryMultiplicativeExpression = g.getInstanceOf("unaryMultiplicativeExpression");
 
-		for (ParseTree c : ctx.children) {
-			if (c instanceof SparqlParser.ConditionalAndExpressionContext) {
-				conditionalOrExpression.add("conditionalAndExpression", visitConditionalAndExpression((SparqlParser.ConditionalAndExpressionContext) c));
-			}
+		if (ctx.op.getType() == SparqlParser.ASTERISK) {
+			unaryMultiplicativeExpression.add("MULTIPLY", "*");
+		} else if (ctx.op.getType() == SparqlParser.DIVIDE) {
+			unaryMultiplicativeExpression.add("DIVIDE", "/");
 		}
 
-		return conditionalOrExpression;
+		unaryMultiplicativeExpression.add("expression", visit(ctx.expression()));
+
+		return unaryMultiplicativeExpression;
 	}
 
 	@Override
-	public ST visitConditionalAndExpression(SparqlParser.ConditionalAndExpressionContext ctx) {
-		// conditionalAndExpression :
-		//   valueLogical (AND valueLogical)*
+	public ST visitUnaryAdditiveExpression(SparqlParser.UnaryAdditiveExpressionContext ctx) {
+		// expression : 
+		//   (ADD|SUBTRACT) expression 
 
-		ST conditionalAndExpression = g.getInstanceOf("conditionalAndExpression");
+		ST unaryAdditiveExpression = g.getInstanceOf("unaryAdditiveExpression");
 
-		for (ParseTree c : ctx.children) {
-			if (c instanceof SparqlParser.ValueLogicalContext) {
-				conditionalAndExpression.add("valueLogical", visitValueLogical((SparqlParser.ValueLogicalContext) c));
-			}
+		if (ctx.op.getType() == SparqlParser.PLUS) {
+			unaryAdditiveExpression.add("ADD", "+");
+		} else if (ctx.op.getType() == SparqlParser.MINUS) {
+			unaryAdditiveExpression.add("SUBTRACT", "-");
 		}
 
-		return conditionalAndExpression;
+		unaryAdditiveExpression.add("expression", visit(ctx.expression()));
+
+		return unaryAdditiveExpression;
 	}
 
 	@Override
-	public ST visitValueLogical(SparqlParser.ValueLogicalContext ctx) {
-		// valueLogical :
-		//   relationalExpression
+	public ST visitUnaryNegationExpression(SparqlParser.UnaryNegationExpressionContext ctx) {
+		// expression : 
+		//   NEGATION expression 
 
-		ST valueLogical = g.getInstanceOf("valueLogical");
+		ST unaryNegationExpression = g.getInstanceOf("unaryNegationExpression");
 
-		valueLogical.add("relationalExpression", visitRelationalExpression(ctx.relationalExpression()));
+		unaryNegationExpression.add("expression", visit(ctx.expression()));
 
-		return valueLogical;
-	}
-
-	@Override
-	public ST visitRelationalExpression(SparqlParser.RelationalExpressionContext ctx) {
-		// relationalExpression :
-		//   numericExpression (EQUAL numericExpression
-		//                    | NOT_EQUAL numericExpression 
-		//                    | LESS numericExpression 
-		//                    | GREATER numericExpression
-		//                    | LESS_EQUAL numericExpression
-		//                    | GREATER_EQUAL numericExpression  
-		//                    | IN OPEN_BRACE (el1=expressionList)? CLOSE_BRACE
-		//                    | NOT IN OPEN_BRACE (el2=expressionList)? CLOSE_BRACE)?
-
-		ST relationalExpression = g.getInstanceOf("relationalExpression");
-
-		relationalExpression.add("numericExpression", visitNumericExpression(ctx.numericExpression(0)));
-
-		if (ctx.EQUAL() != null) {
-			relationalExpression.add("operator", ctx.EQUAL().getSymbol().getText());
-			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-		} else if (ctx.NOT_EQUAL() != null) {
-			relationalExpression.add("operator", ctx.NOT_EQUAL().getSymbol().getText());
-			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-		} else if (ctx.LESS() != null) {
-			relationalExpression.add("operator", ctx.LESS().getSymbol().getText());
-			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-		} else if (ctx.GREATER() != null) {
-			relationalExpression.add("operator", ctx.GREATER().getSymbol().getText());
-			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-		} else if (ctx.LESS_EQUAL() != null) {
-			relationalExpression.add("operator", ctx.LESS_EQUAL().getSymbol().getText());
-			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-		} else if (ctx.GREATER_EQUAL() != null) {
-			relationalExpression.add("operator", ctx.GREATER_EQUAL().getSymbol().getText());
-			relationalExpression.add("operand", visitNumericExpression(ctx.numericExpression(1)));
-		} else if (ctx.el1 != null) {
-			relationalExpression.add("operator", "IN");
-			if (ctx.el1 != null) {
-				relationalExpression.add("element", visitExpressionList(ctx.el1));
-			}
-		} else if (ctx.el2 != null) {
-			relationalExpression.add("operator", "NOT IN");
-			if (ctx.el2 != null) {
-				relationalExpression.add("element", visitExpressionList(ctx.el2));
-			}
-		}
-
-		return relationalExpression;
-	}
-
-	@Override
-	public ST visitNumericExpression(SparqlParser.NumericExpressionContext ctx) {
-		// numericExpression :
-		//   additiveExpression
-
-		ST numericExpression = g.getInstanceOf("numericExpression");
-
-		numericExpression.add("additiveExpression", visitAdditiveExpression(ctx.additiveExpression()));
-
-		return numericExpression;
-	}
-
-	@Override
-	public ST visitAdditiveExpression(SparqlParser.AdditiveExpressionContext ctx) {
-		// additiveExpression : 
-		//   multiplicativeExpression (PLUS multiplicativeExpression | MINUS multiplicativeExpression | (numericLiteralPositive | numericLiteralNegative) 
-		//                            (ASTERISK unaryExpression | DIVIDE unaryExpression)?)*
-
-		boolean first = true;
-
-		ST additiveExpression = g.getInstanceOf("additiveExpression");
-
-		for (ParseTree c : ctx.children) {
-			if (c instanceof TerminalNode) {
-				TerminalNode t = (TerminalNode) c;
-				Token to = (Token) (t.getSymbol());
-				if (to.getType() == SparqlParser.PLUS || to.getType() == SparqlParser.MINUS) {
-					additiveExpression.add("additiveOperator", ((Token) (t.getSymbol())).getText());
-				} else if (to.getType() == SparqlParser.ASTERISK || to.getType() == SparqlParser.DIVIDE) {
-					additiveExpression.add("multiplicativeOperator", ((Token) (t.getSymbol())).getText());
-				}
-			} else if (c instanceof SparqlParser.MultiplicativeExpressionContext) {
-				if (first) {
-					first = false;
-					additiveExpression.add("multiplicativeExpression", visitMultiplicativeExpression((SparqlParser.MultiplicativeExpressionContext) c));
-				} else {
-					additiveExpression.add("multiplicand", visitMultiplicativeExpression((SparqlParser.MultiplicativeExpressionContext) c));
-				}
-			} else if (c instanceof SparqlParser.NumericLiteralPositiveContext) {
-				additiveExpression.add("numericLiteral", visitNumericLiteralPositive((SparqlParser.NumericLiteralPositiveContext) c));
-			} else if (c instanceof SparqlParser.NumericLiteralNegativeContext) {
-				additiveExpression.add("numericLiteral", visitNumericLiteralNegative((SparqlParser.NumericLiteralNegativeContext) c));
-			} else if (c instanceof SparqlParser.UnaryExpressionContext) {
-				additiveExpression.add("unaryExpression", visitUnaryExpression((SparqlParser.UnaryExpressionContext) c));
-			}
-		}
-
-		return additiveExpression;
+		return unaryNegationExpression;
 	}
 
 	@Override
 	public ST visitMultiplicativeExpression(SparqlParser.MultiplicativeExpressionContext ctx) {
-		// multiplicativeExpression :
-		//   unaryExpression (ASTERISK unaryExpression | DIVIDE unaryExpression)*        
+		// expression : 
+		//   expression op=(ASTERISK|DIVIDE) expression 
 
 		ST multiplicativeExpression = g.getInstanceOf("multiplicativeExpression");
 
-		for (ParseTree c : ctx.children) {
-			if (c instanceof TerminalNode) {
-				TerminalNode t = (TerminalNode) c;
-				multiplicativeExpression.add("operator", ((Token) (t.getSymbol())).getText());
-			} else if (c instanceof SparqlParser.UnaryExpressionContext) {
-				multiplicativeExpression.add("unaryExpression", visitUnaryExpression((SparqlParser.UnaryExpressionContext) c));
-			}
+		multiplicativeExpression.add("leftExpression", visit(ctx.expression(0)));
+
+		if (ctx.op.getType() == SparqlParser.ASTERISK) {
+			multiplicativeExpression.add("MULTIPLY", "*");
+		} else if (ctx.op.getType() == SparqlParser.DIVIDE) {
+			multiplicativeExpression.add("DIVIDE", "/");
 		}
+
+		multiplicativeExpression.add("rightExpression", visit(ctx.expression(1)));
 
 		return multiplicativeExpression;
 	}
 
 	@Override
+	public ST visitAdditiveExpression(SparqlParser.AdditiveExpressionContext ctx) {
+		// expression : 
+		//   expression op=(PLUS|MINUS) expression 
+
+		ST additiveExpression = g.getInstanceOf("additiveExpression");
+
+		additiveExpression.add("leftExpression", visit(ctx.expression(0)));
+
+		if (ctx.op.getType() == SparqlParser.PLUS) {
+			additiveExpression.add("ADD", "+");
+		} else if (ctx.op.getType() == SparqlParser.MINUS) {
+			additiveExpression.add("SUBTRACT", "-");
+		}
+
+		additiveExpression.add("rightExpression", visit(ctx.expression(1)));
+
+		return additiveExpression;
+	}
+
+	@Override
+	public ST visitUnarySignedLiteralExpression(SparqlParser.UnarySignedLiteralExpressionContext ctx) {
+		// expression : 
+		//   expression unaryLiteralExpression
+
+		ST unarySignedLiteralExpression = g.getInstanceOf("unarySignedLiteralExpression");
+
+		unarySignedLiteralExpression.add("expression", visit(ctx.expression()));
+		unarySignedLiteralExpression.add("unaryLiteralExpression", visit(ctx.unaryLiteralExpression()));
+
+		return unarySignedLiteralExpression;
+	}
+
+	@Override
+	public ST visitRelationalSetExpression(SparqlParser.RelationalSetExpressionContext ctx) {
+		// expression : 
+		//   expression NOT? IN '(' expressionList? ')' 
+
+		ST relationalSetExpression = g.getInstanceOf("relationalSetExpression");
+
+		relationalSetExpression.add("leftExpression", visit(ctx.expression()));
+
+		if (ctx.NOT() == null) {
+			relationalSetExpression.add("NOT", ctx.NOT().getText());
+		}
+
+		relationalSetExpression.add("IN", ctx.IN().getText());
+
+		relationalSetExpression.add("rightExpressionList", visit(ctx.expressionList()));
+
+		return relationalSetExpression;
+	}
+
+	@Override
+	public ST visitRelationalExpression(SparqlParser.RelationalExpressionContext ctx) {
+		// expression :
+		//   expression op=('='|'!='|'<'|'>'|'<='|'>=') expression
+
+		ST relationalExpression = g.getInstanceOf("relationalExpression");
+
+		relationalExpression.add("leftExpression", visit(ctx.expression(0)));
+
+		if (ctx.op.getType() == SparqlParser.EQUAL) {
+			relationalExpression.add("operator", ctx.op.getText());
+		} else if (ctx.op.getType() == SparqlParser.NOT_EQUAL) {
+			relationalExpression.add("operator", ctx.op.getText());
+		} else if (ctx.op.getType() == SparqlParser.LESS) {
+			relationalExpression.add("operator", ctx.op.getText());
+		} else if (ctx.op.getType() == SparqlParser.GREATER) {
+			relationalExpression.add("operator", ctx.op.getText());
+		} else if (ctx.op.getType() == SparqlParser.LESS_EQUAL) {
+			relationalExpression.add("operator", ctx.op.getText());
+		} else if (ctx.op.getType() == SparqlParser.GREATER_EQUAL) {
+			relationalExpression.add("operator", ctx.op.getText());
+		}
+
+		relationalExpression.add("rightExpression", visit(ctx.expression(1)));
+
+		return relationalExpression;
+	}
+
+	@Override
+	public ST visitConditionalAndExpression(SparqlParser.ConditionalAndExpressionContext ctx) {
+		// expression :
+		//   expression (&& expression)
+
+		ST conditionalAndExpression = g.getInstanceOf("conditionalAndExpression");
+
+		conditionalAndExpression.add("expression", visit(ctx.expression(0)));
+
+		conditionalAndExpression.add("expression", visit(ctx.expression(1)));
+
+		return conditionalAndExpression;
+	}
+
+	@Override
+	public ST visitConditionalOrExpression(SparqlParser.ConditionalOrExpressionContext ctx) {
+		// expression :
+		//   expression (|| expression)
+
+		ST conditionalOrExpression = g.getInstanceOf("conditionalOrExpression");
+
+		conditionalOrExpression.add("leftExpression", visit(ctx.expression(0)));
+
+		conditionalOrExpression.add("rightExpression", visit(ctx.expression(1)));
+
+		return conditionalOrExpression;
+	}
+
+	@Override
+	public ST visitUnaryLiteralExpression(SparqlParser.UnaryLiteralExpressionContext ctx) {
+		// expression :
+		//   (numericLiteralPositive|numericLiteralNegative) (op=('*'|'/') unaryExpression)? 
+
+		ST unaryLiteralExpression = g.getInstanceOf("unaryLiteralExpression");
+
+		if (ctx.numericLiteralPositive() != null) {
+			unaryLiteralExpression.add("numericLiteralPositive", visitNumericLiteralPositive(ctx.numericLiteralPositive()));
+		} else if (ctx.numericLiteralNegative() != null) {
+			unaryLiteralExpression.add("numericLiteralNegative", visitNumericLiteralNegative(ctx.numericLiteralNegative()));
+		}
+
+		if (ctx.op != null) {
+			if (ctx.op.getType() == SparqlParser.ASTERISK) {
+				unaryLiteralExpression.add("operator", "*");
+			} else if (ctx.op.getType() == SparqlParser.DIVIDE) {
+				unaryLiteralExpression.add("operator", "/");
+			}
+		}
+
+		if (ctx.unaryExpression() != null) {
+			unaryLiteralExpression.add("unaryExpression", visitUnaryExpression(ctx.unaryExpression()));
+		}
+
+		return unaryLiteralExpression;
+	}
+
+	@Override
 	public ST visitUnaryExpression(SparqlParser.UnaryExpressionContext ctx) {
-		// unaryExpression :
-		//   NEGATION primaryExpression
-		// | PLUS primaryExpression
-		// | MINUS primaryExpression
-		// | primaryExpression
+		// expression :
+		//    op=('!'|'+'|'-')? primaryExpression
 
 		ST unaryExpression = g.getInstanceOf("unaryExpression");
 
-		if (ctx.NEGATION() != null) {
-			unaryExpression.add("operator", ctx.NEGATION().getSymbol().getText());
-		} else if (ctx.PLUS() != null) {
-			unaryExpression.add("operator", ctx.PLUS().getSymbol().getText());
-		} else if (ctx.MINUS() != null) {
-			unaryExpression.add("operator", ctx.MINUS().getSymbol().getText());
+		if (ctx.op != null) {
+			if (ctx.op.getType() == SparqlParser.NEGATION) {
+				unaryExpression.add("operator", "!");
+			} else if (ctx.op.getType() == SparqlParser.PLUS) {
+				unaryExpression.add("operator", "+");
+			} else if (ctx.op.getType() == SparqlParser.MINUS) {
+				unaryExpression.add("operator", "-");
+			}
 		}
 
-		if (ctx.primaryExpression() != null) {
-			unaryExpression.add("primaryExpression", visitPrimaryExpression(ctx.primaryExpression()));
-		}
+		unaryExpression.add("primaryExpression", visit(ctx.primaryExpression()));
 
 		return unaryExpression;
 	}
 
 	@Override
 	public ST visitPrimaryExpression(SparqlParser.PrimaryExpressionContext ctx) {
-		// primaryExpression :
-		//   brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
+		// expression :
+		//   '(' expression ')' | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
 
 		ST primaryExpression = g.getInstanceOf("primaryExpression");
 
-		if (ctx.brackettedExpression() != null) {
-			primaryExpression.add("brackettedExpression", visitBrackettedExpression(ctx.brackettedExpression()));
+		if (ctx.expression() != null) {
+			primaryExpression.add("expression", visit(ctx.expression()));
 		} else if (ctx.builtInCall() != null) {
 			primaryExpression.add("builtInCall", visitBuiltInCall(ctx.builtInCall()));
 		} else if (ctx.iriRefOrFunction() != null) {
@@ -2109,18 +2154,6 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 		}
 
 		return primaryExpression;
-	}
-
-	@Override
-	public ST visitBrackettedExpression(SparqlParser.BrackettedExpressionContext ctx) {
-		// brackettedExpression :
-		//   OPEN_BRACE expression CLOSE_BRACE
-
-		ST brackettedExpression = g.getInstanceOf("brackettedExpression");
-
-		brackettedExpression.add("expression", visitExpression(ctx.expression()));
-
-		return brackettedExpression;
 	}
 
 	@Override
@@ -2188,45 +2221,45 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 			builtInCall.add("aggregate", visitAggregate(ctx.aggregate()));
 		} else if (ctx.STR() != null) {
 			builtInCall.add("builtInFunction", ctx.STR().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.LANG() != null) {
 			builtInCall.add("builtInFunction", ctx.LANG().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.LANGMATCHES() != null) {
 			builtInCall.add("builtInFunction", ctx.LANGMATCHES().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
 		} else if (ctx.DATATYPE() != null) {
 			builtInCall.add("builtInFunction", ctx.DATATYPE().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.BOUND() != null) {
 			builtInCall.add("builtInFunction", ctx.BOUND().getSymbol().getText().toUpperCase());
 			builtInCall.add("var", visitVar((SparqlParser.VarContext) ctx.var()));
 		} else if (ctx.IRI() != null) {
 			builtInCall.add("builtInFunction", ctx.IRI().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.URI() != null) {
 			builtInCall.add("builtInFunction", ctx.URI().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.BNODE() != null) {
 			builtInCall.add("builtInFunction", ctx.BNODE().getSymbol().getText().toUpperCase());
 			if (ctx.expression(0) != null) {
-				builtInCall.add("expression", visitExpression(ctx.expression(0)));
+				builtInCall.add("expression", visit(ctx.expression(0)));
 			}
 		} else if (ctx.RAND() != null) {
 			builtInCall.add("builtInFunction", ctx.RAND().getSymbol().getText().toUpperCase());
 		} else if (ctx.ABS() != null) {
 			builtInCall.add("builtInFunction", ctx.ABS().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.CEIL() != null) {
 			builtInCall.add("builtInFunction", ctx.CEIL().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.FLOOR() != null) {
 			builtInCall.add("builtInFunction", ctx.FLOOR().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.ROUND() != null) {
 			builtInCall.add("builtInFunction", ctx.ROUND().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.CONCAT() != null) {
 			builtInCall.add("builtInFunction", ctx.CONCAT().getSymbol().getText().toUpperCase());
 			if (ctx.expressionList() != null) {
@@ -2234,60 +2267,60 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 			}
 		} else if (ctx.STRLEN() != null) {
 			builtInCall.add("builtInFunction", ctx.STRLEN().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.UCASE() != null) {
 			builtInCall.add("builtInFunction", ctx.UCASE().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.LCASE() != null) {
 			builtInCall.add("builtInFunction", ctx.LCASE().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.ENCODE_FOR_URI() != null) {
 			builtInCall.add("builtInFunction", ctx.ENCODE_FOR_URI().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.CONTAINS() != null) {
 			builtInCall.add("builtInFunction", ctx.CONTAINS().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
 		} else if (ctx.STRSTARTS() != null) {
 			builtInCall.add("builtInFunction", ctx.STRSTARTS().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
 		} else if (ctx.STRENDS() != null) {
 			builtInCall.add("builtInFunction", ctx.STRENDS().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
 		} else if (ctx.STRBEFORE() != null) {
 			builtInCall.add("builtInFunction", ctx.STRBEFORE().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
 		} else if (ctx.STRAFTER() != null) {
 			builtInCall.add("builtInFunction", ctx.STRAFTER().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
 		} else if (ctx.YEAR() != null) {
 			builtInCall.add("builtInFunction", ctx.YEAR().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.MONTH() != null) {
 			builtInCall.add("builtInFunction", ctx.MONTH().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.DAY() != null) {
 			builtInCall.add("builtInFunction", ctx.DAY().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.HOURS() != null) {
 			builtInCall.add("builtInFunction", ctx.HOURS().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.MINUTES() != null) {
 			builtInCall.add("builtInFunction", ctx.MINUTES().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.SECONDS() != null) {
 			builtInCall.add("builtInFunction", ctx.SECONDS().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.TIMEZONE() != null) {
 			builtInCall.add("builtInFunction", ctx.TIMEZONE().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.TZ() != null) {
 			builtInCall.add("builtInFunction", ctx.TZ().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.NOW() != null) {
 			builtInCall.add("builtInFunction", ctx.NOW().getSymbol().getText().toUpperCase());
 		} else if (ctx.UUID() != null) {
@@ -2296,19 +2329,19 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 			builtInCall.add("builtInFunction", ctx.STRUUID().getSymbol().getText().toUpperCase());
 		} else if (ctx.MD5() != null) {
 			builtInCall.add("builtInFunction", ctx.MD5().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.SHA1() != null) {
 			builtInCall.add("builtInFunction", ctx.SHA1().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.SHA256() != null) {
 			builtInCall.add("builtInFunction", ctx.SHA256().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.SHA384() != null) {
 			builtInCall.add("builtInFunction", ctx.SHA384().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.SHA512() != null) {
 			builtInCall.add("builtInFunction", ctx.SHA512().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.COALESCE() != null) {
 			builtInCall.add("builtInFunction", ctx.COALESCE().getSymbol().getText().toUpperCase());
 			if (ctx.expressionList() != null) {
@@ -2316,36 +2349,36 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 			}
 		} else if (ctx.IF() != null) {
 			builtInCall.add("builtInFunction", ctx.IF().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
-			builtInCall.add("expression", visitExpression(ctx.expression(2)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(2)));
 		} else if (ctx.STRLANG() != null) {
 			builtInCall.add("builtInFunction", ctx.STRLANG().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
 		} else if (ctx.STRDT() != null) {
 			builtInCall.add("builtInFunction", ctx.STRDT().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
 		} else if (ctx.SAMETERM() != null) {
 			builtInCall.add("builtInFunction", ctx.SAMETERM().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
-			builtInCall.add("expression", visitExpression(ctx.expression(1)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(1)));
 		} else if (ctx.ISIRI() != null) {
 			builtInCall.add("builtInFunction", ctx.ISIRI().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.ISURI() != null) {
 			builtInCall.add("builtInFunction", ctx.ISURI().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.ISBLANK() != null) {
 			builtInCall.add("builtInFunction", ctx.ISBLANK().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.ISLITERAL() != null) {
 			builtInCall.add("builtInFunction", ctx.ISLITERAL().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.ISNUMERIC() != null) {
 			builtInCall.add("builtInFunction", ctx.ISNUMERIC().getSymbol().getText().toUpperCase());
-			builtInCall.add("expression", visitExpression(ctx.expression(0)));
+			builtInCall.add("expression", visit(ctx.expression(0)));
 		} else if (ctx.subStringExpression() != null) {
 			builtInCall.add("subStringExpression", visitSubStringExpression(ctx.subStringExpression()));
 		} else if (ctx.strReplaceExpression() != null) {
@@ -2370,7 +2403,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
 		for (ParseTree c : ctx.children) {
 			if (c instanceof SparqlParser.ExpressionContext) {
-				regexExpression.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
+				regexExpression.add("expression", visit((SparqlParser.ExpressionContext) c));
 			}
 		}
 
@@ -2386,7 +2419,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
 		for (ParseTree c : ctx.children) {
 			if (c instanceof SparqlParser.ExpressionContext) {
-				subStringExpression.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
+				subStringExpression.add("expression", visit((SparqlParser.ExpressionContext) c));
 			}
 		}
 
@@ -2402,7 +2435,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
 		for (ParseTree c : ctx.children) {
 			if (c instanceof SparqlParser.ExpressionContext) {
-				strReplaceExpression.add("expression", visitExpression((SparqlParser.ExpressionContext) c));
+				strReplaceExpression.add("expression", visit((SparqlParser.ExpressionContext) c));
 			}
 		}
 
@@ -2454,44 +2487,44 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 			if (ctx.ASTERISK() != null) {
 				aggregate.add("whatever", ctx.ASTERISK().getSymbol().getText());
 			} else if (ctx.expression() != null) {
-				aggregate.add("expression", visitExpression(ctx.expression()));
+				aggregate.add("expression", visit(ctx.expression()));
 			}
 		} else if (ctx.SUM() != null) {
 			aggregate.add("operation", ctx.SUM().getSymbol().getText().toUpperCase());
 			if (ctx.DISTINCT() != null) {
 				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
 			}
-			aggregate.add("expression", visitExpression(ctx.expression()));
+			aggregate.add("expression", visit(ctx.expression()));
 		} else if (ctx.MIN() != null) {
 			aggregate.add("operation", ctx.MIN().getSymbol().getText().toUpperCase());
 			if (ctx.DISTINCT() != null) {
 				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
 			}
-			aggregate.add("expression", visitExpression(ctx.expression()));
+			aggregate.add("expression", visit(ctx.expression()));
 		} else if (ctx.MAX() != null) {
 			aggregate.add("operation", ctx.MAX().getSymbol().getText().toUpperCase());
 			if (ctx.DISTINCT() != null) {
 				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
 			}
-			aggregate.add("expression", visitExpression(ctx.expression()));
+			aggregate.add("expression", visit(ctx.expression()));
 		} else if (ctx.AVG() != null) {
 			aggregate.add("operation", ctx.AVG().getSymbol().getText().toUpperCase());
 			if (ctx.DISTINCT() != null) {
 				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
 			}
-			aggregate.add("expression", visitExpression(ctx.expression()));
+			aggregate.add("expression", visit(ctx.expression()));
 		} else if (ctx.SAMPLE() != null) {
 			aggregate.add("operation", ctx.SAMPLE().getSymbol().getText().toUpperCase());
 			if (ctx.DISTINCT() != null) {
 				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
 			}
-			aggregate.add("expression", visitExpression(ctx.expression()));
+			aggregate.add("expression", visit(ctx.expression()));
 		} else if (ctx.GROUP_CONCAT() != null) {
 			aggregate.add("operation", ctx.GROUP_CONCAT().getSymbol().getText().toUpperCase());
 			if (ctx.DISTINCT() != null) {
 				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
 			}
-			aggregate.add("expression", visitExpression(ctx.expression()));
+			aggregate.add("expression", visit(ctx.expression()));
 			if (ctx.string() != null) {
 				aggregate.add("string", visitString(ctx.string()));
 			}
