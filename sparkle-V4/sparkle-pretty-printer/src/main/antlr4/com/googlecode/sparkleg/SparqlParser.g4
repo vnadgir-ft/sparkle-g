@@ -63,11 +63,11 @@ selectClause
 
 selectVariables
     : var
-    | OPEN_BRACE expression AS var CLOSE_BRACE
+    | '(' expression AS var ')'
     ;
 
 constructQuery
-    : CONSTRUCT (constructTemplate datasetClause* whereClause solutionModifier | datasetClause* WHERE OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE solutionModifier)
+    : CONSTRUCT (constructTemplate datasetClause* whereClause solutionModifier | datasetClause* WHERE '{' triplesTemplate? '}' solutionModifier)
     ;
 
 describeQuery
@@ -95,7 +95,7 @@ groupClause
     ;
     		 
 groupCondition
-    : builtInCall | functionCall | OPEN_BRACE expression (AS var)? CLOSE_BRACE | var
+    : builtInCall | functionCall | '(' expression (AS var)? ')' | var
     ;
     
 havingClause
@@ -111,7 +111,9 @@ orderClause
     ;
 
 orderCondition
-    : ASC brackettedExpression | DESC brackettedExpression | constraint | var
+    : (ASC|DESC) '(' expression ')' 
+    | constraint 
+    | var
     ;
 	    
 limitOffsetClauses
@@ -131,7 +133,7 @@ valuesClause
     ;
     
 updateCommand
-    : prologue (update (SEMICOLON updateCommand)?)?
+    : prologue (update (';' updateCommand)?)?
     ;
 
 update
@@ -207,11 +209,11 @@ graphRefAll
     ;
 
 quadPattern
-    : OPEN_CURLY_BRACE quads CLOSE_CURLY_BRACE
+    : '{' quads '}'
     ;
     
 quadData
-    : OPEN_CURLY_BRACE quads CLOSE_CURLY_BRACE
+    : '{' quads '}'
     ;
     
 quads
@@ -219,19 +221,19 @@ quads
     ;
 
 quadsDetails
-    : quadsNotTriples DOT? triplesTemplate?
+    : quadsNotTriples '.'? triplesTemplate?
     ;
 
 quadsNotTriples
-    : GRAPH varOrIRI OPEN_CURLY_BRACE triplesTemplate? CLOSE_CURLY_BRACE
+    : GRAPH varOrIRI '{' triplesTemplate? '}'
     ;
     
 triplesTemplate
-    : triplesSameSubject (DOT triplesTemplate?)?
+    : triplesSameSubject ('.' triplesTemplate?)?
     ;
     	
 groupGraphPattern
-    : OPEN_CURLY_BRACE (subSelect | groupGraphPatternSub) CLOSE_CURLY_BRACE
+    : '{' (subSelect | groupGraphPatternSub) '}'
     ;
     
 groupGraphPatternSub
@@ -239,11 +241,11 @@ groupGraphPatternSub
     ;
     
 groupGraphPatternSubList
-    : graphPatternNotTriples DOT? triplesBlock?
+    : graphPatternNotTriples '.'? triplesBlock?
     ;
     
 triplesBlock
-    : triplesSameSubjectPath (DOT triplesBlock?)?
+    : triplesSameSubjectPath ('.' triplesBlock?)?
     ;
 
 graphPatternNotTriples
@@ -263,7 +265,7 @@ serviceGraphPattern
     ;
     
 bind
-    : BIND OPEN_BRACE expression AS var CLOSE_BRACE
+    : BIND '(' expression AS var ')'
     ;
     	
 inlineData
@@ -275,15 +277,15 @@ dataBlock
     ;
 
 inlineDataOneVar
-    : var OPEN_CURLY_BRACE dataBlockValue* CLOSE_CURLY_BRACE
+    : var '{' dataBlockValue* '}'
     ;
 
 inlineDataFull
-    : OPEN_BRACE var* CLOSE_BRACE OPEN_CURLY_BRACE dataBlockValues* CLOSE_CURLY_BRACE
+    : '(' var* ')' '{' dataBlockValues* '}'
     ;
 
 dataBlockValues
-    : OPEN_BRACE dataBlockValue* CLOSE_BRACE
+    : '(' dataBlockValue* ')'
     ;
 
 dataBlockValue
@@ -303,7 +305,7 @@ filter
     ;
 
 constraint
-    : brackettedExpression | builtInCall | functionCall
+    : '(' expression ')' | builtInCall | functionCall
     ;
 
 functionCall
@@ -311,19 +313,19 @@ functionCall
     ;
 
 argList
-    : OPEN_BRACE (DISTINCT? expressionList|) CLOSE_BRACE
+    : '(' (DISTINCT? expressionList|) ')'
     ;
 
 expressionList
-    : expression (COMMA expression)*
+    : expression (',' expression)*
     ;
 
 constructTemplate
-    : OPEN_CURLY_BRACE constructTriples? CLOSE_CURLY_BRACE
+    : '{' constructTriples? '}'
     ;
 
 constructTriples
-    : triplesSameSubject (DOT constructTriples?)*
+    : triplesSameSubject ('.' constructTriples?)*
     ;
 
 triplesSameSubject
@@ -335,7 +337,7 @@ propertyList
     ;
 
 propertyListNotEmpty
-    : verb objectList (SEMICOLON (verb objectList)?)* 
+    : verb objectList (';' (verb objectList)?)* 
     ;
 
 verb
@@ -343,7 +345,7 @@ verb
     ;    
 
 objectList
-    : object (COMMA object)*
+    : object (',' object)*
     ;
 
 object
@@ -359,7 +361,7 @@ propertyListPath
     ;  
 
 propertyListPathNotEmpty
-    : (verbPath|verbSimple) objectListPath (SEMICOLON propertyListPathNotEmptyList?)*
+    : (verbPath|verbSimple) objectListPath (';' propertyListPathNotEmptyList?)*
     ;
 
 propertyListPathNotEmptyList
@@ -375,7 +377,7 @@ verbSimple
     ;
     	
 objectListPath
-    : objectPath (COMMA objectPath)*
+    : objectPath (',' objectPath)*
     ;
 
 objectPath
@@ -391,7 +393,7 @@ pathAlternative
     ;
     
 pathSequence
-    : pathEltOrInverse (DIVIDE pathEltOrInverse)*
+    : pathEltOrInverse ('/' pathEltOrInverse)*
     ;
        	  	
 pathElt
@@ -407,11 +409,11 @@ pathMod
     ;
 
 pathPrimary
-    : iri | A | NEGATION pathNegatedPropertySet | DISTINCT? OPEN_BRACE path CLOSE_BRACE
+    : iri | A | '!' pathNegatedPropertySet | DISTINCT? '(' path ')'
     ;
 
 pathNegatedPropertySet
-    : pathOneInPropertySet | OPEN_BRACE (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? CLOSE_BRACE
+    : pathOneInPropertySet | '(' (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? ')'
     ;  	
 
 pathOneInPropertySet
@@ -427,7 +429,7 @@ triplesNode
     ;
 
 blankNodePropertyList
-    : OPEN_SQUARE_BRACKET propertyListNotEmpty CLOSE_SQUARE_BRACKET
+    : '[' propertyListNotEmpty ']'
     ;
 
 triplesNodePath
@@ -435,15 +437,15 @@ triplesNodePath
     ;
 
 blankNodePropertyListPath
-    : OPEN_SQUARE_BRACKET propertyListPathNotEmpty CLOSE_SQUARE_BRACKET
+    : '[' propertyListPathNotEmpty ']'
     ;
 
 collection
-    : OPEN_BRACE graphNode+ CLOSE_BRACE
+    : '(' graphNode+ ')'
     ;
 
 collectionPath
-    : OPEN_BRACE graphNodePath+ CLOSE_BRACE
+    : '(' graphNodePath+ ')'
     ;
     
 graphNode
@@ -471,133 +473,104 @@ graphTerm
     ;
     
 nil
-    : OPEN_BRACE CLOSE_BRACE
+    : '(' ')'
     ;
 
+/* ANTLR V4 branded expressions */
 expression
-    : conditionalOrExpression
+    : primaryExpression                                     # baseExpression
+    | op=('*'|'/') expression                               # unaryMultiplicativeExpression
+    | op=('+'|'-') expression                               # unaryAdditiveExpression
+    | '!' expression                                        # unaryNegationExpression
+    | expression op=('*'|'/') expression                    # multiplicativeExpression
+    | expression op=('+'|'-') expression                    # additiveExpression
+    | expression unaryLiteralExpression                     # unarySignedLiteralExpression   
+    | expression NOT? IN '(' expressionList? ')'            # relationalSetExpression
+    | expression op=('='|'!='|'<'|'>'|'<='|'>=') expression # relationalExpression
+    | expression ('&&' expression)                          # conditionalAndExpression
+    | expression ('||' expression)                          # conditionalOrExpression
     ;
 
-conditionalOrExpression
-    : conditionalAndExpression (OR conditionalAndExpression)*
-    ;
-
-conditionalAndExpression
-    : valueLogical (AND valueLogical)*
-    ;
-
-valueLogical
-    : relationalExpression
-    ;
-
-relationalExpression
-    : numericExpression (EQUAL numericExpression
-                        | NOT_EQUAL numericExpression 
-                        | LESS numericExpression 
-                        | GREATER numericExpression
-                        | LESS_EQUAL numericExpression
-                        | GREATER_EQUAL numericExpression  
-                        | IN OPEN_BRACE (el1=expressionList)? CLOSE_BRACE
-                        | NOT IN OPEN_BRACE (el2=expressionList)? CLOSE_BRACE )?
-    ;
-
-numericExpression
-    : additiveExpression
-    ;
-
-additiveExpression
-    : multiplicativeExpression (PLUS multiplicativeExpression
-                               | MINUS multiplicativeExpression
-                               |(numericLiteralPositive | numericLiteralNegative) ((ASTERISK unaryExpression) | (DIVIDE unaryExpression))?)*
-    ; 
-
-multiplicativeExpression
-    : unaryExpression (ASTERISK unaryExpression | DIVIDE unaryExpression)*
+unaryLiteralExpression
+    : (numericLiteralPositive|numericLiteralNegative) (op=('*'|'/') unaryExpression)? 
     ;
 
 unaryExpression
-    : NEGATION primaryExpression
-    | PLUS primaryExpression
-    | MINUS primaryExpression
-    | primaryExpression
+    : op=('!'|'+'|'-')? primaryExpression
     ;
 
 primaryExpression
-    : brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
-    ;
-
-brackettedExpression
-    : OPEN_BRACE expression CLOSE_BRACE
+    : '(' expression ')' | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
     ;
 
 builtInCall
     : aggregate
-    | STR OPEN_BRACE expression CLOSE_BRACE
-    | LANG OPEN_BRACE expression CLOSE_BRACE
-    | LANGMATCHES OPEN_BRACE expression COMMA expression CLOSE_BRACE
-    | DATATYPE OPEN_BRACE expression CLOSE_BRACE
-    | BOUND OPEN_BRACE var CLOSE_BRACE
-    | IRI OPEN_BRACE expression CLOSE_BRACE
-    | URI OPEN_BRACE expression CLOSE_BRACE
-    | BNODE OPEN_BRACE expression? CLOSE_BRACE
-    | RAND OPEN_BRACE CLOSE_BRACE
-    | ABS OPEN_BRACE expression CLOSE_BRACE
-    | CEIL OPEN_BRACE expression CLOSE_BRACE
-    | FLOOR OPEN_BRACE expression CLOSE_BRACE
-    | ROUND OPEN_BRACE expression CLOSE_BRACE
-    | CONCAT OPEN_BRACE expressionList? CLOSE_BRACE
+    | STR '(' expression ')'
+    | LANG '(' expression ')'
+    | LANGMATCHES '(' expression ',' expression ')'
+    | DATATYPE '(' expression ')'
+    | BOUND '(' var ')'
+    | IRI '(' expression ')'
+    | URI '(' expression ')'
+    | BNODE '(' expression? ')'
+    | RAND '(' ')'
+    | ABS '(' expression ')'
+    | CEIL '(' expression ')'
+    | FLOOR '(' expression ')'
+    | ROUND '(' expression ')'
+    | CONCAT '(' expressionList? ')'
     | subStringExpression
-    | STRLEN OPEN_BRACE expression CLOSE_BRACE
+    | STRLEN '(' expression ')'
     | strReplaceExpression
-    | UCASE OPEN_BRACE expression CLOSE_BRACE
-    | LCASE OPEN_BRACE expression CLOSE_BRACE
-    | ENCODE_FOR_URI OPEN_BRACE expression CLOSE_BRACE
-    | CONTAINS OPEN_BRACE expression COMMA expression CLOSE_BRACE
-    | STRSTARTS OPEN_BRACE expression COMMA expression CLOSE_BRACE
-    | STRENDS OPEN_BRACE expression COMMA expression CLOSE_BRACE
-    | STRBEFORE OPEN_BRACE expression COMMA expression CLOSE_BRACE
-    | STRAFTER OPEN_BRACE expression COMMA expression CLOSE_BRACE
-    | YEAR OPEN_BRACE expression CLOSE_BRACE
-    | MONTH OPEN_BRACE expression CLOSE_BRACE
-    | DAY OPEN_BRACE expression CLOSE_BRACE
-    | HOURS OPEN_BRACE expression CLOSE_BRACE
-    | MINUTES OPEN_BRACE expression CLOSE_BRACE
-    | SECONDS OPEN_BRACE expression CLOSE_BRACE
-    | TIMEZONE OPEN_BRACE expression CLOSE_BRACE
-    | TZ OPEN_BRACE expression CLOSE_BRACE
-    | NOW OPEN_BRACE CLOSE_BRACE
-    | UUID OPEN_BRACE CLOSE_BRACE
-    | STRUUID OPEN_BRACE CLOSE_BRACE
-    | MD5 OPEN_BRACE expression CLOSE_BRACE
-    | SHA1 OPEN_BRACE expression CLOSE_BRACE
-    | SHA256 OPEN_BRACE expression CLOSE_BRACE
-    | SHA384 OPEN_BRACE expression CLOSE_BRACE
-    | SHA512 OPEN_BRACE expression CLOSE_BRACE
-    | COALESCE OPEN_BRACE expressionList? CLOSE_BRACE
-    | IF OPEN_BRACE expression COMMA expression COMMA expression CLOSE_BRACE
-    | STRLANG OPEN_BRACE expression COMMA expression CLOSE_BRACE
-    | STRDT OPEN_BRACE expression COMMA expression CLOSE_BRACE
-    | SAMETERM OPEN_BRACE expression COMMA expression CLOSE_BRACE
-    | ISIRI OPEN_BRACE expression CLOSE_BRACE
-    | ISURI OPEN_BRACE expression CLOSE_BRACE
-    | ISBLANK OPEN_BRACE expression CLOSE_BRACE
-    | ISLITERAL OPEN_BRACE expression CLOSE_BRACE
-    | ISNUMERIC OPEN_BRACE expression CLOSE_BRACE
+    | UCASE '(' expression ')'
+    | LCASE '(' expression ')'
+    | ENCODE_FOR_URI '(' expression ')'
+    | CONTAINS '(' expression ',' expression ')'
+    | STRSTARTS '(' expression ',' expression ')'
+    | STRENDS '(' expression ',' expression ')'
+    | STRBEFORE '(' expression ',' expression ')'
+    | STRAFTER '(' expression ',' expression ')'
+    | YEAR '(' expression ')'
+    | MONTH '(' expression ')'
+    | DAY '(' expression ')'
+    | HOURS '(' expression ')'
+    | MINUTES '(' expression ')'
+    | SECONDS '(' expression ')'
+    | TIMEZONE '(' expression ')'
+    | TZ '(' expression ')'
+    | NOW '(' ')'
+    | UUID '(' ')'
+    | STRUUID '(' ')'
+    | MD5 '(' expression ')'
+    | SHA1 '(' expression ')'
+    | SHA256 '(' expression ')'
+    | SHA384 '(' expression ')'
+    | SHA512 '(' expression ')'
+    | COALESCE '(' expressionList? ')'
+    | IF '(' expression ',' expression ',' expression ')'
+    | STRLANG '(' expression ',' expression ')'
+    | STRDT '(' expression ',' expression ')'
+    | SAMETERM '(' expression ',' expression ')'
+    | ISIRI '(' expression ')'
+    | ISURI '(' expression ')'
+    | ISBLANK '(' expression ')'
+    | ISLITERAL '(' expression ')'
+    | ISNUMERIC '(' expression ')'
     | regexExpression
     | existsFunction
     | notExistsFunction
     ;
 
 regexExpression
-    : REGEX OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE
+    : REGEX '(' expression ',' expression (',' expression)? ')'
     ;
     
 subStringExpression
-    : SUBSTR OPEN_BRACE expression COMMA expression (COMMA expression)? CLOSE_BRACE
+    : SUBSTR '(' expression ',' expression (',' expression)? ')'
     ;
     
 strReplaceExpression
-    : REPLACE OPEN_BRACE expression COMMA expression COMMA expression (COMMA expression)? CLOSE_BRACE
+    : REPLACE '(' expression ',' expression ',' expression (',' expression)? ')'
     ;
     
 existsFunction
@@ -609,13 +582,13 @@ notExistsFunction
     ;
 
 aggregate
-    : COUNT OPEN_BRACE DISTINCT? (ASTERISK | expression) CLOSE_BRACE
-    | SUM OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-    | MIN OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-    | MAX OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-    | AVG OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-    | SAMPLE OPEN_BRACE DISTINCT? expression CLOSE_BRACE
-    | GROUP_CONCAT OPEN_BRACE DISTINCT? expression (SEMICOLON SEPARATOR EQUAL string)? CLOSE_BRACE
+    : COUNT '(' DISTINCT? (ASTERISK | expression) ')'
+    | SUM '(' DISTINCT? expression ')'
+    | MIN '(' DISTINCT? expression ')'
+    | MAX '(' DISTINCT? expression ')'
+    | AVG '(' DISTINCT? expression ')'
+    | SAMPLE '(' DISTINCT? expression ')'
+    | GROUP_CONCAT '(' DISTINCT? expression (';' SEPARATOR '=' string)? ')'
     ;
     
 iriRefOrFunction
@@ -663,7 +636,7 @@ blankNode
     ;
 
 anon
-    : OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
+    : '[' ']'
     ;
 // $>
 
