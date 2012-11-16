@@ -58,7 +58,7 @@ subSelect
     ;
     	
 selectClause
-    : SELECT (DISTINCT | REDUCED)? (selectVariables+ | ASTERISK)
+    : SELECT (DISTINCT | REDUCED)? (selectVariables+ | '*')
     ;
 
 selectVariables
@@ -71,7 +71,7 @@ constructQuery
     ;
 
 describeQuery
-    : DESCRIBE (varOrIRI+ | ASTERISK) datasetClause* whereClause? solutionModifier
+    : DESCRIBE (varOrIRI+ | '*') datasetClause* whereClause? solutionModifier
     ;
 
 askQuery
@@ -205,7 +205,7 @@ graphRef
     ;
 
 graphRefAll
-    : graphRef | (DEFAULT | NAMED | ALL)
+    : graphRef | DEFAULT | NAMED | ALL
     ;
 
 quadPattern
@@ -293,7 +293,7 @@ dataBlockValue
     ;
 
 minusGraphPattern
-    : MINUS_KEYWORD groupGraphPattern
+    : MINUS groupGraphPattern
     ;
 
 groupOrUnionGraphPattern
@@ -389,7 +389,7 @@ path
     ; 
 
 pathAlternative
-    : pathSequence (PIPE pathSequence)*
+    : pathSequence ('|' pathSequence)*
     ;
     
 pathSequence
@@ -405,15 +405,15 @@ pathEltOrInverse
     ;
 
 pathMod
-    : QUESTION_MARK | ASTERISK | PLUS 
+    : QUESTION_MARK | ASTERISK | PLUS_SIGN 
     ;
 
 pathPrimary
-    : iri | A | '!' pathNegatedPropertySet | DISTINCT? '(' path ')'
+    : iri | A | '!' pathNegatedPropertySet | '(' path ')'
     ;
 
 pathNegatedPropertySet
-    : pathOneInPropertySet | '(' (pathOneInPropertySet (PIPE pathOneInPropertySet)*)? ')'
+    : pathOneInPropertySet | '(' (pathOneInPropertySet ('|' pathOneInPropertySet)*)? ')'
     ;  	
 
 pathOneInPropertySet
@@ -596,7 +596,7 @@ iriRefOrFunction
     ;
 
 rdfLiteral
-    : string (LANGTAG | (REFERENCE iri))?
+    : string (LANGTAG | ('^^' iri))?
     ;
 
 numericLiteral

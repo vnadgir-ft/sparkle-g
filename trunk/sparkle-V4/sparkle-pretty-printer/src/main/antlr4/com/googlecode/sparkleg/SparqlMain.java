@@ -100,7 +100,7 @@ public class SparqlMain {
 		System.out.println("Start parsing: -------------------------------");
 		System.out.flush();
 
-		ParserRuleContext<Token> t = parser.query();
+		ParserRuleContext t = parser.query();
 
 		System.out.flush();
 		System.out.println("Parse tree: -------------------------------");

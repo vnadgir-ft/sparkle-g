@@ -1164,7 +1164,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 	@Override
 	public ST visitMinusGraphPattern(SparqlParser.MinusGraphPatternContext ctx) {
 		// minusGraphPattern :
-		//   MINUS_KEYWORD groupGraphPattern
+		//   MINUS groupGraphPattern
 
 		ST minusGraphPattern = g.getInstanceOf("minusGraphPattern");
 
@@ -1603,7 +1603,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 	@Override
 	public ST visitPathMod(SparqlParser.PathModContext ctx) {
 		// pathMod :
-		//   QUESTION_MARK | ASTERISK | PLUS 
+		//   QUESTION_MARK | ASTERISK | PLUS_SIGN 
 
 		ST pathMod = g.getInstanceOf("pathMod");
 
@@ -1611,8 +1611,8 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 			pathMod.add("QUESTION_MARK", ctx.QUESTION_MARK().getSymbol().getText());
 		} else if (ctx.ASTERISK() != null) {
 			pathMod.add("ASTERISK", ctx.ASTERISK().getSymbol().getText());
-		} else if (ctx.PLUS() != null) {
-			pathMod.add("PLUS", ctx.PLUS().getSymbol().getText());
+		} else if (ctx.PLUS_SIGN() != null) {
+			pathMod.add("PLUS", ctx.PLUS_SIGN().getSymbol().getText());
 		}
 
 		return pathMod;
@@ -1621,7 +1621,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 	@Override
 	public ST visitPathPrimary(SparqlParser.PathPrimaryContext ctx) {
 		// pathPrimary :
-		//   iri | A | NEGATION pathNegatedPropertySet | DISTINCT? OPEN_BRACE path CLOSE_BRACE
+		//   iri | A | NEGATION pathNegatedPropertySet | OPEN_BRACE path CLOSE_BRACE
 
 		ST pathPrimary = g.getInstanceOf("pathPrimary");
 
@@ -1632,9 +1632,6 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 		} else if (ctx.pathNegatedPropertySet() != null) {
 			pathPrimary.add("pathNegatedPropertySet", visitPathNegatedPropertySet(ctx.pathNegatedPropertySet()));
 		} else if (ctx.path() != null) {
-			if (ctx.DISTINCT() != null) {
-				pathPrimary.add("DISTINCT", ctx.DISTINCT().getSymbol().getText());
-			}
 			pathPrimary.add("path", visitPath(ctx.path()));
 		}
 
@@ -1928,9 +1925,9 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
 		ST unaryAdditiveExpression = g.getInstanceOf("unaryAdditiveExpression");
 
-		if (ctx.op.getType() == SparqlParser.PLUS) {
+		if (ctx.op.getType() == SparqlParser.PLUS_SIGN) {
 			unaryAdditiveExpression.add("ADD", "+");
-		} else if (ctx.op.getType() == SparqlParser.MINUS) {
+		} else if (ctx.op.getType() == SparqlParser.MINUS_SIGN) {
 			unaryAdditiveExpression.add("SUBTRACT", "-");
 		}
 
@@ -1974,15 +1971,15 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 	@Override
 	public ST visitAdditiveExpression(SparqlParser.AdditiveExpressionContext ctx) {
 		// expression : 
-		//   expression op=(PLUS|MINUS) expression 
+		//   expression op=(PLUS_SIGN|MINUS_SIGN) expression 
 
 		ST additiveExpression = g.getInstanceOf("additiveExpression");
 
 		additiveExpression.add("leftExpression", visit(ctx.expression(0)));
 
-		if (ctx.op.getType() == SparqlParser.PLUS) {
+		if (ctx.op.getType() == SparqlParser.PLUS_SIGN) {
 			additiveExpression.add("ADD", "+");
-		} else if (ctx.op.getType() == SparqlParser.MINUS) {
+		} else if (ctx.op.getType() == SparqlParser.MINUS_SIGN) {
 			additiveExpression.add("SUBTRACT", "-");
 		}
 
@@ -2118,9 +2115,9 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 		if (ctx.op != null) {
 			if (ctx.op.getType() == SparqlParser.NEGATION) {
 				unaryExpression.add("operator", "!");
-			} else if (ctx.op.getType() == SparqlParser.PLUS) {
+			} else if (ctx.op.getType() == SparqlParser.PLUS_SIGN) {
 				unaryExpression.add("operator", "+");
-			} else if (ctx.op.getType() == SparqlParser.MINUS) {
+			} else if (ctx.op.getType() == SparqlParser.MINUS_SIGN) {
 				unaryExpression.add("operator", "-");
 			}
 		}
@@ -2485,7 +2482,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 				aggregate.add("attribute", ctx.DISTINCT().getSymbol().getText().toUpperCase());
 			}
 			if (ctx.ASTERISK() != null) {
-				aggregate.add("whatever", ctx.ASTERISK().getSymbol().getText());
+ 				aggregate.add("whatever", ctx.ASTERISK().getSymbol().getText());
 			} else if (ctx.expression() != null) {
 				aggregate.add("expression", visit(ctx.expression()));
 			}
