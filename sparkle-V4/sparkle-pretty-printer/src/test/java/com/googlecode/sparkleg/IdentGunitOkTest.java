@@ -202,7 +202,7 @@ public class IdentGunitOkTest {
 		SparqlParser parser = new SparqlParser(tokens);
 		parser.setBuildParseTree(true);
 
-		ParserRuleContext<Token> t = parser.query();
+		ParserRuleContext t = parser.query();
 
 		numberOfSyntaxErrors = parser.getNumberOfSyntaxErrors();
 

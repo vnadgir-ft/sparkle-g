@@ -152,7 +152,7 @@ SERVICE : ('S'|'s')('E'|'e')('R'|'r')('V'|'v')('I'|'i')('C'|'c')('E'|'e');
 
 BIND : ('B'|'b')('I'|'i')('N'|'n')('D'|'d');
 
-MINUS_KEYWORD : ('M'|'m')('I'|'i')('N'|'n')('U'|'u')('S'|'s');
+MINUS : ('M'|'m')('I'|'i')('N'|'n')('U'|'u')('S'|'s');
 
 IRI : ('I'|'i')('R'|'r')('I'|'i');
     	 
@@ -257,7 +257,7 @@ EXISTS : ('E'|'e')('X'|'x')('I'|'i')('S'|'s')('T'|'t')('S'|'s');
 SEPARATOR : ('S'|'s')('E'|'e')('P'|'p')('A'|'a')('R'|'r')('A'|'a')('T'|'t')('O'|'o')('R'|'r');
 
 IRIREF
-    : '<' (~('<' | '>' | '"' | OPEN_CURLY_BRACE | CLOSE_CURLY_BRACE | PIPE | INVERSE | '`' | '\\' | '\u0000'..'\u0020'))* '>'
+    : '<' (~('<' | '>' | '"' | '{' | '}' | '|' | '^' | '`' | '\\' | '\u0000'..'\u0020'))* '>'
     ;
 
 PNAME_NS : PN_PREFIX? ':';
@@ -270,7 +270,7 @@ VAR1 : '?' VARNAME;
 
 VAR2 : '$' VARNAME;
 
-LANGTAG : '@' ('A'..'Z'|'a'..'z')+ (MINUS ('A'..'Z'|'a'..'z'|DIGIT)+)*;
+LANGTAG : '@' ('A'..'Z'|'a'..'z')+ (MINUS_SIGN ('A'..'Z'|'a'..'z'|DIGIT)+)*;
 
 INTEGER : DIGIT+;
 
@@ -285,17 +285,17 @@ DOUBLE
     | DIGIT+ EXPONENT
     ;
 
-INTEGER_POSITIVE : PLUS INTEGER;
+INTEGER_POSITIVE : PLUS_SIGN INTEGER;
 
-DECIMAL_POSITIVE : PLUS DECIMAL;
+DECIMAL_POSITIVE : PLUS_SIGN DECIMAL;
 
-DOUBLE_POSITIVE : PLUS DOUBLE;
+DOUBLE_POSITIVE : PLUS_SIGN DOUBLE;
 
-INTEGER_NEGATIVE : MINUS INTEGER;
+INTEGER_NEGATIVE : MINUS_SIGN INTEGER;
 
-DECIMAL_NEGATIVE : MINUS DECIMAL;
+DECIMAL_NEGATIVE : MINUS_SIGN DECIMAL;
 
-DOUBLE_NEGATIVE : MINUS DOUBLE;
+DOUBLE_NEGATIVE : MINUS_SIGN DOUBLE;
     
 fragment
 EXPONENT : ('e'|'E') SIGN? DIGIT+;
@@ -336,7 +336,7 @@ fragment
 VARNAME : (PN_CHARS_U | DIGIT) (PN_CHARS_U | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040')*;
 
 fragment
-PN_CHARS : PN_CHARS_U | MINUS | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040';
+PN_CHARS : PN_CHARS_U | MINUS_SIGN | DIGIT | '\u00B7' | '\u0300'..'\u036F' | '\u203F'..'\u2040';
 
 fragment
 PN_PREFIX : PN_CHARS_BASE ((PN_CHARS|DOT)* PN_CHARS)?;
@@ -359,7 +359,7 @@ PN_LOCAL_ESC : '\\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | '\'' | '(' | ')'
 fragment
 DIGIT : '0'..'9';
 
-COMMENT : '#' .* (EOL|EOF) -> channel(99);
+COMMENT : '#' .*? (EOL|EOF) -> channel(99);
 
 fragment
 EOL : '\n' | '\r';
@@ -394,12 +394,12 @@ SEMICOLON : ';';
 
 DOT : '.';
 
-PLUS : '+';
+PLUS_SIGN : '+';
 
-MINUS : '-';
+MINUS_SIGN : '-';
 
 fragment
-SIGN : (PLUS|MINUS);
+SIGN : (PLUS_SIGN|MINUS_SIGN);
 	
 ASTERISK : '*';
 
