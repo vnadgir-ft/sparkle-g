@@ -229,7 +229,7 @@ quadsNotTriples
     ;
     
 triplesTemplate
-    : triplesSameSubject ('.' triplesTemplate?)?
+     : triplesSameSubject ('.' triplesSameSubject?)*
     ;
     	
 groupGraphPattern

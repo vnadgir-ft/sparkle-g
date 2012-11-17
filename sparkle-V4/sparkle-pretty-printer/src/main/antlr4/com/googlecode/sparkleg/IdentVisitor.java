@@ -885,14 +885,17 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitTriplesTemplate(SparqlParser.TriplesTemplateContext ctx) {
         // triplesTemplate :
-        //   triplesSameSubject (DOT triplesTemplate?)?
+        //   triplesSameSubject (DOT triplesSameSubject?)*
 
         ST triplesTemplate = g.getInstanceOf("triplesTemplate");
 
-        triplesTemplate.add("triplesSameSubject", visitTriplesSameSubject(ctx.triplesSameSubject()));
+        int i = 0;
 
-        if (ctx.triplesTemplate() != null) {
-            triplesTemplate.add("triplesTemplate", visitTriplesTemplate(ctx.triplesTemplate()));
+        while (i < ctx.getChildCount()) {
+            ParseTree c = ctx.getChild(i++);
+            if (c instanceof SparqlParser.TriplesSameSubjectContext) {
+                triplesTemplate.add("triplesSameSubject", visitTriplesSameSubject((SparqlParser.TriplesSameSubjectContext) c));
+            }
         }
 
         return triplesTemplate;
