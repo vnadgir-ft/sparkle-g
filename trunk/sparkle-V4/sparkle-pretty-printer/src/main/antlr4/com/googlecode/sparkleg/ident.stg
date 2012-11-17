@@ -362,8 +362,8 @@ quadsNotTriples(varOrIRI, triplesTemplate) ::= <<
 }<else>{ }<endif>
 >>
 
-triplesTemplate(triplesSameSubject, triplesTemplate) ::= <<
-<triplesSameSubject><if(triplesTemplate)> .<\n><triplesTemplate><endif>
+triplesTemplate(triplesSameSubject) ::= <<
+<triplesSameSubject; separator=" .\n">
 >>
 
 groupGraphPattern(subSelect, groupGraphPatternSub) ::= <<
