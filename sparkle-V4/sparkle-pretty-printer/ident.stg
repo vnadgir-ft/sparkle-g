@@ -378,8 +378,8 @@ groupGraphPatternSubList(graphPatternNotTriples, triplesBlock) ::= <<
 <if(graphPatternNotTriples)><graphPatternNotTriples><endif><if(triplesBlock)><\n><triplesBlock><endif>
 >>
 
-triplesBlock(triplesSameSubjectPath, triplesBlock) ::= <<
-<triplesSameSubjectPath><if(triplesBlock)> .<\n><triplesBlock><endif>
+triplesBlock(triplesSameSubjectPath) ::= <<
+<triplesSameSubjectPath; separator=" .\n">
 >>
 
 graphPatternNotTriples(groupOrUnionGraphPattern, optionalGraphPattern, minusGraphPattern, graphGraphPattern, serviceGraphPattern, filter, bind, inlineData) ::= <<
@@ -648,8 +648,8 @@ unarySignedLiteralExpression(expression, unaryLiteralExpression) ::= <<
 <expression><unaryLiteralExpression>
 >>
 
-relationalSetExpression(leftExpression, NOT, IN, rightExpression) ::= <<
-<leftExpression><if(NOT)> NOT<endif><if(IN)> IN<endif><rightExpression>
+relationalSetExpression(leftExpression, NOT, IN, expressionList) ::= <<
+<leftExpression><if(NOT)> NOT<endif><if(IN)> IN<endif>(<expressionList>)
 >>
 
 relationalExpression(leftExpression, operator, rightExpression) ::= <<
