@@ -230,9 +230,10 @@
     </target>
     
     <target name="junit" depends="test-compile" description="compile junit test">
-        <junit printsummary="yes" fork="yes" haltonfailure="yes" dir="${build}">
+        <junit printsummary="yes" showoutput="true" fork="yes" haltonfailure="yes" dir="${build}">
             <sysproperty key="basedir" value="${build}"/>
             <formatter type="plain"/>
+            <formatter usefile="false" type="brief" />
             <test name="com.googlecode.sparkleg.IdentGunitOkTest"/>
             <classpath>
                 <path path="${test-classes}"/>
