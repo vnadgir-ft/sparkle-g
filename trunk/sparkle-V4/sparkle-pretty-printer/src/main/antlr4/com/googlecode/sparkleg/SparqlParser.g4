@@ -26,10 +26,6 @@ options{
 tokenVocab=SparqlLexer;
 }
 
-@header {
-package com.googlecode.sparkleg;
-}
-
 // $<Parser
 
 query

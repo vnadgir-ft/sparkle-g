@@ -22,10 +22,6 @@
  */
 lexer grammar SparqlLexer;
 
-@lexer::header {
-package com.googlecode.sparkleg;
-}
-
 // $<Lexer
 
 WS : (' '| '\t'| EOL)+ -> channel(99);
