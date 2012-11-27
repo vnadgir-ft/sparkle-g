@@ -98,16 +98,54 @@ Assemble the following jar-files in a directory of your choice:
 Copy the ident.stg file and the query file input.rq into the directory, too. 
 Execute the following command: 
 
+The Windows way
 {{{
 java -cp antlr-4.0b4-complete.jar;sparql4.jar SparqlMain input.rq
+}}}
+
+The Unix way
+{{{
+java -cp antlr-4.0b4-complete.jar:sparql4.jar SparqlMain input.rq
 }}}
 
 You should receive the following output:
 
 {{{
-Working on file input.rq
+Work on file input.rq
+Tokens: -------------------------------
+Number of tokens 68
+TokenList: -------------------------------
+[@0,0:5='PREFIX',<3>,1:0]
+[@1,6:6=' ',<1>,channel=99,1:6]
+[@2,7:9='dc:',<116>,1:7]
+[@3,10:12='   ',<1>,channel=99,1:10]
+[@4,13:46='<http://purl.org/dc/elements/1.1/>',<115>,1:13]
+[@5,47:49=' \r\n',<1>,channel=99,1:47]
+[@6,50:55='PREFIX',<3>,2:0]
+[@7,56:56=' ',<1>,channel=99,2:6]
+[@8,57:57=':',<116>,2:7]
+[@9,58:62='     ',<1>,channel=99,2:8]
+[@10,63:88='<http://example.org/book/>',<115>,2:13]
+[@11,89:91=' \r\n',<1>,channel=99,2:39]
+[@12,92:97='PREFIX',<3>,3:0]
+...
+Input from token list: -------------------------------
+PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
+PREFIX :     <http://example.org/book/> 
+PREFIX ns:   <http://example.org/ns#> 
+
+SELECT ?book ?title ?price
+{
+   ?book dc:title ?title ;
+         ns:price ?price .
+}
+Values (?book ?title) {
+ (UNDEF "SPARQL Tutorial")
+ (:book2 UNDEF)
+}Start parsing: -------------------------------
 Parse tree: -------------------------------
-(query (prologue (prefixDecl PREFIX dc: <http://purl.org/dc/elements/1.1/>) (prefixDecl PREFIX : <http://example.org/book/>) (prefixDecl PREFIX ns: http://example.org/ns#>)) (selectQuery (selectClause SELECT (var ?book) (var ?title) (var ?price)) (whereClause (groupGraphPattern { (groupGraphPatternSub (triplesBlock (triplesSameSubjectPath (varOrTerm (var ?book)) propertyListNotEmptyPath (verbPath (path (pathAlternative (pathSequence pathEltOrInverse (pathElt (pathPrimary (iriRef (prefixedName dc:title))))))))) (objectList (object (graphNode (varOrTerm (var ?title))))) ; (verbPath (path (pathAlternative (pathSequence (pathEltOrInverse (pathElt (pathPrimary (iriRef (prefixedName ns:price))))))))) (objectList (object (graphNode (varOrTerm (var ?price))))))) .)) })) solutionModifier) bindingsClause BINDINGS (var ?book) (var ?title) { ( (bindingsValueList (bindingValue UNDEF) (bindingValue (rdfLiteral (string "SPARQL Tutorial"))))) ( (bindingsValueList (bindingValue (iriRef (prefixedName :book2))) (bindingValue UNDEF)) ) }) <EOF>)
+(query (prologue (prefixDecl PREFIX dc: <http://purl.org/dc/elements/1.1/>) (prefixDecl PREFIX : <http://example.org/book/>) (prefixDecl PREFIX ns: <http://example.org/ns#>)) (selectQuery (selectClause SELECT (selectVariables (var ?book)) (selectVariables (var ?title)) (selectVariables (var ?price))) (whereClause (groupGraphPattern { (groupGraphPatternSub (triplesBlock (triplesSameSubjectPath (varOrTerm (var ?book)) (propertyListPathNotEmpty (verbPath (path (pathAlternative (pathSequence (pathEltOrInverse (pathElt (pathPrimary (iri (prefixedName dc:title))))))))) (objectListPath (objectPath (graphNodePath (varOrTerm (var ?title))))) ; (propertyListPathNotEmptyList (verbPath (path (pathAlternative (pathSequence (pathEltOrInverse (pathElt (pathPrimary (iri (prefixedName ns:price))))))))) (objectList (object (graphNode (varOrTerm (var ?price)))))))) .)) })) solutionModifier) (valuesClause Values (dataBlock (inlineDataFull ( (var ?book) (var ?title) ) { (dataBlockValues ( (dataBlockValue UNDEF) (dataBlockValue (rdfLiteral (string "SPARQL Tutorial"))) )) (dataBlockValues ( (dataBlockValue (iri (prefixedName :book2))) (dataBlockValue UNDEF) )) }))) <EOF>)
+Read StringTemplate Group File: ident.stg-------------------------------
 Emit reformatted query: -------------------------------
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
 PREFIX : <http://example.org/book/>
@@ -115,14 +153,28 @@ PREFIX ns: <http://example.org/ns#>
 
 SELECT ?book ?title ?price
 WHERE {
-   ?book dc:title ?title ;
+   ?book dc:title ?title;
          ns:price ?price
 }
-BINDINGS ?book ?title {
+VALUES (?book ?title) {
    (UNDEF "SPARQL Tutorial")
    (:book2 UNDEF)
 }
--------------------------------
+Emit original query: -------------------------------
+PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
+PREFIX :     <http://example.org/book/> 
+PREFIX ns:   <http://example.org/ns#> 
+
+SELECT ?book ?title ?price
+{
+   ?book dc:title ?title ;
+         ns:price ?price .
+}
+Values (?book ?title) {
+ (UNDEF "SPARQL Tutorial")
+ (:book2 UNDEF)
+}-------------------------------
+Number of errors encountered: 0
 }}}
 
 
