@@ -121,6 +121,8 @@
                 <arg path="@{libdirectory}"/>
                 <arg value="-visitor"/>
                 <arg path="@{grammar.name}"/>
+                <arg value="-package"/>
+                <arg value="com.googlecode.sparkleg"/>
                 <classpath>
                     <path refid="antlr.path"/>
                 </classpath>
