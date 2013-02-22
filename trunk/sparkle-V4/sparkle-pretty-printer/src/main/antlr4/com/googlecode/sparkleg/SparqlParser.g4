@@ -309,7 +309,7 @@ functionCall
     ;
 
 argList
-    : '(' (DISTINCT? expressionList|) ')'
+    : '(' (DISTINCT? expressionList| /* argList is allowed to be empty */) ')'
     ;
 
 expressionList
@@ -401,7 +401,7 @@ pathEltOrInverse
     ;
 
 pathMod
-    : QUESTION_MARK | ASTERISK | PLUS_SIGN 
+    : op=('?'| '*' | '+') 
     ;
 
 pathPrimary
