@@ -29,7 +29,7 @@ tokenVocab=SparqlLexer;
 // $<Parser
 
 query
-    : prologue (selectQuery | constructQuery | describeQuery | askQuery) valuesClause EOF
+    : prologue (selectQuery | constructQuery | describeQuery | askQuery)? valuesClause EOF
     | updateCommand EOF
     ;
 
