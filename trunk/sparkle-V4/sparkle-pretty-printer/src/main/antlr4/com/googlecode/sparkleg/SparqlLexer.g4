@@ -296,9 +296,9 @@ DOUBLE_NEGATIVE : MINUS_SIGN DOUBLE;
 fragment
 EXPONENT : ('e'|'E') SIGN? DIGIT+;
 
-STRING_LITERAL1 : '\'' (~('\'' | '\\' | EOL) | ECHAR)* '\'';
+STRING_LITERAL1 : '\'' (~('\'' | '\\' | '\n' | '\r') | ECHAR)* '\'';
 
-STRING_LITERAL2 : '"' (~('"' | '\\' | EOL) | ECHAR)* '"';
+STRING_LITERAL2 : '"' (~('"' | '\\' | '\n' | '\r') | ECHAR)* '"';
 
 STRING_LITERAL_LONG1 : '\'\'\'' (('\'' | '\'\'')? (~('\''|'\\') | ECHAR))* '\'\'\'';
 
