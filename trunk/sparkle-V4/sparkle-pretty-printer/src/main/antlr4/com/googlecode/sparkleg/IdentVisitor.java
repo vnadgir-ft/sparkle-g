@@ -1606,12 +1606,12 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
 
         ST pathMod = g.getInstanceOf("pathMod");
 
-        if (ctx.QUESTION_MARK() != null) {
-            pathMod.add("QUESTION_MARK", ctx.QUESTION_MARK().getSymbol().getText());
-        } else if (ctx.ASTERISK() != null) {
-            pathMod.add("ASTERISK", ctx.ASTERISK().getSymbol().getText());
-        } else if (ctx.PLUS_SIGN() != null) {
-            pathMod.add("PLUS", ctx.PLUS_SIGN().getSymbol().getText());
+        if (ctx.op.getType() == SparqlParser.QUESTION_MARK) {
+            pathMod.add("QUESTION_MARK", "?");
+        } else if (ctx.op.getType() == SparqlParser.ASTERISK) {
+            pathMod.add("ASTERISK", "*");
+        } else if (ctx.op.getType() == SparqlParser.PLUS_SIGN) {
+            pathMod.add("PLUS", "+");
         }
 
         return pathMod;
@@ -1902,7 +1902,7 @@ public class IdentVisitor extends SparqlParserBaseVisitor<ST> implements SparqlP
     @Override
     public ST visitUnaryMultiplicativeExpression(SparqlParser.UnaryMultiplicativeExpressionContext ctx) {
         // expression : 
-        //   (ASTERISK|DIVIDE) expression 
+        //   op=('*'|'/') expression 
 
         ST unaryMultiplicativeExpression = g.getInstanceOf("unaryMultiplicativeExpression");
 
