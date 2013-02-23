@@ -39,7 +39,7 @@ import java.util.Collection;
 
 /**
  *
- * @author Jürgen
+ * @author Juergen
  *
  * Select all queries from Sparql.testsuite with expected GUnit status OK. The
  * query is processed by the Sparkle Pretty Printer. The resulting re-formatted

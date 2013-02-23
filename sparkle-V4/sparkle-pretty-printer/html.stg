@@ -1,5 +1,5 @@
 /*
-* Copyright 2011 - 2012 the original author or authors.
+* Copyright 2011 - 2013 the original author or authors.
 *
 * All rights reserved.
 *
@@ -31,7 +31,7 @@
 * @author Michele Mostarda (michele.mostarda)
 * @author Juergen Pfundt (Juergen.Pfundt)
 *
-* Jürgen Pfundt, 28.07.2011 First draft of ident template
+* Juergen Pfundt, 28.07.2011 First draft of ident template
 */
 
 group ident;
