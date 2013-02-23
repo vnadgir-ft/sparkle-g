@@ -30,7 +30,7 @@ tokenVocab=SparqlLexer;
 
 query
     : prologue (selectQuery | constructQuery | describeQuery | askQuery)? valuesClause EOF
-    | updateCommand EOF
+    | updateCommand? EOF
     ;
 
 prologue
@@ -129,7 +129,7 @@ valuesClause
     ;
     
 updateCommand
-    : prologue (update (';' updateCommand)?)?
+    : prologue (update (';' prologue update)* (';' prologue)?)?
     ;
 
 update
