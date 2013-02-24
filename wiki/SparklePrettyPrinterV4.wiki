@@ -205,7 +205,7 @@ You should receive the following output:
 {{{
 Work on file input.rq
 Tokens: -------------------------------
-Number of tokens 68
+Number of tokens 69
 TokenList: -------------------------------
 [@0,0:5='PREFIX',<3>,1:0]
 [@1,6:6=' ',<1>,channel=99,1:6]
@@ -220,7 +220,18 @@ TokenList: -------------------------------
 [@10,63:88='<http://example.org/book/>',<115>,2:13]
 [@11,89:91=' \r\n',<1>,channel=99,2:39]
 [@12,92:97='PREFIX',<3>,3:0]
+[@13,98:98=' ',<1>,channel=99,3:6]
+[@14,99:101='ns:',<116>,3:7]
+[@15,102:104='   ',<1>,channel=99,3:10]
+[@16,105:128='<http://example.org/ns#>',<115>,3:13]
+[@17,129:133=' \r\n\r\n',<1>,channel=99,3:37]
+[@18,134:139='SELECT',<4>,5:0]
+[@19,140:140=' ',<1>,channel=99,5:6]
+[@20,141:145='?book',<119>,5:7]
+[@21,146:146=' ',<1>,channel=99,5:12]
 ...
+[@67,295:296='\r\n',<1>,channel=99,13:1]
+[@68,297:296='<EOF>',<-1>,14:3]
 Input from token list: -------------------------------
 PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
 PREFIX :     <http://example.org/book/> 
@@ -234,7 +245,8 @@ SELECT ?book ?title ?price
 Values (?book ?title) {
  (UNDEF "SPARQL Tutorial")
  (:book2 UNDEF)
-}Start parsing: -------------------------------
+}
+Start parsing: -------------------------------
 Parse tree: -------------------------------
 (query (prologue (prefixDecl PREFIX dc: <http://purl.org/dc/elements/1.1/>) (prefixDecl PREFIX : <http://example.org/book/>) (prefixDecl PREFIX ns: <http://example.org/ns#>)) (selectQuery (selectClause SELECT (selectVariables (var ?book)) (selectVariables (var ?title)) (selectVariables (var ?price))) (whereClause (groupGraphPattern { (groupGraphPatternSub (triplesBlock (triplesSameSubjectPath (varOrTerm (var ?book)) (propertyListPathNotEmpty (verbPath (path (pathAlternative (pathSequence (pathEltOrInverse (pathElt (pathPrimary (iri (prefixedName dc:title))))))))) (objectListPath (objectPath (graphNodePath (varOrTerm (var ?title))))) ; (propertyListPathNotEmptyList (verbPath (path (pathAlternative (pathSequence (pathEltOrInverse (pathElt (pathPrimary (iri (prefixedName ns:price))))))))) (objectList (object (graphNode (varOrTerm (var ?price)))))))) .)) })) solutionModifier) (valuesClause Values (dataBlock (inlineDataFull ( (var ?book) (var ?title) ) { (dataBlockValues ( (dataBlockValue UNDEF) (dataBlockValue (rdfLiteral (string "SPARQL Tutorial"))) )) (dataBlockValues ( (dataBlockValue (iri (prefixedName :book2))) (dataBlockValue UNDEF) )) }))) <EOF>)
 Read StringTemplate Group File: ident.stg-------------------------------
@@ -265,7 +277,8 @@ SELECT ?book ?title ?price
 Values (?book ?title) {
  (UNDEF "SPARQL Tutorial")
  (:book2 UNDEF)
-}-------------------------------
+}
+-------------------------------
 Number of errors encountered: 0
 }}}
 
