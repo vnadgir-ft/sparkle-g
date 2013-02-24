@@ -20,10 +20,10 @@ The answer to the question “Why do we need ANTLR V4?” can be found [http://w
 The prerelase uses Ant as build tool. You should have Ant version 1.8 or later installed.
 Java 1.6 or later is obligatory. 
 
-Download the sparkle-pretty-printer-all-4.0-beta.jar from the download page of the sparkle-g project. Unpack the  jar archive in a directory of your choice.
+Download the sparkle-pretty-printer-all-4-1.0.jar from the download page of the sparkle-g project. Unpack the  jar archive in a directory of your choice.
 
 {{{
-jar xvf sparkle-pretty-printer-all-4.0-beta.jar
+jar xvf sparkle-pretty-printer-all-4-1.0.jar
 }}}
 
 Change into the created sparkle-pretty-printer directory and type on the command line:
@@ -35,44 +35,44 @@ ant all
 You should see a build progress information somehow like this:
 
 {{{
-Buildfile: /Users/jp/ws/sparkle-pretty-printer/build.xml
+Buildfile: /Users/jp/ws/sparql-v4/sparkle-pretty-printer/build.xml
 
 antlr_home:
-     [echo] Anltr V4 found in: jar:file:/Users/jp/ws/sparkle-pretty-printer/lib/antlr4/antlr-4.0b4-complete.jar!/org/antlr/v4/Tool.class
+     [echo] Anltr V4 found in: jar:file:/Users/jp/ws/sparql-v4/sparkle-pretty-printer/lib/antlr4/antlr-4-1.0-complete.jar!/org/antlr/v4/Tool.class
 
 init:
-    [mkdir] Created dir: /Users/jp/ws/sparkle-pretty-printer/target/classes/com/googlecode/sparkleg
-    [mkdir] Created dir: /Users/jp/ws/sparkle-pretty-printer/target/classes/META-INF
-    [mkdir] Created dir: /Users/jp/ws/sparkle-pretty-printer/target/dist
-    [mkdir] Created dir: /Users/jp/ws/sparkle-pretty-printer/target/dist/javadoc/com/googlecode/sparkleg
-    [mkdir] Created dir: /Users/jp/ws/sparkle-pretty-printer/target/test-classes/com/googlecode/sparkleg
+    [mkdir] Created dir: /Users/jp/ws/sparql-v4/sparkle-pretty-printer/target/classes/com/googlecode/sparkleg
+    [mkdir] Created dir: /Users/jp/ws/sparql-v4/sparkle-pretty-printer/target/classes/META-INF
+    [mkdir] Created dir: /Users/jp/ws/sparql-v4/sparkle-pretty-printer/target/dist
+    [mkdir] Created dir: /Users/jp/ws/sparql-v4/sparkle-pretty-printer/target/dist/javadoc/com/googlecode/sparkleg
+    [mkdir] Created dir: /Users/jp/ws/sparql-v4/sparkle-pretty-printer/target/test-classes/com/googlecode/sparkleg
 
 clean:
 
 antlr:
 
 compile:
-    [javac] Compiling 8 source files to /Users/jp/ws/sparkle-pretty-printer/target/classes
-    [javac] /Users/jp/ws/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/IdentVisitor.java
-    [javac] /Users/jp/ws/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlLexer.java
-    [javac] /Users/jp/ws/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlMain.java
-    [javac] /Users/jp/ws/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParser.java
-    [javac] /Users/jp/ws/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParserBaseListener.java
-    [javac] /Users/jp/ws/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParserBaseVisitor.java
-    [javac] /Users/jp/ws/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParserListener.java
-    [javac] /Users/jp/ws/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParserVisitor.java
+    [javac] Compiling 8 source files to /Users/jp/ws/sparql-v4/sparkle-pretty-printer/target/classes
+    [javac] /Users/jp/ws/sparql-v4/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/IdentVisitor.java
+    [javac] /Users/jp/ws/sparql-v4/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlLexer.java
+    [javac] /Users/jp/ws/sparql-v4/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlMain.java
+    [javac] /Users/jp/ws/sparql-v4/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParser.java
+    [javac] /Users/jp/ws/sparql-v4/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParserBaseListener.java
+    [javac] /Users/jp/ws/sparql-v4/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParserBaseVisitor.java
+    [javac] /Users/jp/ws/sparql-v4/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParserListener.java
+    [javac] /Users/jp/ws/sparql-v4/sparkle-pretty-printer/src/main/antlr4/com/googlecode/sparkleg/SparqlParserVisitor.java
 
 manifest:
 
 dist:
-      [jar] Building jar: /Users/jp/ws/sparkle-pretty-printer/target/dist/sparql4.jar
+      [jar] Building jar: /Users/jp/ws/sparql-v4/sparkle-pretty-printer/target/dist/sparql4.jar
 
 doc:
   [javadoc] Generating Javadoc
   [javadoc] Javadoc execution
   [javadoc] Loading source files for package com.googlecode.sparkleg...
   [javadoc] Constructing Javadoc information...
-  [javadoc] Standard Doclet version 1.7.0_05
+  [javadoc] Standard Doclet version 1.7.0_13
   [javadoc] Building tree for all the packages and classes...
   [javadoc] Building index for all the packages and classes...
   [javadoc] Building index for all classes...
@@ -83,16 +83,108 @@ run:
 all:
 
 BUILD SUCCESSFUL
-Total time: 26 seconds
+Total time: 31 seconds
 }}}
 
 The run task opens a tree view of the example query contained in the input.rq file. Press the OK-Button to close the window. 
+
+= Automated Testing =
+
+== Syntax Testing Using JUnit ==
+
+JUnit is used for testing the SPARQL 1.1 syntax as defined in the Sparql.g grammar file. At the moment more than 500 test queries are part of the testsuite.
+
+=== Running the JUnit tests ===
+
+{{{
+ant junit
+}}}
+
+The execution of the test cases is logged in TEST-com.googlecode.sparkleg.IdentGunitOKTest.txt.
+A detailed evaluation of each test case can be found in target/src/test/java/com/googlecode/sparkleg/syntactic_validator1.log.
+
+== Grammar Testing ==
+
+A parameterized JUnit test is dynamically set up, which includes all queries from the Sparql.testsuite file with expected GUnit status OK.
+{{{
+final String REGEX = "(^\\s*<<)(.*?)(>>\\s*(OK|FAIL)\\s*$)";
+}}}
+All queries extracted from the GUnit file are treated as described below:
+
+ # a test query is processed by the Sparkle Pretty Printer
+ # the output of the transformation process, the re-formatted query is saved as response1
+ # this response1 query is sent through the Sparkle Printer transformation pipeline, too
+ # the resulting output response2 is compared to response1. In case of equality the test case is evaluated as successfull
+
+A stable transformation algorithm should result in no changes when
+repeatedly applied on the generated output. This behaviour is neccessary but not sufficient to yield a well formed reformatted query. For this reason the three data sequences: original query, response1 and response2 are written for manual inspection in a log file.
+
+=== DAWG Test Data ===
+
+Most of the JUnit test cases are based on the DAWG {{{data-r2}}} and {{{data-sparql11}}} testsuites. The start of the DAWG test cases is marked in the {{{Sparql.testsuite}}} file and the {{{Sparql.gunit}}} file with the following disclaimer:
+ 
+W3C(R) SOFTWARE NOTICE AND LICENSE
+[http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231 http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231]
+ 
+ This work (and included software, documentation such as READMEs, or other related items) is being provided by the copyright holders under the following license. By obtaining, using and/or copying this work, you (the  licensee) agree that you have read, understood, and will comply with the following terms and conditions.
+ 
+ Permission to copy, modify, and distribute this software and its
+ documentation, with or without modification, for any purpose and without fee or royalty is hereby granted, provided that you include the following on ALL copies of the software and documentation or portions thereof, including modifications:
+
+   1. The full text of this NOTICE in a location viewable to users of the redistributed or derivative work.
+
+   2. Any pre-existing intellectual property disclaimers, notices, or terms and conditions. If none exist, the W3C Software Short Notice should be included (hypertext is preferred, text is permitted) within the body of any redistributed or derivative code.
+
+   3. Notice of any changes or modifications to the files, including  changes were made. (We recommend you provide URIs to the  location from which the code is derived.)
+
+ THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE OR DOCUMENTATION WILL NOT INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.
+
+ COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR DOCUMENTATION.
+ 
+ The name and trademarks of copyright holders may NOT be used in advertising or publicity pertaining to the software without specific, written prior permission. Title to copyright in this software and any associated documentation will at all times remain with copyright holders
+
+=== SPARQL 1.1 Example Queries ===
+
+Another part of the test queries origin from the SPARQL 1.1 Query Language W3C Working Draft 12 May 2011 [http://www.w3.org/TR/sparql11-query/].
+
+The following note signals the start of those queries:
+{{{
+/* 
+ * The following testcases are taken from the w3.org (http://www.w3.org/TR/sparql11-query/#grammar) SPARQL examples
+ */
+}}}
+The chapter from which the queries had been taken is noted on top of the first query of a chapter. The example shows two queries from chapter {{{5.2.3 Group Graph Pattern Examples}}} followed by queries contained in chapter {{{6.1 Optional Pattern Matching}}}
+
+{{{
+// 5.2.3 Group Graph Pattern Examples
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox 
+  {
+    ?x foaf:name ?name . FILTER regex(?name, "Smith")
+    ?x foaf:mbox ?mbox .
+  }
+>> OK
+
+<<
+PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox 
+  {
+    ?x foaf:name ?name .
+    {}
+    ?x foaf:mbox ?mbox .
+  }
+>> OK
+
+// 6.1 Optional Pattern Matching
+...
+}}}   
 
 === Executing the Provided Tiny Example Program ===
 
 Assemble the following jar-files in a directory of your choice: 
 
- * antlr-4.0b4-complete.jar
+ * antlr-4.0.1-complete.jar
  * sparql4.jar 
 
 Copy the ident.stg file and the query file input.rq into the directory, too. 
@@ -100,12 +192,12 @@ Execute the following command:
 
 The Windows way
 {{{
-java -cp antlr-4.0b4-complete.jar;sparql4.jar SparqlMain input.rq
+java -cp antlr-4-1.0-complete.jar;sparql4.jar SparqlMain input.rq
 }}}
 
 The Unix way
 {{{
-java -cp antlr-4.0b4-complete.jar:sparql4.jar SparqlMain input.rq
+java -cp antlr-4-1.0-complete.jar:sparql4.jar SparqlMain input.rq
 }}}
 
 You should receive the following output:
